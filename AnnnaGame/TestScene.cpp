@@ -58,15 +58,16 @@ void TestScene::start()
 
 	obj = birthObjectNonHitbox();
 
-	auto num = obj->actman[U""].getAction(1);
-	ac = dynamic_cast<Actions*>(*obj->actman[U""].getAction(1).begin());
+	obj->ACreate(U"あいさつ").startIf([] {return KeyA.down(); })
+		+= MyPrint(U"hello", 1)
+		+ MyPrint(U"world", 1)
+		+ MyPrint(U"c++").endIf([] {return KeyA.down(); }, 1)
+		>> MyPrint(U"こんにちは", 1)
+		+ MyPrint(U"世界", 1);
 }
 
 void TestScene::update(double dt)
 {
 	Scene::update(dt);
-	Print << obj->actman[U""].getActiveIndex();
-	Print << obj->actman[U""].getActiveNum();
-	Print << ac->getActiveIndex();
-	Print << ac->getActiveNum();
+	
 }

@@ -64,4 +64,3 @@ Skill* SkillProvider::Get(StringView name)
 
 	throw Error{ U"SkillProviderのインスタンスが生成されていないため、スキルを提供できませんでした。" };
 }
-

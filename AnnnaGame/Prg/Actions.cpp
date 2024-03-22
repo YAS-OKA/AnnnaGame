@@ -5,7 +5,7 @@ using namespace prg;
 Actions::Actions()
 	:IAction()
 {
-	endCondition.set([borrowed = lend()] {return borrowed->isAllFinished(); });
+	endCondition.addIn(U"isAllFinished", [borrowed = lend()] {return borrowed->isAllFinished(); });
 }
 
 Actions::~Actions()
@@ -173,7 +173,7 @@ void Actions::update(double dt)
 void prg::Actions::_insert(int32 septIndex, IAction* action)
 {
 #if _DEBUG
-	if (isActive())throw Error{ U"Actionsが実行中にActionの追加が行われました" };//実行時エラーなのでリリース時はthrowしない
+	if (isActive())throw Error{ U"Actions実行中にActionの追加が行われました" };//実行時エラーなのでリリース時はthrowしない
 #endif
 
 	update_list.insert(update_list.begin() + separate[septIndex], action);
@@ -200,7 +200,7 @@ void prg::Actions::_startCheck()
 		auto& act = (*it);
 		if ((not act->started) and (not act->ended))
 		{
-			if (act->startCondition.check()) act->start();
+			if (act->startCondition.commonCheck()) act->start();
 
 			act->startCondition.countFrame();//カウント
 		}
@@ -221,7 +221,7 @@ void prg::Actions::_endCheck()
 	{
 		auto& act = (*it);
 		if (act->isActive()) {
-			if (act->endCondition.check())
+			if (act->endCondition.commonCheck())
 			{
 				act->end();
 				activeNum--;

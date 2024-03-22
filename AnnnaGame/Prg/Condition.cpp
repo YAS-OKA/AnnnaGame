@@ -18,19 +18,24 @@ void ICondition::forced(bool _flag)
 	flag = _flag;
 }
 
-void prg::ICondition::countFrame()
+void ICondition::countFrame()
 {
 	frameCounter++;
 }
 
-void prg::ICondition::setWaitFrame(size_t frame)
+void ICondition::setWaitFrame(size_t frame)
 {
 	waitFrame = frame;
 }
 
-bool prg::ICondition::enoughFrame() const
+bool ICondition::enoughFrame() const
 {
 	return waitFrame <= frameCounter;
+}
+
+bool prg::ICondition::commonCheck()const
+{
+	return enoughFrame() and (flag or check());
 }
 
 void ICondition::reset()
@@ -39,9 +44,9 @@ void ICondition::reset()
 	frameCounter = 0;
 }
 
-bool ICondition::check()
+bool ICondition::check()const
 {
-	return enoughFrame() and flag;
+	return false;
 }
 
 void prg::ConditionArray::countFrame()
@@ -56,18 +61,14 @@ void prg::ConditionArray::countFrame()
 
 bool ConditionArray::check()const
 {
-	if (not enoughFrame())return false;
-
-	if (flag)return true;
 	if (conditions.arr.empty())return false;//無条件の場合、自分(flag)が条件となる
-
+	
+	//すべてand または すべてor
 	bool tmp = checkType == Type::Any;
 
 	for (auto& conditionTable : conditions.arr)
-	{
 		for (auto& [_, condition] : conditionTable.second)
-			if (tmp == condition->check())return tmp;
-	}
+			if (tmp == condition->commonCheck())return tmp;
 
 	return not tmp;
 }
@@ -90,12 +91,8 @@ Hit::Hit(const Borrow<Hitbox>& box, const ColliderCategory& target, size_t waitF
 {
 }
 
-bool Hit::check()
+bool Hit::check()const
 {
-	if (not enoughFrame())return false;
-
-	if (flag)return flag;
-
 	for (auto& c : target)
 	{
 		return box->collidedEntitys.contains(c) and not box->collidedEntitys.at(c).empty();
@@ -112,7 +109,7 @@ void ButtonChecker::setButton(ui::Button* button)
 	ButtonChecker::button = button;
 }
 
-bool ButtonChecker::check()
+bool ButtonChecker::check()const
 {
 	return button->pushed();
 }
@@ -122,11 +119,9 @@ prg::TimeCondition::TimeCondition(const Borrow<IAction>& _act, double time, size
 {
 }
 
-bool prg::TimeCondition::check()
+bool prg::TimeCondition::check()const
 {
-	if (not enoughFrame())return false;
-
-	return flag or (act and act->timer >= time);
+	return act and act->timer >= time;
 }
 
 prg::FuncCondition::FuncCondition(const Borrow<IAction>& act, const ActState& state, bool Not, size_t waitFrame)
@@ -141,4 +136,9 @@ prg::FuncCondition::FuncCondition(const Borrow<IAction>& act, const ActState& st
 	else
 		if (Not) m_function = [=] {return not(act->isEnded()); };
 		else m_function = [=] {return act->isEnded(); };
+}
+
+bool prg::FuncCondition::check() const
+{
+	return m_function();
 }

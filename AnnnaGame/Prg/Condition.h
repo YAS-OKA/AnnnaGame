@@ -17,10 +17,12 @@ namespace prg
 
 		bool enoughFrame()const;
 
-		virtual bool check();
+		bool commonCheck()const;
 
 		virtual void reset();
 	protected:
+		virtual bool check()const;
+
 		bool flag;
 	private:
 		size_t waitFrame;
@@ -45,8 +47,6 @@ namespace prg
 		ConditionArray& operator = (const ConditionArray&) = delete;
 
 		void countFrame()override;
-
-		virtual bool check()const;
 
 		template<class C = FuncCondition, class... Args>
 		C* add(Args&& ...args)
@@ -84,6 +84,9 @@ namespace prg
 		//Every すべてのconditionがtrueならtrue
 		//Any いずれかのconditionがtrueならtrue
 		Type checkType = Type::Every;
+
+	protected:
+		virtual bool check()const override;
 	};
 
 	class TimeCondition :public ICondition
@@ -95,7 +98,8 @@ namespace prg
 
 		TimeCondition(const Borrow<IAction>& act, double time, size_t waitFrame = 0);
 
-		bool check();
+	protected:
+		bool check()const override;
 	};
 
 	enum class ActState
@@ -113,14 +117,9 @@ namespace prg
 
 		FuncCondition(const Borrow<class IAction>& act, const ActState& state, bool Not = false, size_t waitFrame = 0);
 
-		bool check()
-		{
-			if (not enoughFrame())return false;
-
-			return flag or m_function();
-		};
-
 		std::function<bool()> m_function;
+	protected:
+		bool check()const override;
 	};
 
 }
@@ -142,7 +141,8 @@ namespace prg
 		Hit(const Borrow<Hitbox>& box, HashSet<ColliderCategory> targets = {}, size_t waitFrame = 0);
 		Hit(const Borrow<Hitbox>& box, const ColliderCategory& target, size_t waitFrame = 0);
 
-		bool check()override;
+	protected:
+		bool check()const override;
 	};
 }
 
@@ -161,6 +161,7 @@ namespace prg
 		ButtonChecker(ui::Button* button, size_t waitFrame = 0);
 		void setButton(ui::Button* button);
 
-		bool check()override;
+	protected:
+		bool check()const override;
 	};
 }

@@ -11,11 +11,11 @@ private:
 public:
 	Actions& create(StringView name, bool startImmediately = false, bool loop = false);
 	//アクション終了時に消去されるアクションを生成
-	Actions& createOneShotAct(StringView name, bool startImmediately = false, bool loop = false);
+	Actions& createOneShot(StringView name, bool startImmediately = false, bool loop = false);
 
 	Actions& create(StringView name, Actions&& act, bool startImmediately = false, Optional<bool> loop = none);
 
-	Actions& createOneShotAct(StringView name, Actions&& act, bool startImmediately = false, Optional<bool> loop = none);
+	Actions& createOneShot(StringView name, Actions&& act, bool startImmediately = false, Optional<bool> loop = none);
 
 	bool erase(StringView name);
 	//開始

@@ -5,7 +5,7 @@
 
 using namespace prg;
 
-IAction::IAction(double t)
+IAction::IAction(const Optional<double>& t)
 	:updatePriority(0)
 	, timer(0)
 	, timeScale(1.0)
@@ -13,8 +13,9 @@ IAction::IAction(double t)
 	, startCondition(ConditionArray())
 	, endCondition(ConditionArray())
 {
-	endCondition.add<TimeCondition>(*this, t);
+	if (t)	endCondition.add<TimeCondition>(*this, *t);
 }
+
 void IAction::setStartCondition(ConditionArray&& condition)
 {
 	startCondition = std::move(condition);
@@ -74,7 +75,7 @@ prg::TimeAction::TimeAction(double time)
 {
 }
 
-MyPrint::MyPrint(const String& text, double t)
+MyPrint::MyPrint(const String& text,const Optional<double>& t)
 	:text(text), IAction(t)
 {}
 
@@ -84,16 +85,16 @@ void MyPrint::update(double dt)
 	Print << text;
 }
 
-FuncAction::FuncAction(const UpdateFunc& upd, double time)
+FuncAction::FuncAction(const UpdateFunc& upd, const Optional<double>& time)
 	:upd(upd), IAction(time) {}
 
-FuncAction::FuncAction(const TermEvent& ini, double time)
+FuncAction::FuncAction(const TermEvent& ini, const Optional<double>& time)
 	:ini(ini), IAction(time) {}
 
-FuncAction::FuncAction(const TermEvent& ini, const UpdateFunc& upd, double time)
+FuncAction::FuncAction(const TermEvent& ini, const UpdateFunc& upd, const Optional<double>& time)
 	:ini(ini), upd(upd), IAction(time) {}
 
-prg::FuncAction::FuncAction(const TermEvent& ini, const UpdateFunc& upd, const TermEvent& fin, double time)
+prg::FuncAction::FuncAction(const TermEvent& ini, const UpdateFunc& upd, const TermEvent& fin, const Optional<double>& time)
 	:ini(ini), upd(upd), fin(fin), IAction(time) {}
 
 

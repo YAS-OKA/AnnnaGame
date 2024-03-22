@@ -15,7 +15,7 @@ namespace prg
 		Actions(Act&& other)
 			:IAction()
 		{
-			endCondition.set([borrowed = lend()] {return borrowed->isAllFinished(); });
+			endCondition.addIn(U"isAllFinished",[borrowed = lend()] {return borrowed->isAllFinished(); });
 			addAct(new Act(std::move(other)));
 		}
 

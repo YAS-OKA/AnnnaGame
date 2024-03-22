@@ -11,7 +11,7 @@ namespace prg
 	class IAction :public Borrowable
 	{
 	public:
-		IAction(double time = Math::Inf);
+		IAction(const Optional<double>& time = none);
 
 		void setStartCondition(ConditionArray&& condition);
 
@@ -106,7 +106,7 @@ namespace prg
 	class MyPrint final :public IAction
 	{
 	public:
-		MyPrint(const String& text, double time = Math::Inf);
+		MyPrint(const String& text, const Optional<double>& time = none);
 
 		String text;
 
@@ -117,8 +117,6 @@ namespace prg
 	class FuncAction :public IAction
 	{
 	public:
-		using IAction::IAction;
-
 		using Self = FuncAction*;
 		using FullUpdate = std::function<void(double, Self)>;
 		using SimpleUpdate = std::function<void(double)>;
@@ -129,13 +127,13 @@ namespace prg
 		TermEvent ini = [] {};
 		TermEvent fin = [] {};
 
-		FuncAction(const UpdateFunc& upd, double time = Math::Inf);
+		FuncAction(const UpdateFunc& upd, const Optional<double>& time = none);
 
-		FuncAction(const TermEvent& ini, double time = 0);
+		FuncAction(const TermEvent& ini, const Optional<double>& time = 0);
 
-		FuncAction(const TermEvent& ini, const UpdateFunc& upd, double time = Math::Inf);
+		FuncAction(const TermEvent& ini, const UpdateFunc& upd, const Optional<double>& time = none);
 
-		FuncAction(const TermEvent& ini, const UpdateFunc& upd, const TermEvent& fin, double time = Math::Inf);
+		FuncAction(const TermEvent& ini, const UpdateFunc& upd, const TermEvent& fin, const Optional<double>& time = none);
 	private:
 		void update(double dt);
 		void start();

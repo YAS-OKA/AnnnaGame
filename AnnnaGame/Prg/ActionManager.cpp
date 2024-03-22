@@ -11,7 +11,7 @@ Actions& ActionManager::create(StringView name, bool immediatelyStart, bool loop
 	return actions[name];
 }
 
-Actions& ActionManager::createOneShotAct(StringView name, bool startImmediately, bool loop)
+Actions& ActionManager::createOneShot(StringView name, bool startImmediately, bool loop)
 {
 	auto& act = create(name, startImmediately, loop);
 	oneShotSet.emplace(&act);
@@ -27,7 +27,7 @@ Actions& ActionManager::create(StringView name, Actions&& action, bool immediate
 	return actions[name];
 }
 
-Actions& ActionManager::createOneShotAct(StringView name, Actions&& action, bool immediatelyStart, Optional<bool> loop)
+Actions& ActionManager::createOneShot(StringView name, Actions&& action, bool immediatelyStart, Optional<bool> loop)
 {
 	auto& act = create(name, std::forward<Actions>(action), immediatelyStart, loop);
 	oneShotSet.emplace(&act);
@@ -70,7 +70,7 @@ void ActionManager::update(double dt)
 	for (auto& [key, act] : actions) {
 		if ((not act.isStarted()) and (not act.isEnded()))
 		{
-			if (act.startCondition.check())	act.start();
+			if (act.startCondition.commonCheck())act.start();
 			act.startCondition.countFrame();//カウント
 		}
 
@@ -83,7 +83,7 @@ void ActionManager::update(double dt)
 	for (auto& [key, act] : actions)
 	{
 		if (act.isActive()) {
-			if (act.endCondition.check())
+			if (act.endCondition.commonCheck())
 			{
 				act.end();
 				if (oneShotSet.contains(&act)) eraseList << key;

@@ -124,7 +124,7 @@ void ISkillEffect::setCTarget(Character* chara)
 
 void ISkillEffect::setTime(double t)
 {
-	endIf<TimeCondition>(*this,t);
+	endIf<TimeCondition>(*this, t);
 	time = t;
 }
 

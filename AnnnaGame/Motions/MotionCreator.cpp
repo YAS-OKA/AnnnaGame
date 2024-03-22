@@ -351,7 +351,7 @@ namespace mot
 
 			//パーツ選択
 			auto& selectParts = ACreate(U"selectParts");
-			selectParts.add<prg::FuncAction>(
+			selectParts.add(
 				[=] {
 					auto pre = selecting;
 					Parts* selectedParts = nullptr;
