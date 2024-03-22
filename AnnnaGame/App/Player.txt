@@ -1,0 +1,33 @@
+[Annna]
+{
+	[hp]{30}
+
+	[p_power]{20}
+	[p_recover]{20}
+	[p_guard]{15}
+
+	[m_power]{13}
+	[m_recover]{15}
+	[m_guard]{13}
+
+	[quick]{35}
+	[zokusei]{50,50,50}
+}
+
+[template]
+{
+	[hp]{}
+
+	[p_power]{}
+	[p_recover]{}
+	[p_guard]{}
+
+	[m_power]{}
+	[m_recover]{}
+	[m_guard]{}
+
+	[quick]{}
+	[zokusei]{}
+}
+
+[zokusei]{fire,walter,grass 0~100}

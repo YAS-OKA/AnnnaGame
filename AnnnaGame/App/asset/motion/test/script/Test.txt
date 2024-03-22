@@ -1,0 +1,4 @@
+TIME 0
+JOINT body
+LEN 1
+SetAngle 90

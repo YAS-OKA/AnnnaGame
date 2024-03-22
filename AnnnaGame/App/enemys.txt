@@ -1,0 +1,39 @@
+
+double fire;//‰Î
+		double water;//…
+		double soil;//’n
+		double plant;//A•¨
+		double animal;//“®•¨
+[KirikabuBake]
+{
+	[hp]{30}
+
+	[p_power]{10}
+	[p_recover]{}
+	[p_guard]{5}
+
+	[m_power]{0}
+	[m_recover]{}
+	[m_guard]{5}
+
+	[quick]{20}
+	[zokusei]{5,50,50,100,20}
+}
+
+[template]
+{
+	[hp]{}
+
+	[p_power]{}
+	[p_recover]{}
+	[p_guard]{}
+
+	[m_power]{}
+	[m_recover]{}
+	[m_guard]{}
+
+	[quick]{}
+	[zokusei]{}
+}
+
+[zokusei]{fire,walter,soil,plant,animal 0~100}

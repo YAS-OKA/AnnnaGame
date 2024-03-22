@@ -1,0 +1,57 @@
+﻿{
+  "arm": {
+    "angle": 0.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "body",
+    "pos": "(0, 0)",
+    "rotatePos": "(15.33331, 43.33331)",
+    "scale": "(1, 1)",
+    "scalePos": "(16, 43.33334)",
+    "texture": "test/arm.png",
+    "z": 0.0
+  },
+  "body": {
+    "angle": 0.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "master",
+    "pos": "(0, 0)",
+    "rotatePos": "(-21.33331, 106.66669)",
+    "scale": "(1, 1)",
+    "scalePos": "(0, 0)",
+    "texture": "test/base-body.png",
+    "z": 100.0
+  },
+  "hat": {
+    "angle": 0.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "head",
+    "pos": "(0, 0)",
+    "rotatePos": "(20.66669, -84.66669)",
+    "scale": "(1, 1)",
+    "scalePos": "(0, 0)",
+    "texture": "test/hat.png",
+    "z": 30.0
+  },
+  "head": {
+    "angle": 0.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "body",
+    "pos": "(0, 0)",
+    "rotatePos": "(-11.33337, 2)",
+    "scale": "(1, 1)",
+    "scalePos": "(0, 0)",
+    "texture": "test/head.png",
+    "z": 50.0
+  },
+  "master": {
+    "angle": 0.0,
+    "color": "(0, 0, 0, 0)",
+    "parent": "",
+    "pos": "(0, 0)",
+    "rotatePos": "(0, 0)",
+    "scale": "(0.6, 0.6)",
+    "scalePos": "(0, 0)",
+    "texture": "rect 0 0",
+    "z": 100.0
+  }
+}

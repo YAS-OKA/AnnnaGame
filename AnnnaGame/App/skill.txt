@@ -1,0 +1,18 @@
+[Skill]
+{
+	[punch]
+	{
+		[zokusei]{normal}
+		[magic_and_physics]{ 0,1 }
+		[value]{7}
+		[recover]{ 0,1 }
+	}
+}
+
+[template]
+{
+	[zokusei]{}
+	[magic_and_physics]{ , }
+	[value]{}
+	[recover]{ , }
+}
