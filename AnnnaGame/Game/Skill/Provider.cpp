@@ -7,15 +7,11 @@ using namespace skill;
 
 SkillProvider* SkillProvider::instance = nullptr;
 
-void SkillProvider::Init(my::Scene* scene)
+SkillProvider::SkillProvider()
 {
-	if (instance)return;//すでにインスタンスが生成されていたらここで終了
-	instance = new SkillProvider();
-	instance->scene = scene;
-
 	using C = ColliderCategory;
 	using enum EffectType;
-	auto& d = instance->skillDict;
+	auto& d = skillDict;
 
 	d[U"Tmp"] = [](Skill* s, Actions& act)
 		{
@@ -30,22 +26,29 @@ void SkillProvider::Init(my::Scene* scene)
 
 			act |= FuncAction(
 				[=, hitbox = s->getHitbox()](double) {
-						for (auto& target : hitbox->getNewHittings({ C::enemy }))
-						{
-							auto damage = [](Damage*) { return 10; };
-							auto dotDamage = [](DotDamage*) {return 1; };
+					for (auto& target : hitbox->getNewHittings({ C::enemy }))
+					{
+						auto damage = [](Damage*) { return 10; };
+						auto dotDamage = [](DotDamage*) {return 1; };
 
-							////効果を付与
-							target += SEffect<burn>(s)
-								= Damage(s, damage)
-								>> MyPrint(U"いたっ！", 0.8)
-								+ DotDamage(s, 1, 7, dotDamage)
-								+ MyPrint(U"メラメラ", 7)
-								>> MyPrint(U"治った！", 2);
-						}
+						////効果を付与
+						target += SEffect<burn>(s)
+							= Damage(s, damage)
+							>> MyPrint(U"いたっ！", 0.8)
+							+ DotDamage(s, 1, 7, dotDamage)
+							+ MyPrint(U"メラメラ", 7)
+							>> MyPrint(U"治った！", 2);
+					}
 				}, hitableTime
 			);
 		};
+}
+
+void SkillProvider::Init(my::Scene* scene)
+{
+	if (instance)return;//すでにインスタンスが生成されていたらここで終了
+	instance = new SkillProvider();
+	instance->scene = scene;
 }
 
 void SkillProvider::Destroy()

@@ -10,6 +10,7 @@ namespace prg
 
 	class IAction :public Borrowable
 	{
+		ConditionArray* editingCondition = nullptr;
 	public:
 		IAction(const Optional<double>& time = none);
 
@@ -21,6 +22,7 @@ namespace prg
 		auto startIf(this Self&& self, Args&& ...args)->decltype(self)
 		{
 			self.startCondition.set<C>(args...);
+			self.editingCondition = &self.startCondition;
 			return std::forward<Self>(self);
 		}
 		//開始条件を追加
@@ -28,6 +30,22 @@ namespace prg
 		auto andStartIf(this Self&& self, Args&& ...args)->decltype(self)
 		{
 			self.startCondition.add<C>(args...);
+			self.editingCondition = &self.startCondition;
+			return std::forward<Self>(self);
+		}
+		template<class C = FuncCondition, class Self, class... Args>
+		auto startIfNot(this Self&& self, Args&& ...args) -> decltype(self)
+		{
+			self.startCondition.set<C>(args...)->Not();
+			self.editingCondition = &self.startCondition;
+			return std::forward<Self>(self);
+		}
+		//開始条件を追加
+		template<class C = FuncCondition, class Self, class... Args>
+		auto andStartIfNot(this Self&& self, Args&& ...args) -> decltype(self)
+		{
+			self.startCondition.add<C>(args...)->Not();
+			self.editingCondition = &self.startCondition;
 			return std::forward<Self>(self);
 		}
 		//終了条件をセット
@@ -35,6 +53,7 @@ namespace prg
 		auto endIf(this Self&& self, Args&& ...args)->decltype(self)
 		{
 			self.endCondition.set<C>(args...);
+			self.editingCondition = &self.endCondition;
 			return std::forward<Self>(self);
 		}
 		//終了条件を追加
@@ -42,16 +61,50 @@ namespace prg
 		auto andEndIf(this Self&& self, Args&& ...args)->decltype(self)
 		{
 			self.endCondition.add<C>(args...);
+			self.editingCondition = &self.endCondition;
+			return std::forward<Self>(self);
+		}
+		//終了条件をセット
+		template<class C = FuncCondition, class Self, class... Args>
+		auto endIfNot(this Self&& self, Args&& ...args) -> decltype(self)
+		{
+			self.endCondition.set<C>(args...)->Not();
+			self.editingCondition = &self.endCondition;
+			return std::forward<Self>(self);
+		}
+		//終了条件を追加
+		template<class C = FuncCondition, class Self, class... Args>
+		auto andEndIfNot(this Self&& self, Args&& ...args) -> decltype(self)
+		{
+			self.endCondition.add<C>(args...)->Not();
+			self.editingCondition = &self.endCondition;
+			return std::forward<Self>(self);
+		}
+		//and editingCondition
+		template<class C = FuncCondition, class Self, class... Args>
+		auto andIf(this Self&& self, Args&& ...args) -> decltype(self)
+		{
+			if(self.editingCondition)self.editingCondition->add<C>(args...);
+			return std::forward<Self>(self);
+		}
+		template<class C = FuncCondition, class Self, class... Args>
+		auto andIfNot(this Self&& self, Args&& ...args) -> decltype(self)
+		{
+			if (self.editingCondition)self.editingCondition->add<C>(args...)->Not();
 			return std::forward<Self>(self);
 		}
 		//他のアクションと開始終了を合わせる
 		template<class Self>
 		auto same(this Self&& self,const Borrow<IAction>& other)->decltype(self)
 		{
+			auto tmp = self.editingCondition;//エディティングコンディションの状態を保存しておく
 			self.startIf(other, ActState::start);
 			self.endIf(other, ActState::end);
+			self.editingCondition = tmp;//最初の状態に戻す
 			return std::forward<Self>(self);
 		}
+
+		void setId(StringView id);
 
 		bool isStarted();
 

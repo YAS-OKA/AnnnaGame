@@ -4,7 +4,7 @@
 //#include"Draw.h"
 #include"../Game/Object.h"
 #include"../DrawManager.h"
-#include"../Game/Utilities.h"
+#include"../Util/Util.h"
 
 CollideBox::CollideFigure::CollideFigure(const Figure& fig)
 	:figure(fig)//,layerd(layerd)

@@ -32,6 +32,8 @@ void Player::start()
 		auto s = skill::SkillProvider::Get(U"旅人/たたく");//スキル取得
 		s->addInfo<skill::Chara>(U"chara", this);
 		attack.add([=] { s->act(); });//スキル発動
+
+
 	}
 	//jump
 	{

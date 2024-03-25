@@ -4,15 +4,59 @@
 #include"../Component/Draw.h"
 #include"../Game/Scenes.h"
 #include"../Component/Collider.h"
-#include"../Game/Utilities.h"
 
 class Object;
 class Collider;
 class Character;
 
-//今回のゲームで使うアクション
 namespace prg
 {
+	//アクションを終了させる
+	class EndAction final :public IAction
+	{
+	public:
+		Borrow<class Actions> actions;
+
+		Array<Borrow<IAction>>targets{};
+
+		template<class... Args>
+		EndAction(const Borrow<Actions>& actions, Args&& ...ids)
+			:IAction(0), actions(actions)
+		{
+			setTargets(ids...);
+		}
+		template<class ...Args>
+		void withoutId(Args&& ...ids)
+		{
+			for (const String& id : std::initializer_list<String>{ ids... }) addException(id);
+		}
+
+		template<class ...Args>
+		void without(Args&& ...acts)
+		{
+			for (const Borrow<IAction>& act : std::initializer_list<Borrow<IAction>>{ acts... }) addException(act);
+		}
+
+		void endAll();
+
+		//fに渡されるIActionのnull判定はしなくていい
+		void endOtherIf(const std::function<bool(IAction*)>& f);
+
+		template<class... Args>
+		void setTargets(Args&& ...ids)
+		{
+			for (const String& id : std::initializer_list<String>{ ids... }) addTarget(id);
+		}
+	protected:
+		Array<Borrow<IAction>> exception{};
+		std::function<bool (IAction*)> f = nullptr;
+		void addException(StringView id);
+		void addException(const Borrow<IAction>& act);
+		void addTarget(StringView ids);
+		void start()override;
+		void update(double dt)override;
+	};
+
 	class FreeFall :public IAction
 	{
 	public:
@@ -67,8 +111,8 @@ namespace prg
 			auto vis = hitbox->getComponent<Draw3D>(U"hitbox");
 			vis->color = ColorF{ Palette::Yellow }.removeSRGBCurve();
 			vis->visible = false;
-
-			hitbox->ACreate(U"killSelf", true) +=LifeSpan(hitbox).same(*this);
+			//このアクションが終わったらヒットボックスオブジェクトをkill
+			hitbox->ACreate(U"killSelf", true) += LifeSpan(hitbox).same(*this);
 		}
 		
 		Hitbox* setTarget(HashSet<ColliderCategory> category) {

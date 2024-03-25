@@ -10,7 +10,7 @@
 namespace util
 {
 
-	StopMax::StopMax(double max, double value)
+	/*StopMax::StopMax(double max, double value)
 		:value(value), max(max) {}
 
 	void StopMax::add(double additional)
@@ -22,7 +22,7 @@ namespace util
 	bool StopMax::additionable()const
 	{
 		return value < max;
-	}
+	}*/
 
 	void MouseObject::start()
 	{

@@ -26,6 +26,11 @@ void IAction::setEndCondition(ConditionArray&& condition)
 	endCondition = std::move(condition);
 }
 
+void prg::IAction::setId(StringView id)
+{
+	this->id = id;
+}
+
 bool IAction::isStarted()
 {
 	return started;

@@ -118,7 +118,7 @@ void prg::Actions::start(const int32& startIndex, bool startFirstActions)
 void Actions::reset()
 {
 	IAction::reset();
-	activeNum = update_list.size();
+	notFinishedActNum = update_list.size();
 	activeIndex = 0;
 	loopCount = 0;
 	for (auto& action : update_list)
@@ -129,7 +129,7 @@ void Actions::reset()
 
 bool Actions::isAllFinished()
 {
-	return activeNum == 0;
+	return notFinishedActNum == 0;
 }
 
 void Actions::end()
@@ -140,7 +140,18 @@ void Actions::end()
 	{
 		if (action->isActive())action->end();
 	}
-	//if (initialize)reset();
+}
+
+void prg::Actions::end(IAction* act)
+{
+	for (auto it = update_list.begin(), en = update_list.end(); it != en; ++it) {
+		if ((*it) == act and (*it)->isActive()) {
+			(*it)->end();
+			activeNum--;
+			notFinishedActNum--;
+			return;
+		}
+	}
 }
 
 void Actions::update(double dt)
@@ -178,7 +189,7 @@ void prg::Actions::_insert(int32 septIndex, IAction* action)
 
 	update_list.insert(update_list.begin() + separate[septIndex], action);
 
-	++activeNum;
+	++notFinishedActNum;
 }
 
 void prg::Actions::_sort()
@@ -200,7 +211,11 @@ void prg::Actions::_startCheck()
 		auto& act = (*it);
 		if ((not act->started) and (not act->ended))
 		{
-			if (act->startCondition.commonCheck()) act->start();
+			if (act->startCondition.commonCheck())
+			{
+				act->start();
+				activeNum++;
+			}
 
 			act->startCondition.countFrame();//カウント
 		}
@@ -225,6 +240,7 @@ void prg::Actions::_endCheck()
 			{
 				act->end();
 				activeNum--;
+				notFinishedActNum--;
 			}
 			act->endCondition.countFrame();//カウント
 		}

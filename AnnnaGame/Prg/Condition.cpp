@@ -1,6 +1,7 @@
 ﻿#include "../stdafx.h"
 #include "Condition.h"
 #include"Action.h"
+#include"Actions.h"
 
 #include"../EC.hpp"
 #include"../Prg/GameAction.h"
@@ -35,7 +36,13 @@ bool ICondition::enoughFrame() const
 
 bool prg::ICondition::commonCheck()const
 {
-	return enoughFrame() and (flag or check());
+	return enoughFrame() and TNot != (flag or check());
+}
+
+ICondition* prg::ICondition::Not(bool flag)
+{
+	TNot = flag;
+	return this;
 }
 
 void ICondition::reset()
@@ -124,21 +131,36 @@ bool prg::TimeCondition::check()const
 	return act and act->timer >= time;
 }
 
-prg::FuncCondition::FuncCondition(const Borrow<IAction>& act, const ActState& state, bool Not, size_t waitFrame)
+prg::FuncCondition::FuncCondition(const Borrow<IAction>& act, const ActState& state, size_t waitFrame)
 	:ICondition(waitFrame)
 {
-	if (state == ActState::start)
-		if (Not)	m_function = [=] {return not(act->isStarted()); };
-		else m_function = [=] {return act->isStarted(); };
-	else if (state == ActState::active)
-		if (Not) m_function = [=] {return not(act->isActive()); };
-		else m_function = [=] {return act->isActive(); };
-	else
-		if (Not) m_function = [=] {return not(act->isEnded()); };
-		else m_function = [=] {return act->isEnded(); };
+	using enum ActState;
+
+	switch (state){
+	case start: m_function = [act] {return act->isStarted(); }; break;
+	case active: m_function = [act] {return act->isActive(); }; break;
+	case end: m_function = [act] {return act->isEnded(); }; break;
+	default: break;
+	}
 }
 
 bool prg::FuncCondition::check() const
 {
 	return m_function();
+}
+
+prg::ActivesChecker::ActivesChecker(const Borrow<class Actions>& act, int32 threshold, size_t waitFrame)
+	:ICondition(waitFrame), actions(act), threshold(threshold)
+{
+}
+
+bool prg::ActivesChecker::check() const
+{
+	int32 activeNum = actions->getActiveNum();
+	//例外のアクションがカウントされていたらその分ひく
+	for (const auto& name : exception)
+		if (actions->getAction(name)->isActive())
+			activeNum--;
+
+	return activeNum >= threshold;
 }

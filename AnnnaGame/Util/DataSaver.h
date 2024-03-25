@@ -14,6 +14,8 @@ public:
 		ConstractChild();
 	}
 
+	String preProcess(const String& data);
+
 	void ConstractChild()
 	{
 		children = LoadDataSaver(data);

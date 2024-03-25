@@ -2,6 +2,7 @@
 #include "Draw.h"
 #include"Transform.h"
 #include"../DrawManager.h"
+#include"../Util/Util.h"
 
 IDrawing::IDrawing(DrawManager* manager)
 	:manager(manager)

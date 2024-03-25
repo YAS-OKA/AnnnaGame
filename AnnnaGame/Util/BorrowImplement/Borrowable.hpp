@@ -47,6 +47,11 @@ public:
 		return ptr and ptr.get()->get();//nullptrかポインタ
 	}
 
+	C* get()const
+	{
+		return ptr.get()->get();
+	}
+
 	operator C* ()const
 	{
 		return ptr.get()->get();
@@ -75,14 +80,6 @@ public:
 		return Borrow<C>(bor);
 	};
 };
-//キャスト
-template<class C>
-template<class T, std::enable_if_t<std::is_base_of_v<BaseBorrowable, T>>*>
-Borrow<C>::operator Borrow<T>()const
-{
-	if (ptr->get())return ptr->cast_lender->lend<T>();
-	else return Borrow<T>(nullptr);
-};
 
 //これを継承するだけ
 class Borrowable :public BaseBorrowable
@@ -109,3 +106,17 @@ public:
 	}
 };
 
+//キャスト
+template<class C>
+template<class T, std::enable_if_t<std::is_base_of_v<BaseBorrowable, T>>*>
+Borrow<C>::operator Borrow<T>()const
+{
+	if (ptr->get())return ptr->cast_lender->lend<T>();
+	else return Borrow<T>(nullptr);
+};
+
+template<class _Ty1, class _Ty2>
+bool operator == (const Borrow<_Ty1>& _Left, const Borrow<_Ty2>& _Right)
+{
+	return _Left.get() == _Right.get();
+}

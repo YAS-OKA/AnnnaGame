@@ -4,7 +4,6 @@
 
 namespace prg
 {
-
 	//こいつは子アクションの所有権持ってるので気を付けて
 	class Actions :public IAction
 	{
@@ -51,7 +50,7 @@ namespace prg
 				*it = *(it + 1) + 1;
 			}
 
-			action->id = id;
+			if(id==U"" and action->id==U"")action->id = id;
 
 			return *action;
 		}
@@ -78,13 +77,13 @@ namespace prg
 				++(*itr);
 			}
 
-			action->id = id;
+			if (id == U"" and action->id == U"")action->id = id;
 
 			return *action;
 		}
 
 		template<class T = IAction>
-		T* getAction(const String& id)
+		T* getAction(StringView id)
 		{
 			//キャストに失敗したらnullptr
 			for (auto& action : update_list)if (action->id == id)return dynamic_cast<T*>(action);
@@ -92,7 +91,6 @@ namespace prg
 			//見つからなければ
 			return nullptr;
 		}
-
 		int32 getIndex(IAction* action);
 
 		int32 getActiveIndex()const;
@@ -120,6 +118,8 @@ namespace prg
 		void reset()override;
 		/// @brief アクションを終了する
 		void end()override;
+		/// @brief 引数に渡したアクションがアクティブならそのアクションを終了する。
+		void end(IAction* act);
 
 		bool isAllFinished();
 
@@ -149,8 +149,10 @@ namespace prg
 		std::tuple<int32, int32> _getArea(const int32& Index)const;
 
 		int32 activeIndex = 0;
-		//終了していないIActionがいくつあるか addしたときに++ updateでendのとき-- resetのとき=
+		//実行中のアクションの個数
 		int32 activeNum = 0;
+		//終了していないIActionがいくつあるか addしたときに++ updateでendのとき-- resetのとき=
+		int32 notFinishedActNum = 0;
 
 		Array<IAction*> update_list;
 		//仕切り

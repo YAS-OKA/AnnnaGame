@@ -5,6 +5,7 @@
 #include"../Game/UI.h"
 #include"Parts.h"
 #include"../Game/Utilities.h"
+#include"../Util/Util.h"
 #include"../Util/Cmd.hpp"
 #include"../Util/CmdDecoder.h"
 #include"MotionCmd.h"
@@ -255,8 +256,8 @@ namespace mot
 			const double r = 6;
 			auto tmp = rotatePoint->addComponent<DrawCircle>(scene->getDrawManager(), r);
 			tmp->color = Palette::Orange;
-			auto& act = rotatePoint->ACreate(U"move", true);
-			act.add(
+			rotatePoint->ACreate(U"move", true)
+				.add(
 				//アドレスのコピー　これをしないとthis->...を参照してしまう
 				[rp = rotatePoint, s = selecting](double dt) {
 					rp->transform->setPos(
@@ -266,9 +267,9 @@ namespace mot
 			);
 			pointCollider << rotatePoint->addComponent<Collider>(CollideBox::CollideFigure(Circle{ 0,0,r }));
 			//つかんだ時の処理
-			auto& gr = rotatePoint->ACreate(U"grab");
 			std::shared_ptr<Vec2> offset{ new Vec2{0,0} };
-			gr.add(
+			rotatePoint->ACreate(U"grab")
+				.add(
 				[=, rp = rotatePoint]
 				{
 					*offset = rp->transform->getPos().xy() - (mouse->getCursorPos(&rp->getComponent<Field<Influence>>(U"dManagerInfluence")->value)).xy();
@@ -287,19 +288,19 @@ namespace mot
 			const double r=6;
 			auto tmp = scalePoint->addComponent<DrawCircle>(scene->getDrawManager(), r);
 			tmp->color = Palette::Green;
-			auto& act = scalePoint->ACreate(U"move", true);
-			act.add(
+			scalePoint->ACreate(U"move", true)
+				.add(
 				[sp = scalePoint, s = selecting](double dt) {
 					sp->transform->setPos(
-						{ s->getScalePos().rotated(s->getAbsAngle() * 1_deg) + s->getPos() + s->transform->getParent()->getPos().xy(),UiZvalue/2 - 10 }
+						{ s->getScalePos().rotated(s->getAbsAngle() * 1_deg) + s->getPos() + s->transform->getParent()->getPos().xy(),UiZvalue / 2 - 10 }
 					);
 				}
 			);
 			pointCollider << scalePoint->addComponent<Collider>(CollideBox::CollideFigure(Circle{ 0,0,r }));
 
-			auto& gr = scalePoint->ACreate(U"grab");
 			std::shared_ptr<Vec2> offset{ new Vec2{0,0} };
-			gr.add<prg::FuncAction>(
+			scalePoint->ACreate(U"grab")
+				.add<prg::FuncAction>(
 				[=, sp = scalePoint]
 				{
 					*offset = sp->transform->getPos().xy() - (mouse->getCursorPos(&sp->getComponent<Field<Influence>>(U"dManagerInfluence")->value)).xy();
@@ -350,8 +351,7 @@ namespace mot
 			transform->setPos({ util::sw() - w,0,UiZvalue });
 
 			//パーツ選択
-			auto& selectParts = ACreate(U"selectParts");
-			selectParts.add(
+			ACreate(U"selectParts").add(
 				[=] {
 					auto pre = selecting;
 					Parts* selectedParts = nullptr;
@@ -372,17 +372,15 @@ namespace mot
 			);
 
 			//パーツを動かす
-			auto& act = ACreate(U"move");
-
-			act.startIf([=] {return grabbing != nullptr; });
-
 			std::shared_ptr<Vec2> offset{ new Vec2{0,0} };
-			act.add(
+			ACreate(U"move")
+				.startIf([=] {return grabbing != nullptr; })
+				.add(
 				[=]
 				{
 				*offset = grabbing->getPos() - (mouse->getCursorPos(&grabbing->getComponent<Field<Influence>>(U"dManagerInfluence")->value) - grabbing->transform->getParent()->getPos()).xy();
 				},
-					[=](double dt, prg::FuncAction*)
+					[=](double dt)
 				{
 					grabbing->setAbsPos(mouse->getCursorPos(&grabbing->getComponent<Field<Influence>>(U"dManagerInfluence")->value).xy() + *offset);/*.rotate(-grabbing->getAngle() * 1_deg));*/
 					auto p = grabbing->getPos();

@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include"../Prg/Action.h"
+#include"../Prg/Init.h"
 #include"../Figure.h"
-#include"../Game/Utilities.h"
+#include"../Util/Util.h"
 
 namespace mot
 {

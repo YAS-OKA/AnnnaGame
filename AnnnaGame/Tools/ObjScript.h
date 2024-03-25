@@ -2,7 +2,8 @@
 #include"../Game/Object.h"
 #include"../Util/DataSaver.h"
 #include"../Prg/Action.h"
-#include"../Game/Utilities.h"
+//#include"../Game/Utilities.h"
+#include"../Util/Util.h"
 #include"../Util/CmdDecoder.h"
 
 namespace my
@@ -137,8 +138,8 @@ namespace objScriptCmdAction
 		void start()override;
 	};
 
-	class MakeGUI :public prg::IAction
-	{
+	//class MakeGUI :public prg::IAction
+	//{
 
-	};
+	//};
 }

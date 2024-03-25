@@ -15,8 +15,8 @@ void Main()
 	manager.birth<GameMaster>();
 
 	while (System::Update())
-	{
-		ClearPrint();
+	{/*
+		ClearPrint();*/
 
 		manager.update(Scene::DeltaTime());
 	}

@@ -19,10 +19,12 @@ namespace prg
 
 		bool commonCheck()const;
 
+		ICondition* Not(bool flag = true);
+
 		virtual void reset();
 	protected:
 		virtual bool check()const;
-
+		bool TNot = false;//これがtrueならNot
 		bool flag;
 	private:
 		size_t waitFrame;
@@ -115,13 +117,27 @@ namespace prg
 		FuncCondition(std::function<bool()> _function, size_t waitFrame = 0)
 			:ICondition(waitFrame), m_function{ _function } {}
 
-		FuncCondition(const Borrow<class IAction>& act, const ActState& state, bool Not = false, size_t waitFrame = 0);
+		FuncCondition(const Borrow<class IAction>& act, const ActState& state, size_t waitFrame = 0);
 
 		std::function<bool()> m_function;
 	protected:
 		bool check()const override;
 	};
+	//Actions内で、他のアクションがスタートしたかを監視
+	class ActivesChecker:public ICondition
+	{
+	public:
+		ActivesChecker(const Borrow<class Actions>& act, int32 threshold = 1, size_t waitFrame = 0);
 
+		template<class... Args>
+		void without(Args&& ...args) { exception.emplace(args...); }
+	protected:
+		HashSet<String> exception;
+		Borrow<Actions> actions;
+		int32 threshold;
+
+		bool check()const override;
+	};
 }
 
 #include"../Component/Collider.h"

@@ -1,6 +1,6 @@
 ﻿#include "../stdafx.h"
 #include "Motion.h"
-#include"../Game/Utilities.h"
+#include"../Util/Util.h"
 
 namespace
 {

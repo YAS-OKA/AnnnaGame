@@ -3,6 +3,7 @@
 #include"../Game/Camera.h"
 #include"../Util/Cmd.hpp"
 #include"../Util/CmdDecoder.h"
+#include"../Util/Util.h"
 #include"MotionCmd.h"
 
 namespace

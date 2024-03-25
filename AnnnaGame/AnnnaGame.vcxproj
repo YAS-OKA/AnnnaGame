@@ -134,6 +134,8 @@
     <ClCompile Include="Game\Object.cpp" />
     <ClCompile Include="Game\Scenes.cpp" />
     <ClCompile Include="Game\Scenes\GameScene.cpp" />
+    <ClCompile Include="Game\StateMachine\Inform.cpp" />
+    <ClCompile Include="Game\StateMachine\StateProvider.cpp" />
     <ClCompile Include="Game\UI.cpp" />
     <ClCompile Include="Game\Utilities.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -153,9 +155,11 @@
     </ClCompile>
     <ClCompile Include="TestScene.cpp" />
     <ClCompile Include="Tools\ObjScript.cpp" />
+    <ClCompile Include="Tools\StateScript.cpp" />
     <ClCompile Include="Util\BorrowImplement\Base.cpp" />
     <ClCompile Include="Util\CmdDecoder.cpp" />
     <ClCompile Include="Util\DataSaver.cpp" />
+    <ClCompile Include="Util\Util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="App\engine\texture\box-shadow\128.png" />
@@ -385,6 +389,8 @@
     <ClInclude Include="Game\Scenes.h" />
     <ClInclude Include="Game\Scenes\GameScene.h" />
     <ClInclude Include="Game\Skill\SkillsActor.h" />
+    <ClInclude Include="Game\StateMachine\Inform.h" />
+    <ClInclude Include="Game\StateMachine\StateProvider.h" />
     <ClInclude Include="Game\UI.h" />
     <ClInclude Include="Game\Utilities.h" />
     <ClInclude Include="Motions\Motion.h" />
@@ -401,6 +407,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TestScene.h" />
     <ClInclude Include="Tools\ObjScript.h" />
+    <ClInclude Include="Tools\StateScript.h" />
     <ClInclude Include="Util\Borrow.h" />
     <ClInclude Include="Util\BorrowImplement\Base.h" />
     <ClInclude Include="Util\BorrowImplement\Borrowable.hpp" />
@@ -409,6 +416,7 @@
     <ClInclude Include="Util\DataSaver.h" />
     <ClInclude Include="Util\PCTree.hpp" />
     <ClInclude Include="Util\TypeContainer.hpp" />
+    <ClInclude Include="Util\Util.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App\example\obj\blacksmith.obj">

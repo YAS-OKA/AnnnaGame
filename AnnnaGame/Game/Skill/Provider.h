@@ -6,7 +6,7 @@ namespace skill
 	//SkillEffectCreatorを組み合わせてSkillを作り、提供するシングルトン
 	class SkillProvider
 	{
-		SkillProvider() {};
+		SkillProvider();
 		~SkillProvider() {};
 
 		HashTable<String, Skill::Collback> skillDict;

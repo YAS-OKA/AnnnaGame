@@ -1,12 +1,44 @@
 ﻿#include "../stdafx.h"
 #include "GameAction.h"
-#include"../Component/Collider.h"
 #include"../Game/Object.h"
-#include"../Component/Collider.h"
 #include"../Game/Chara/Character.h"
 
 namespace prg
 {
+	void EndAction::endAll()
+	{
+		endOtherIf([](IAction*) {return true; });
+	}
+	void EndAction::endOtherIf(const std::function<bool(IAction*)>& f)
+	{
+		this->f = f;
+	}
+	void EndAction::addException(StringView id)
+	{
+		exception << actions->getAction<IAction>(id)->lend();
+	}
+	void EndAction::addException(const Borrow<IAction>& act)
+	{
+		exception << act;
+	}
+	void EndAction::addTarget(StringView id)
+	{
+		targets << actions->getAction<IAction>(id)->lend();
+	}
+
+	void EndAction::start()
+	{
+		if (f)actions->getAll().each([&](IAction* act) {if (f(act))targets << act->lend(); });
+	}
+
+	void EndAction::update(double dt)
+	{
+		//nullじゃないアクションを終了する。
+		targets.remove_if([&](const Borrow<IAction>& target) {return (not target) or exception.contains(target); });
+		//終了する
+		targets.each([&](Borrow<IAction>& target) {if (actions)actions->end(target); });
+	}
+
 	FreeFall::FreeFall(Transform* transform, double time)
 		:transform(transform),IAction(time)
 	{
@@ -102,4 +134,5 @@ namespace prg
 		Print << U"zokusei";
 		p.zokusei.printParams();
 	}
+
 }
