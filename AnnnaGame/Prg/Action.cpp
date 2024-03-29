@@ -13,7 +13,7 @@ IAction::IAction(const Optional<double>& t)
 	, startCondition(ConditionArray())
 	, endCondition(ConditionArray())
 {
-	if (t)	endCondition.add<TimeCondition>(*this, *t);
+	if (t)endCondition.add<TimeCondition>(*this, *t);
 }
 
 void IAction::setStartCondition(ConditionArray&& condition)
@@ -24,11 +24,6 @@ void IAction::setStartCondition(ConditionArray&& condition)
 void IAction::setEndCondition(ConditionArray&& condition)
 {
 	endCondition = std::move(condition);
-}
-
-void prg::IAction::setId(StringView id)
-{
-	this->id = id;
 }
 
 bool IAction::isStarted()
@@ -44,6 +39,13 @@ bool IAction::isEnded()
 bool IAction::isActive()
 {
 	return started and (not ended);
+}
+
+void prg::IAction::StateCheckType(bool f)
+{
+	m_stateCheckerType = f;
+	startCondition.checkType = Type::Any;
+	endCondition.checkType = Type::Any;//こっちはやらなくていいかも
 }
 
 void IAction::update(double dt)

@@ -12,6 +12,6 @@ namespace setting
 	inline constexpr Input SubRight = KeyRight;
 	inline constexpr Input SubLeft = KeyLeft;
 	inline constexpr Input SubUp = KeyUp;
-	//inline constexpr Input SubDown = KeyDown;
+	inline constexpr Input SubDown = KeyDown;
 	
 }

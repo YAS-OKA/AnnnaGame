@@ -20,50 +20,6 @@ namespace my{
 
 namespace util
 {
-	////極座標
-	//static Vec2 polar(double rad, double len=1)
-	//{
-	//	return len * Vec2{ Cos(rad),Sin(rad) };
-	//}
-	////ベクトル内積
-	//static double dotProduct(Vec2 vl, Vec2 vr) {
-	//	return vl.x * vr.x + vl.y * vr.y;
-	//}
-
-	//static double angleOf2Vec(Vec2 A, Vec2 B)
-	//{
-	//	//内積とベクトル長さを使ってcosθを求める
-	//	double cos_sita = dotProduct(A, B) / (A.length() * B.length());
-
-	//	//cosθからθを求める
-	//	return Acos(cos_sita);
-	//}
-	////x,yをひっくり返す
-	//static Vec2 invXY(const Vec2& p)
-	//{
-	//	return { p.y,p.x };
-	//}
-
-	//static double getRad(const Vec2& p)
-	//{
-	//	return p.getAngle() - 90_deg;
-	//}
-
-	//template<class T>
-	//static Array<T> slice(Array<T> arr, int32 a, int32 b)
-	//{
-	//	Array<T> ret{};
-	//	for (auto itr = arr.begin() + a, en = arr.begin() + b; itr != en; ++itr)ret << *itr;
-	//	return ret;
-	//}
-
-	//static String slice(const String& arr, int32 a, int32 b)
-	//{
-	//	String ret = U"";
-	//	for (auto itr = arr.begin() + a, en = arr.begin() + b; itr != en; ++itr)ret << *itr;
-	//	return ret;
-	//}
-
 	enum class ProjectionType
 	{
 		Parallel,
@@ -112,21 +68,6 @@ namespace util
 	constexpr auto sc = s3d::Scene::Center;
 	constexpr auto sw = s3d::Scene::Width;
 	constexpr auto sh = s3d::Scene::Height;
-
-	////上限で止まる
-	//struct StopMax
-	//{
-	//	double value;
-	//	double max;
-
-	//	StopMax() {};
-
-	//	StopMax(double max, double value = 0);
-
-	//	void add(double value);
-
-	//	bool additionable()const;
-	//};
 
 	class MouseObject :public Object
 	{

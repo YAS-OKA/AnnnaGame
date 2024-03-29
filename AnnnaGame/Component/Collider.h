@@ -76,7 +76,7 @@ enum class ColliderCategory
 {
 	hero,
 	enemy,
-
+	object,
 	non,
 };
 

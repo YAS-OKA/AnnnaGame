@@ -1,7 +1,12 @@
 ﻿#pragma once
+#include<fstream>
 
 namespace util
 {
+	template<class T> using uPtr = std::unique_ptr<T>;
+	template<class T> using sPtr = std::shared_ptr<T>;
+	template<class T> using wPtr = std::weak_ptr<T>;
+
 	//極座標
 	static Vec2 polar(double rad, double len = 1)
 	{
@@ -60,4 +65,26 @@ namespace util
 
 		bool additionable()const;
 	};
+
+	static std::string str(StringView s);
+
+	static String uStr(const std::string& s);
+
+	class EditFile
+	{
+	private:
+		uPtr<std::fstream> file;		
+	public:
+
+		EditFile() = default;
+
+		EditFile(FilePathView path);
+		//上書き
+		void overwrite(StringView text);
+		//fileの中身をすべて読みだす
+		String readAll()const;
+	};
+
+	static EditFile createFile(FilePath path);
+
 }

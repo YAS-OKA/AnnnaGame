@@ -29,6 +29,11 @@ void ICondition::setWaitFrame(size_t frame)
 	waitFrame = frame;
 }
 
+void prg::ICondition::addWaitFrame(size_t frame)
+{
+	waitFrame += frame;
+}
+
 bool ICondition::enoughFrame() const
 {
 	return waitFrame <= frameCounter;
@@ -36,7 +41,13 @@ bool ICondition::enoughFrame() const
 
 bool prg::ICondition::commonCheck()const
 {
+	if (getWaitFrame() >= 100)Print<<frameCounter;
 	return enoughFrame() and TNot != (flag or check());
+}
+
+size_t prg::ICondition::getWaitFrame() const
+{
+	return waitFrame;
 }
 
 ICondition* prg::ICondition::Not(bool flag)
@@ -56,14 +67,27 @@ bool ICondition::check()const
 	return false;
 }
 
+prg::ConditionArray::ConditionArray(const Type& t)
+	:checkType(t)
+{
+}
+
+size_t prg::ConditionArray::getConditionSize() const
+{
+	size_t res = 0;
+	for (auto& conditionTable : conditions.arr)
+		for (auto& [_, condition] : conditionTable.second)
+			res++;
+	return res;
+}
+
 void prg::ConditionArray::countFrame()
 {
 	ICondition::countFrame();
 	for (auto& conditionTable : conditions.arr)
-	{
 		for (auto& [_, condition] : conditionTable.second)
 			condition->countFrame();
-	}
+	
 }
 
 bool ConditionArray::check()const
@@ -137,9 +161,22 @@ prg::FuncCondition::FuncCondition(const Borrow<IAction>& act, const ActState& st
 	using enum ActState;
 
 	switch (state){
-	case start: m_function = [act] {return act->isStarted(); }; break;
-	case active: m_function = [act] {return act->isActive(); }; break;
-	case end: m_function = [act] {return act->isEnded(); }; break;
+	case start: m_function = [act] {return act and act->isStarted(); }; break;
+	case active: m_function = [act] {return act and act->isActive(); }; break;
+	case end: m_function = [act] {return (not act) or act->isEnded(); }; break;
+	default: break;
+	}
+}
+
+prg::FuncCondition::FuncCondition(const Input& key, const KeyState& state, size_t waitFrame)
+	:ICondition(waitFrame)
+{
+	using enum KeyState;
+
+	switch (state) {
+	case d: m_function = [key] {return key.down(); }; break;
+	case u: m_function = [key] {return key.up(); }; break;
+	case p: m_function = [key] {return key.pressed(); }; break;
 	default: break;
 	}
 }

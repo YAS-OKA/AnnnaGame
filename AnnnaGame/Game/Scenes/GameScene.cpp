@@ -9,6 +9,7 @@
 #include"../../Component/CameraAffect/Convert2DTransformComponent.h"
 #include"../../Component/CameraAffect/Convert2DScaleComponent.h"
 #include"../Skill/Provider.h"
+#include"../StateMachine/Inform.h"
 
 void GameScene::start()
 {
@@ -32,6 +33,10 @@ void GameScene::start()
 	h->visible = true;
 
 	player->param.LoadFile(U"Player.txt", U"Annna");
+
+	
+
+	player->behaviorSetting(state::Inform());
 
 	//カメラ
 	camera = birthObjectNonHitbox<Camera>(BasicCamera3D(drawManager.getRenderTexture().size(), 50_deg, Vec3{ 0,10,-30 }));

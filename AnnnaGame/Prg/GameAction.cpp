@@ -33,24 +33,166 @@ namespace prg
 
 	void EndAction::update(double dt)
 	{
-		//nullじゃないアクションを終了する。
+		//null または 例外のアクションは除外
 		targets.remove_if([&](const Borrow<IAction>& target) {return (not target) or exception.contains(target); });
 		//終了する
 		targets.each([&](Borrow<IAction>& target) {if (actions)actions->end(target); });
 	}
 
-	FreeFall::FreeFall(Transform* transform, double time)
-		:transform(transform),IAction(time)
+	void ActCluster::update(double dt)
+	{
+		IAction::update(dt);
+		dt *= timeScale;
+		//start
+		for (auto it = acts.begin(), end = acts.end(); it != end; ++it)
+		{
+			auto& act = (*it);
+			if (not act->started)
+			{
+				if (act->startCondition.commonCheck())act->start();
+
+				act->startCondition.countFrame();//カウント
+			}
+		}
+		//update
+		for (auto it = acts.begin(), en = acts.end(); it != en; ++it)
+		{
+			if ((*it)->isActive())(*it)->update(dt);
+		}
+		//end
+		for (auto it = acts.begin(), end = acts.end(); it != end; ++it)
+		{
+			auto& act = (*it);
+			if (act->isActive()) {
+				if (act->endCondition.commonCheck())
+				{
+					act->end();
+					act->reset();
+				}
+				else {
+					act->endCondition.countFrame();//カウント
+				}
+			}
+		}
+	}
+
+	void ActCluster::end()
+	{
+		IAction::end();
+		for (auto it = acts.begin(), end = acts.end(); it != end; ++it)
+		{
+			auto& act = (*it);
+			act->end();
+			act->reset();
+		}
+	}
+
+
+	MoveAct::MoveAct(Transform* transform, const Vec3& initVel, const Optional<double>& t)
+		:transform(transform), initVel(initVel), IAction(t)
 	{
 	}
 
-	FreeFall::FreeFall(Transform* transform, Vec3 initVel, Vec3 acc, double time)
-		:initVel(initVel),acc(acc), transform(transform), IAction(time)
+	MoveAct::MoveAct(const Vec3& initVel, const Optional<double>& t)
+		:initVel(initVel)
 	{
 	}
 
-	FreeFall::FreeFall(Transform* transform, Vec3 initVel, double acc, double time)
-		:initVel(initVel), transform(transform), IAction(time)
+	void MoveAct::setTransform(Transform* t)
+	{
+		transform = t;
+	}
+
+	void MoveAct::start()
+	{
+		IAction::start();
+		vel = initVel;
+	}
+
+	void MoveAct::update(double dt)
+	{
+		IAction::update(dt);
+		vel += acc * dt;
+		if(transform)*transform += vel * dt;
+	}
+
+	MulMove::MulMove(Transform* transform, const Optional<double>& constantSpeed, const Optional<double>& t)
+		:IAction(t), transform(transform), constantSpeed(constantSpeed)
+	{
+	}
+
+	void MulMove::setLimit(double limitingSpeed)
+	{
+		this->limitingSpeed = limitingSpeed;
+	}
+
+	void MulMove::addMove(MoveAct&& move)
+	{
+		moves << util::uPtr<MoveAct>(new MoveAct(std::forward<MoveAct>(move)));
+	}
+
+	void MulMove::update(double dt)
+	{
+		IAction::update(dt);
+		dt *= timeScale;
+		//start
+		for (auto it = moves.begin(), end = moves.end(); it != end; ++it)
+		{
+			auto& act = (*it);
+			if (not act->started)
+			{
+				if (act->startCondition.commonCheck())act->start();
+
+				act->startCondition.countFrame();//カウント
+			}
+		}
+		//update
+		Vec3 vel = { 0,0,0 };
+		for (auto it = moves.begin(), en = moves.end(); it != en; ++it)
+		{
+			if ((*it)->isActive())
+			{
+				(*it)->timer += dt;
+				(*it)->vel += (*it)->acc * dt;
+				vel += (*it)->vel;
+			}
+		}
+
+		if (constantSpeed)vel.setLength(*constantSpeed);
+		if (limitingSpeed)vel.setLength(Min(vel.length(), *limitingSpeed));
+
+		*transform += vel * dt;
+
+		//end
+		for (auto it = moves.begin(), end = moves.end(); it != end; ++it)
+		{
+			auto& act = (*it);
+			if (act->isActive()) {
+				if (act->endCondition.commonCheck())
+				{
+					act->end();
+					act->reset();
+				}
+				else {
+					act->endCondition.countFrame();//カウント
+				}
+			}
+		}
+	}
+
+	void MulMove::end()
+	{
+		IAction::end();
+		for (auto it = moves.begin(), end = moves.end(); it != end; ++it)
+		{
+			auto& act = (*it);
+			act->end();
+			act->reset();
+		}
+	}
+
+	FreeFall::FreeFall(Transform* transform, const Vec3& initVel, double acc, const Optional<double>& t)
+		:MoveAct(transform, initVel, t)
 	{
 		setAcc(acc);
 	}
@@ -60,20 +202,7 @@ namespace prg
 		acc = Vec3{ 0,a,0 };
 	}
 
-	void FreeFall::start()
-	{
-		IAction::start();
-		vel = initVel;
-	}
-
-	void FreeFall::update(double dt)
-	{
-		IAction::update(dt);
-		vel += acc *dt;
-		*transform += vel * dt;
-	}
-
-	LifeSpan::LifeSpan(Object* target, double time)
+	LifeSpan::LifeSpan(Object* target, const Optional<double>& time)
 		:target(target), IAction(time)
 	{}
 
@@ -119,7 +248,7 @@ namespace prg
 		hitbox->getComponent<Draw3D>(U"hitbox")->visible = false;
 	}
 
-	ShowParam::ShowParam(Character* c, double t)
+	ShowParam::ShowParam(Character* c, const Optional<double>& t)
 		:chara(c),IAction(t)
 	{}
 
@@ -134,5 +263,4 @@ namespace prg
 		Print << U"zokusei";
 		p.zokusei.printParams();
 	}
-
 }

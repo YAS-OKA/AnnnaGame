@@ -7,17 +7,6 @@ namespace tool
 	{
 	public:
 		static void Create(FilePath path, StringView name);
-		static void CreateFromText(const String& text);
-	};
-
-	class StateReader
-	{
-	public:
-		StateReader() {};
-	};
-
-	class EdgeReader
-	{
-	public:
+		static void CreateFromText(const String& text, StringView name);
 	};
 }

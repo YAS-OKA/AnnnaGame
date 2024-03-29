@@ -15,6 +15,9 @@ namespace mot
 
 namespace my
 {
+	/*template<class Shape>
+	void createCollider();*/
+
 	class Scene :public Entity
 	{
 	protected:

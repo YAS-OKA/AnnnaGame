@@ -1,12 +1,13 @@
 ﻿#pragma once
 #include"Actions.h"
+#include"../Game/StateMachine/StateProvider.h"
 
 using namespace prg;
 
 class ActionManager
 {
 private:
-	HashTable<String, Actions> actions;
+	HashTable<String, std::unique_ptr<Actions>> actions;
 	HashSet<Actions*> oneShotSet;
 public:
 	Actions& create(StringView name, bool startImmediately = false, bool loop = false);

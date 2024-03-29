@@ -1,12 +1,11 @@
 ﻿#pragma once
 #include"Character.h"
+#include"../StateMachine/Inform.h"
 
 enum class SpotedSkill
 {
 	up,left,right,neutral
 };
-
-
 
 class Player:public Character
 {
@@ -16,5 +15,7 @@ public:
 	void start()override;
 
 	void update(double dt)override;
+
+	void behaviorSetting(const state::Inform& info);
 };
 

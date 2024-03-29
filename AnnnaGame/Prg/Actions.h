@@ -8,7 +8,7 @@ namespace prg
 	class Actions :public IAction
 	{
 	public:
-		Actions();
+		Actions(StringView id=U"");
 
 		template<class Act, std::enable_if_t<std::is_base_of_v<IAction,Act>>* = nullptr >
 		Actions(Act&& other)
@@ -50,7 +50,7 @@ namespace prg
 				*it = *(it + 1) + 1;
 			}
 
-			if(id==U"" and action->id==U"")action->id = id;
+			if(id!=U"")action->id = id;
 
 			return *action;
 		}
@@ -77,7 +77,7 @@ namespace prg
 				++(*itr);
 			}
 
-			if (id == U"" and action->id == U"")action->id = id;
+			if (id != U"")action->id = id;
 
 			return *action;
 		}
@@ -113,7 +113,9 @@ namespace prg
 		/// @brief アクションを開始 startFirstActionsをtrueにすると、一番最初のアクションがこのstartの中で実行される
 		void start(bool startFirstActions);
 		/// @brief 指定したインデックスからアクションを開始 まだ実装してない
-		void start(const int32& startIndex, bool startFirstAction);
+		virtual void start(const int32& startIndex, bool startFirstAction);
+		/// @brief 引数に渡したアクションがアクティブじゃなければ開始させる。
+		void start(IAction* act);
 		/// @brief アクションをリセット
 		void reset()override;
 		/// @brief アクションを終了する
@@ -123,7 +125,7 @@ namespace prg
 
 		bool isAllFinished();
 
-		void update(double dt)override;
+		virtual void update(double dt)override;
 		
 		//終了したときに再開する
 		bool loop = false;
@@ -131,18 +133,18 @@ namespace prg
 		bool stopped = false;
 		//ループカウントの上限　別にカンストしてもループは続く
 		const int32 maxLoopCount = 10000;
-	private:
+
+
+	protected:
 		void _insert(int32 septIndex, IAction* act);
 
 		void _sort();
 
-		void _startCheck();
+		virtual void _startCheck();
 
 		void _update(double dt);
 
-		void _endCheck();
-
-		void _frameCount();
+		virtual void _endCheck();
 
 		bool _isEnded(std::tuple<int32, int32> se)const;
 
@@ -160,13 +162,34 @@ namespace prg
 
 		int32 loopCount = 0;
 	};
+
+	class StateActions :public Actions
+	{
+	public:
+		StateActions(StringView id);
+
+		void start(const int32& startIndex, bool startFirstAction)override;
+
+		void update(double dt)override;
+		//from->toの条件
+		IAction& relate(StringView from, StringView to);
+
+		IAction& relate(Array<String> from, StringView to);
+		//重複可能
+		void duplicatable(String a, String b);
+
+	protected:
+		void _startCheck()override;
+
+		HashTable<String,HashSet<String>> canDuplicate;
+	};
 }
 
 /******      以下はActionの演算子オーバーロード     *****/
 using namespace prg;
 //aとbを同時に開始するアクション　addParallel
 template<class Act1, class Act2>
-typename std::enable_if_t<std::is_base_of_v<IAction, Act1>&& std::is_base_of_v<IAction, Act2>, Actions>
+typename std::enable_if_t<!std::is_base_of_v<Actions, Act1>  && std::is_base_of_v<IAction, Act1>&& std::is_base_of_v<IAction, Act2>, Actions>
 operator + (Act1&& a, Act2&& b)
 {
 	Actions actions;
@@ -174,24 +197,25 @@ operator + (Act1&& a, Act2&& b)
 	actions.addActParallel(new Act2(std::forward<Act2>(b)));
 	return actions;
 }
-template<class Act2>
-typename std::enable_if_t<std::is_base_of_v<IAction, Act2>, Actions&&>
-operator + (Actions& a, Act2&& b)
+template<class Act1,class Act2>
+typename std::enable_if_t<std::is_base_of_v<Actions, Act1> && std::is_base_of_v<IAction, Act2>, Act1&&>
+operator + (Act1& a, Act2&& b)
 {
 	a.addActParallel(new Act2(std::forward<Act2>(b)));
-	return std::forward<Actions>(a);
+	return std::forward<Act1>(a);
 }
-template<class Act2>
-typename std::enable_if_t<std::is_base_of_v<IAction, Act2>, Actions&&>
-operator + (Actions&& a, Act2&& b)
+template<class Act1, class Act2>
+typename std::enable_if_t<std::is_base_of_v<Actions, Act1>&& std::is_base_of_v<IAction, Act2>, Act1&&>
+operator + (Act1&& a, Act2&& b)
 {
 	a.addActParallel(new Act2(std::forward<Act2>(b)));
-	return std::forward<Actions>(a);
+	return std::forward<Act1>(a);
 }
+
 
 //aからbに移り変わるアクション　add
 template<class Act1, class Act2>
-typename std::enable_if_t<std::is_base_of_v<IAction, Act1>&& std::is_base_of_v<IAction, Act2>, Actions>
+typename std::enable_if_t<!std::is_base_of_v<Actions,Act1> && std::is_base_of_v<IAction, Act1>&& std::is_base_of_v<IAction, Act2>, Actions>
 operator >> (Act1&& a, Act2&& b)
 {
 	Actions actions;
@@ -199,23 +223,30 @@ operator >> (Act1&& a, Act2&& b)
 	actions.addAct(new Act2(std::forward<Act2>(b)));
 	return actions;
 }
+template<class Act1, class Act2>
+typename std::enable_if_t<std::is_base_of_v<Actions, Act1>&& std::is_base_of_v<IAction, Act2>, Act1>
+operator >> (Act1&& a, Act2&& b)
+{
+	a.addAct(new Act2(std::forward<Act2>(b)));
+	return std::forward<Act1>(a);
+}
 
-template<class Act2>
-typename std::enable_if_t<std::is_base_of_v<IAction, Act2>, Actions&&>
-operator >> (Actions&& a, Act2&& b)
+//template<class Act2>
+//typename std::enable_if_t<std::is_base_of_v<IAction, Act2>, Actions&&>
+//operator >> (Actions&& a, Act2&& b)
+//{
+//	a.addAct(new Act2(std::forward<Act2>(b)));
+//	return std::forward<Actions>(a);
+//}
+template<class Act1, class Act2>
+typename std::enable_if_t<std::is_base_of_v<Actions,Act1> && std::is_base_of_v<IAction, Act2>, void>
+operator += (Act1& a, Act2&& b)
 {
 	a.addAct(new Act2(std::forward<Act2>(b)));
-	return std::forward<Actions>(a);
 }
-template<class Act2>
-typename std::enable_if_t<std::is_base_of_v<IAction, Act2>, void>
-operator += (Actions& a, Act2&& b)
-{
-	a.addAct(new Act2(std::forward<Act2>(b)));
-}
-template<class Act2>
-typename std::enable_if_t<std::is_base_of_v<IAction, Act2>, void>
-operator |= (Actions& a, Act2&& b)
+template<class Act1,class Act2>
+typename std::enable_if_t<std::is_base_of_v<Actions, Act1>&& std::is_base_of_v<IAction, Act2>, void>
+operator |= (Act1& a, Act2&& b)
 {
 	a.addActParallel(new Act2(std::forward<Act2>(b)));
 }

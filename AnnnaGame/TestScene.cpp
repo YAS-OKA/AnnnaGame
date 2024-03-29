@@ -22,17 +22,18 @@ void TestScene::start()
 
 	drawManager.setting(camera);
 
-	DataSaver a;
-	Print << a.preProcess(TextReader{ U"DataSaverTest.txt" }.readAll());
+	obj = birthObjectNonHitbox();
 
-	//obj = birthObjectNonHitbox();
+	Actions attack;
 
-	//obj->ACreate(U"あいさつ").startIf([] {return KeyA.down(); })
-	//	+= MyPrint(U"hello", 1)
-	//	+ MyPrint(U"world", 1)
-	//	+ MyPrint(U"c++").endIf([] {return KeyA.down(); },1)
-	//	>> MyPrint(U"こんにちは", 1)
-	//	+ MyPrint(U"世界", 1);
+	attack.loop = true;
+
+	Actions move;
+	move.setEndCondition(ConditionArray());
+	attack += std::move(move.endIf(KeyA));
+	attack += MyPrint(U"attack!", 1);
+
+	obj->actman.create(U"a", std::move(attack), true);
 }
 
 void TestScene::update(double dt)

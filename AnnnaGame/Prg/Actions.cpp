@@ -2,9 +2,9 @@
 #include "Actions.h"
 using namespace prg;
 
-Actions::Actions()
-	:IAction()
+Actions::Actions(StringView id)
 {
+	setId(id);
 	endCondition.addIn(U"isAllFinished", [borrowed = lend()] {return borrowed->isAllFinished(); });
 }
 
@@ -96,6 +96,8 @@ void Actions::start(bool startFirstActions)
 
 void prg::Actions::start(const int32& startIndex, bool startFirstActions)
 {
+	reset();
+
 	IAction::start();
 
 	activeIndex = startIndex;
@@ -113,6 +115,17 @@ void prg::Actions::start(const int32& startIndex, bool startFirstActions)
 	}
 
 	if (startFirstActions)_startCheck();
+}
+
+void prg::Actions::start(IAction* act)
+{
+	for (auto it = update_list.begin(), en = update_list.end(); it != en; ++it) {
+		if ((*it) == act and not (*it)->isActive()) {
+			(*it)->start();
+			activeNum++;
+			return;
+		}
+	}
 }
 
 void Actions::reset()
@@ -216,8 +229,9 @@ void prg::Actions::_startCheck()
 				act->start();
 				activeNum++;
 			}
-
-			act->startCondition.countFrame();//カウント
+			else {
+				act->startCondition.countFrame();//カウント
+			}
 		}
 	}
 }
@@ -242,7 +256,9 @@ void prg::Actions::_endCheck()
 				activeNum--;
 				notFinishedActNum--;
 			}
-			act->endCondition.countFrame();//カウント
+			else {
+				act->endCondition.countFrame();//カウント
+			}
 		}
 	}
 }
@@ -264,3 +280,127 @@ std::tuple<int32, int32> prg::Actions::_getArea(const int32& activeIndex) const
 		separate[activeIndex],
 		separate.size() - 1 > activeIndex ? separate[activeIndex + 1] : separate[activeIndex]);
 }
+
+prg::StateActions::StateActions(StringView id)
+{
+	this->id = id;
+	setEndCondition(ConditionArray());//リセット
+}
+
+void prg::StateActions::start(const int32& startIndex, bool startFirstAction)
+{
+	IAction::start();
+}
+
+void prg::StateActions::update(double dt)
+{
+	if (stopped)return;
+
+	IAction::update(dt);
+	dt *= timeScale;
+	_sort();
+
+	_startCheck();
+
+	_update(dt);
+
+	_endCheck();
+}
+
+IAction& prg::StateActions::relate(StringView from, StringView to)
+{
+	auto fa = getAction<IAction>(from);
+	auto ta = getAction<IAction>(to);
+	ta->startIf(fa->lend(), ActState::active);//fromアクションがアクティブか、という条件
+	return *ta;
+}
+
+IAction& prg::StateActions::relate(Array<String> froms, StringView to)
+{
+	auto ta = getAction<IAction>(to);
+	ConditionArray c(Type::Any);
+	for (auto& from : froms)
+	{
+		auto fa = getAction<IAction>(from);
+		c.add(fa->lend(), ActState::active);
+	}
+	ta->startIf<ConditionArray>(std::move(c));
+	return *ta;
+}
+
+void prg::StateActions::duplicatable(String a, String b)
+{
+	canDuplicate[a].emplace(b);
+	canDuplicate[b].emplace(a);
+}
+
+void prg::StateActions::_startCheck()
+{
+	Array<IAction*> preStartAct;
+	Array<IAction*> startAct;
+	Array<IAction*> activeAct;
+	//スタートするものとアクティブなものを探す
+	for (auto it = update_list.begin(), end = update_list.end(); it != end; ++it)
+	{
+		auto& act = (*it);
+		if ((not act->started) and (not act->ended))
+		{
+			if (act->startCondition.commonCheck())
+			{
+				preStartAct << act;
+			}
+
+			act->startCondition.countFrame();//カウント
+		}
+		else if (act->isActive())
+		{
+			activeAct << act;
+		}
+	}
+	//startActはすでに優先度順に並んでいる。
+	//ここで同時スタートの問題を解決する。
+	for (auto it = preStartAct.begin(), end = preStartAct.end(); it != end; ++it)
+	{
+		auto& act = (*it);
+
+		for (auto it2 = startAct.begin(), end2 = startAct.end(); it2 != end2; ++it2)
+		{
+			auto& startedAct = (*it2);
+			//同時に実行できないステートがあったら
+			if (not (canDuplicate.contains(startedAct->id) and canDuplicate[startedAct->id].contains(act->id)))
+				goto next;//スタートしない。
+		}
+
+		startAct << act;
+		act->start();
+		activeNum++;
+
+	next://スタートしない
+		continue;
+	}
+	//もしアクティブなものとスタートするものが一つもなければ
+	if (activeAct.isEmpty() and startAct.isEmpty())
+	{
+		if (not update_list.isEmpty())
+		{
+			update_list.front()->start();
+			activeNum++;
+		}
+	}
+	//すでにアクティブだったものを終わらせる
+	for (auto it = activeAct.begin(), en = activeAct.end(); it != en; ++it)
+	{
+		auto& act = (*it);
+		for (auto it2 = startAct.begin(), end2 = startAct.end(); it2 != end2; ++it2)
+		{
+			auto& startedAct = (*it2);
+			//同時に実行できないのであれば終了
+			if (not (canDuplicate.contains(startedAct->id) and canDuplicate[startedAct->id].contains(act->id)))
+			{
+				end(act);
+				act->reset();
+			}
+		}		
+	}
+}
+

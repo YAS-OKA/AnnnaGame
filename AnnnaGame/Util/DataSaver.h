@@ -14,7 +14,7 @@ public:
 		ConstractChild();
 	}
 
-	String preProcess(const String& data);
+	static String preProcess(const String& data);
 
 	void ConstractChild()
 	{
@@ -36,7 +36,7 @@ public:
 		}
 	}
 
-	Optional<DataSaver> getDataSaver(const String& name)const
+	Optional<DataSaver> getDataSaver(StringView name)const
 	{
 		if (children.contains(name))return children.at(name);
 		else return none;
@@ -49,7 +49,7 @@ public:
 		result = text.replaced(U"\n", U"");
 		result = result.replaced(U"\t", U"");
 		result = result.replaced(U" ", U"");
-		return result.replaced(U"\\n", U"\n");
+		return preProcess(result.replaced(U"\\n", U"\n"));
 	}
 
 	static HashTable<String,DataSaver> LoadDataSaver(String text)

@@ -193,7 +193,7 @@ public:
 	{
 		if (not ids.contains(typeid(A)))ids.emplace(typeid(A), 0);
 		else ++ids[typeid(A)];
-		return addIn<A>(Format(ids[typeid(A)]), args...);
+		return addIn<A>(Format(ids[typeid(A)]), std::forward<Args>(args)...);
 	}
 
 	template<class A, class... Args>
@@ -201,7 +201,7 @@ public:
 	{
 		if (arr[typeid(A)].contains(id))remove<T>(id);
 
-		auto a = new A(args...);
+		auto a = new A(std::forward<Args>(args)...);
 
 		arr[typeid(A)].emplace(id, a);
 
@@ -211,7 +211,8 @@ public:
 	template<class A, class... Args>
 	A* set(Args&& ...args)
 	{
-		return setIn<A>(U"0", args...);
+		ids[typeid(A)] = 0;
+		return setIn<A>(U"0", std::forward<Args>(args)...);
 	}
 
 	template<class A, class... Args>
@@ -219,7 +220,7 @@ public:
 	{
 		remove<A>();
 
-		return addIn<A>(id, args...);
+		return addIn<A>(id, std::forward<Args>(args)...);
 	}
 
 	template<class A, std::enable_if_t<std::is_base_of_v<T, A>>* = nullptr>

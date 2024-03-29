@@ -1,15 +1,14 @@
 ﻿#include"../../stdafx.h"
 #include"StateProvider.h"
 #include"../../Prg/GameAction.h"
-#define F(x) std::forward<Actions>(x)
+//#include"../../Prg/StateActions.h"
 
 using namespace state;
 
-Actions&& state::StateCreator::create(StringView name)
+StateActions state::StateCreator::create(StringView name)
 {
-	Actions act;
-	act.setId(name);
-	return std::move(act);
+	StateActions act(name);
+	return act;
 }
 
 StateProvider* StateProvider::instance = nullptr;
@@ -28,20 +27,12 @@ void state::StateProvider::Destroy()
 
 StateProvider::StateProvider()
 {
-	using A = Actions&&;
 
-	dict[U"Player"]
-		= [&](In info, A act)
-		{
-			act |= dict[U"Operable"](info)
-				+ dict[U"InOperable"](info);
-			return F(act);
-		};
 }
 
-Actions&& state::StateProvider::Get(StringView name, const Inform& info)
+StateActions&& state::StateProvider::Get(StringView name, const Inform& info)
 {	
-	return std::forward<Actions>(instance and instance->dict.contains(name) ?
-		instance->dict[name](info) : Actions()
+	return std::forward<StateActions>(instance and instance->dict.contains(name) ?
+		instance->dict[name](info) : StateActions(name)
 	);
 }

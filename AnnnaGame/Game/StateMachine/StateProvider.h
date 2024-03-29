@@ -1,21 +1,23 @@
 ﻿#pragma once
 #include"../../Prg/Actions.h"
 #include"Inform.h"
+#define F(x) std::forward<StateActions>(x)
 
 namespace state
 {
 	using In = const Inform&;
+	using A = StateActions&&;
 
 	class StateCreator
 	{
 	public:
 		StateCreator() = default;
 		StateCreator(StringView name,
-			const std::function<Actions && (In, Actions&&)>& method = [](In, Actions&& a) {return std::forward<Actions>(a); })
+			const std::function<StateActions (In, StateActions&&)>& method = [](In, StateActions&& a) {return std::forward<StateActions>(a); })
 			:method(method), name(name)
 		{};
 
-		StateCreator& operator = (const std::function<Actions && (In, Actions&&)>& method)
+		StateCreator& operator = (const std::function<StateActions (In, StateActions&&)>& method)
 		{
 			this->method = method;
 			return *this;
@@ -23,13 +25,13 @@ namespace state
 
 		String name;
 
-		std::function<Actions&& (In, Actions&&)> method;
+		std::function<StateActions (In, StateActions&&)> method;
 
-		Actions&& create(StringView name);
+		StateActions create(StringView name);
 
-		Actions&& operator()(In info)
+		StateActions operator()(In info)
 		{
-			return std::forward<Actions>(method(info, create(name)));
+			return F(method(info, std::move(create(name))));
 		}
 	};
 
@@ -60,6 +62,6 @@ namespace state
 
 		static void Destroy();
 
-		static Actions&& Get(StringView name, const Inform& info);
+		static StateActions&& Get(StringView name, const Inform& info);
 	};
 }

@@ -7,6 +7,8 @@ namespace prg
 	class ConditionArray;
 
 	class Actions;
+	class StateActions;
+	class ActCluster;
 
 	class IAction :public Borrowable
 	{
@@ -14,88 +16,58 @@ namespace prg
 	public:
 		IAction(const Optional<double>& time = none);
 
-		void setStartCondition(ConditionArray&& condition);
+		void setStartCondition(ConditionArray&& condition = ConditionArray());
 
-		void setEndCondition(ConditionArray&& condition);
+		void setEndCondition(ConditionArray&& condition = ConditionArray());
 		//開始条件をセット
 		template<class C = FuncCondition, class Self, class... Args>
-		auto startIf(this Self&& self, Args&& ...args)->decltype(self)
+		auto startIf(this Self&& self, Args&& ...args) -> decltype(self)
 		{
-			self.startCondition.set<C>(args...);
 			self.editingCondition = &self.startCondition;
-			return std::forward<Self>(self);
-		}
-		//開始条件を追加
-		template<class C = FuncCondition, class Self, class... Args>
-		auto andStartIf(this Self&& self, Args&& ...args)->decltype(self)
-		{
-			self.startCondition.add<C>(args...);
-			self.editingCondition = &self.startCondition;
+			self.editingCondition->set<C>(std::forward<Args>(args)...);
+
 			return std::forward<Self>(self);
 		}
 		template<class C = FuncCondition, class Self, class... Args>
 		auto startIfNot(this Self&& self, Args&& ...args) -> decltype(self)
 		{
-			self.startCondition.set<C>(args...)->Not();
 			self.editingCondition = &self.startCondition;
-			return std::forward<Self>(self);
-		}
-		//開始条件を追加
-		template<class C = FuncCondition, class Self, class... Args>
-		auto andStartIfNot(this Self&& self, Args&& ...args) -> decltype(self)
-		{
-			self.startCondition.add<C>(args...)->Not();
-			self.editingCondition = &self.startCondition;
+			self.editingCondition->set<C>(std::forward<Args>(args)...)->Not();
 			return std::forward<Self>(self);
 		}
 		//終了条件をセット
 		template<class C = FuncCondition, class Self, class... Args>
-		auto endIf(this Self&& self, Args&& ...args)->decltype(self)
+		auto endIf(this Self&& self, Args&& ...args) -> decltype(self)
 		{
-			self.endCondition.set<C>(args...);
 			self.editingCondition = &self.endCondition;
-			return std::forward<Self>(self);
-		}
-		//終了条件を追加
-		template<class C = FuncCondition, class Self, class... Args>
-		auto andEndIf(this Self&& self, Args&& ...args)->decltype(self)
-		{
-			self.endCondition.add<C>(args...);
-			self.editingCondition = &self.endCondition;
+			self.editingCondition->set<C>(std::forward<Args>(args)...);
 			return std::forward<Self>(self);
 		}
 		//終了条件をセット
 		template<class C = FuncCondition, class Self, class... Args>
 		auto endIfNot(this Self&& self, Args&& ...args) -> decltype(self)
 		{
-			self.endCondition.set<C>(args...)->Not();
 			self.editingCondition = &self.endCondition;
+			self.editingCondition->set<C>(std::forward<Args>(args)...)->Not();
 			return std::forward<Self>(self);
 		}
-		//終了条件を追加
-		template<class C = FuncCondition, class Self, class... Args>
-		auto andEndIfNot(this Self&& self, Args&& ...args) -> decltype(self)
-		{
-			self.endCondition.add<C>(args...)->Not();
-			self.editingCondition = &self.endCondition;
-			return std::forward<Self>(self);
-		}
-		//and editingCondition
+		//条件追加
 		template<class C = FuncCondition, class Self, class... Args>
 		auto andIf(this Self&& self, Args&& ...args) -> decltype(self)
 		{
-			if(self.editingCondition)self.editingCondition->add<C>(args...);
+			if (self.editingCondition)self.editingCondition->add<C>(std::forward<Args>(args)...);
 			return std::forward<Self>(self);
 		}
 		template<class C = FuncCondition, class Self, class... Args>
 		auto andIfNot(this Self&& self, Args&& ...args) -> decltype(self)
 		{
-			if (self.editingCondition)self.editingCondition->add<C>(args...)->Not();
+			if (self.editingCondition)self.editingCondition->add<C>(std::forward<Args>(args)...)->Not();
 			return std::forward<Self>(self);
 		}
+
 		//他のアクションと開始終了を合わせる
 		template<class Self>
-		auto same(this Self&& self,const Borrow<IAction>& other)->decltype(self)
+		auto same(this Self&& self, const Borrow<IAction>& other) -> decltype(self)
 		{
 			auto tmp = self.editingCondition;//エディティングコンディションの状態を保存しておく
 			self.startIf(other, ActState::start);
@@ -104,7 +76,33 @@ namespace prg
 			return std::forward<Self>(self);
 		}
 
-		void setId(StringView id);
+		//開始と終了条件が同じ
+		template<class C = FuncCondition, class Self, class... Args >
+		auto activeIf(this Self&& self, Args&& ...args) -> decltype(self)
+		{
+			auto tmp = self.editingCondition;//エディティングコンディションの状態を保存しておく
+			self.startIf<C>(args...);
+			self.endIfNot<C>(std::forward<Args>(args)...);
+			self.editingCondition = tmp;//最初の状態に戻す
+			return std::forward<Self>(self);
+		}
+		//開始と終了条件が同じ
+		template<class C = FuncCondition, class Self, class... Args>
+		auto activeIfNot(this Self&& self, Args&& ...args) -> decltype(self)
+		{
+			auto tmp = self.editingCondition;//エディティングコンディションの状態を保存しておく
+			self.startIfNot<C>(args...);
+			self.endIf<C>(std::forward<Args>(args)...);
+			self.editingCondition = tmp;//最初の状態に戻す
+			return std::forward<Self>(self);
+		}
+
+		template<class Self>
+		auto setId(this Self&& self, StringView id) -> decltype(self)
+		{
+			self.id = id;
+			return std::forward<Self>(self);
+		};
 
 		bool isStarted();
 
@@ -118,13 +116,19 @@ namespace prg
 
 		double timeScale;
 
+		void StateCheckType(bool f = true);
+
 		ConditionArray startCondition;
 		ConditionArray endCondition;
 	protected:
+		bool m_stateCheckerType = false;
+
 		String id;
 		bool started = false;
 		bool ended = false;
 		friend Actions;
+		friend StateActions;
+		friend ActCluster;
 
 		virtual void reset();
 

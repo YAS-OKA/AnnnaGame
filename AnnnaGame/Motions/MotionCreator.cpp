@@ -57,7 +57,7 @@ namespace mot
 			auto& act = act_owner->ACreate(eventName);
 			//ボタンが押され、かつそのボタンが前面にあるなら
 			act.startIf<prg::ButtonChecker>(button)
-				.andStartIf([=] {return button->collider->owner == clickedSurfaceUiEntity;});
+				.andIf([=] {return button->collider->owner == clickedSurfaceUiEntity;});
 			act.add(events[0]);
 		}
 		else {
@@ -68,7 +68,7 @@ namespace mot
 				//ボタンが押され、かつそのボタンが前面にあるなら
 				act.add(e)
 					.startIf<prg::ButtonChecker>(button)
-					.andStartIf([=] {return button->collider->owner == clickedSurfaceUiEntity; });
+					.andIf([=] {return button->collider->owner == clickedSurfaceUiEntity; });
 			}
 		}
 

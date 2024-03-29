@@ -15,9 +15,13 @@ namespace prg
 
 		void setWaitFrame(size_t frame);
 
+		void addWaitFrame(size_t frame);
+
 		bool enoughFrame()const;
 
 		bool commonCheck()const;
+
+		size_t getWaitFrame()const;
 
 		ICondition* Not(bool flag = true);
 
@@ -42,37 +46,42 @@ namespace prg
 		TypeContainer<ICondition> conditions;
 	public:
 		using ICondition::ICondition;
+
+		ConditionArray(const Type& t);
+
 		ConditionArray(ConditionArray&&) = default;
 		ConditionArray& operator = (ConditionArray&&) = default;
 
 		ConditionArray(const ConditionArray&) = delete;
 		ConditionArray& operator = (const ConditionArray&) = delete;
 
+		size_t getConditionSize()const;
+
 		void countFrame()override;
 
 		template<class C = FuncCondition, class... Args>
 		C* add(Args&& ...args)
 		{
-			return conditions.add<C>(args...);
+			return conditions.add<C>(std::forward<Args>(args)...);
 		}
 		template<class C = FuncCondition, class... Args>
 		C* addIn(const String& id, Args&& ...args)
 		{
-			return conditions.addIn<C>(id, args...);
+			return conditions.addIn<C>(id, std::forward<Args>(args)...);
 		}
 
 		template<class C = FuncCondition, class... Args>
 		C* set(Args&& ...args)
 		{
 			conditions.removeAll();
-			return conditions.set<C>(args...);
+			return conditions.set<C>(std::forward<Args>(args)...);
 		}
 
 		template<class C = FuncCondition, class... Args>
 		C* setIn(const String& id, Args&& ...args)
 		{
 			conditions.removeAll();
-			return conditions.setIn<C>(id, args...);
+			return conditions.setIn<C>(id, std::forward<Args>(args)...);
 		}
 
 		template<class C = FuncCondition>
@@ -109,6 +118,11 @@ namespace prg
 		start, active, end
 	};
 
+	enum class KeyState
+	{
+		d,u,p
+	};
+
 	//関数でチェック
 	class FuncCondition :public ICondition
 	{
@@ -118,6 +132,8 @@ namespace prg
 			:ICondition(waitFrame), m_function{ _function } {}
 
 		FuncCondition(const Borrow<class IAction>& act, const ActState& state, size_t waitFrame = 0);
+
+		FuncCondition(const Input& key, const KeyState& state = KeyState::d , size_t waitFrame = 0);
 
 		std::function<bool()> m_function;
 	protected:
@@ -156,6 +172,15 @@ namespace prg
 
 		Hit(const Borrow<Hitbox>& box, HashSet<ColliderCategory> targets = {}, size_t waitFrame = 0);
 		Hit(const Borrow<Hitbox>& box, const ColliderCategory& target, size_t waitFrame = 0);
+
+	protected:
+		bool check()const override;
+	};
+
+	class Collision :public ICondition
+	{
+	public:
+		Collider* collider;
 
 	protected:
 		bool check()const override;
