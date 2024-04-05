@@ -15,8 +15,20 @@ namespace mot
 
 namespace my
 {
-	/*template<class Shape>
-	void createCollider();*/
+	//template<class Shape>
+	//void createCollider(Entity* ent,const Shape& shape, const Vec3& relative)
+	//{
+	///*	auto col=ent->addComponentNamed<Collider>(U"hitbox",shape, relative);
+	//	auto box = col->hitbox.boudingBox();*/
+	//	//auto s = shape;
+	//	//s.h = Min(1.0, shape.h * 0.05);
+	//	//ent->addComponentNamed<Collider>(U"bottom",s, box.bottomCenter());
+	//	//ent->addComponentNamed<Collider>(U"top", s, box.topCenter());
+
+	//}
+
+	void createCollider(Entity* ent, const Box& shape, const Vec3& relative);
+	void createCollider(Entity* ent, const Cylinder& shape, const Vec3& relative);
 
 	class Scene :public Entity
 	{
@@ -25,6 +37,8 @@ namespace my
 		DrawManager drawManager;
 		Camera* camera;
 		GameMaster* master;
+
+		void hitboxVisible(const MeshData& data);
 	public:
 		RegisterAssets r;
 		mot::LoadParts* partsLoader;
@@ -50,7 +64,7 @@ namespace my
 			auto obj=entityManager.birthNonStart<T>(args...);
 			obj->scene = this;
 			obj->start();
-			obj->addComponent<Collider>(shape,relative);
+			createCollider(obj,shape, relative);
 			auto vis = obj->addComponentNamed<Draw3D>(U"hitbox", getDrawManager(), MeshData::Box(shape.size));
 			vis->relative = relative;
 			vis->color = ColorF{ Palette::Red,0.5 };
@@ -64,7 +78,7 @@ namespace my
 			auto obj = entityManager.birthNonStart<T>(args...);
 			obj->scene = this;
 			obj->start();
-			obj->addComponent<Collider>(shape, relative);
+			createCollider(obj,shape, relative);
 			auto vis = obj->addComponentNamed<Draw3D>(U"hitbox", getDrawManager(), MeshData::Cylinder(shape.r, shape.h));
 			vis->relative = relative;
 			vis->color = ColorF{ Palette::Red,0.5 };
@@ -79,6 +93,7 @@ namespace my
 			obj->scene = this;
 			obj->start();
 			obj->addComponent<Collider>(shape, relative);
+			//createCollider(obj, shape, relative);
 			auto vis = obj->addComponentNamed<Draw2D<Figure>>(U"hitbox", getDrawManager(), shape);
 			vis->relative = relative;
 			vis->color = ColorF{ Palette::Red,0.6 };

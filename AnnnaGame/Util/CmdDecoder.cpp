@@ -42,9 +42,13 @@ void DecoderSet::motionScriptCmd(mot::PartsManager* pmanager)
 {
 	using namespace mot;
 
-	decoder->add<SetMotion<RotateTo>, String, String, double, double, double, bool, double>(U"SetAngle", pmanager);
+	decoder->add<SetMotion<RotateTo>, String, String, double, double, double, bool, int32>(U"SetAngle", pmanager);
 	decoder->add<SetMotion<RotateTo>, String, String, double, double, double, bool>(U"SetAngle", pmanager);
 	decoder->add<SetMotion<RotateTo>, String, String, double, double, double>(U"SetAngle", pmanager);
+	decoder->add<SetMotion<RotateTo>, String, String, double, double>(U"SetAngle", pmanager);
+	decoder->add<SetMotion<MoveTo>, String, String, double, double, double, double>(U"SetPos", pmanager);
+	decoder->add<SetMotion<MoveTo>, String, String, double, double, double>(U"SetPos", pmanager);
+
 }
 
 void DecoderSet::objScriptCmd(Object* obj)

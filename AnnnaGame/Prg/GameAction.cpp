@@ -103,6 +103,11 @@ namespace prg
 		transform = t;
 	}
 
+	Vec3 MoveAct::getVel() const
+	{
+		return vel;
+	}
+
 	void MoveAct::start()
 	{
 		IAction::start();

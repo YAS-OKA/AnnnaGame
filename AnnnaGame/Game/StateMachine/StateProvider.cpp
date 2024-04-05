@@ -5,7 +5,7 @@
 
 using namespace state;
 
-StateActions state::StateCreator::create(StringView name)
+StateActions state::StateCreator::create(StringView name)const
 {
 	StateActions act(name);
 	return act;
@@ -30,7 +30,7 @@ StateProvider::StateProvider()
 
 }
 
-StateActions&& state::StateProvider::Get(StringView name, const Inform& info)
+StateActions&& state::StateProvider::Get(StringView name, In info)
 {	
 	return std::forward<StateActions>(instance and instance->dict.contains(name) ?
 		instance->dict[name](info) : StateActions(name)

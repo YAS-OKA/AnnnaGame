@@ -346,7 +346,7 @@ public:
 		{
 			kill(child);
 		}
-		//仲間もkillする
+		//一蓮托生もkillする
 		for (auto& other : ent->sameDestiny)
 		{
 			other->sameDestiny.erase(ent);

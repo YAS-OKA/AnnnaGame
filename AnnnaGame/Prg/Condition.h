@@ -177,13 +177,25 @@ namespace prg
 		bool check()const override;
 	};
 
-	class Collision :public ICondition
+	class Touch:public ICondition
 	{
 	public:
 		Collider* collider;
 
+		ColliderCategory targetCategory;
+
+		Touch(Collider* collider, const ColliderCategory& groundCategory, size_t waitFrame = 0);
+
 	protected:
 		bool check()const override;
+	};
+
+	class TouchGround :public ICondition
+	{
+	public:
+		Collider* collider;
+		ColliderCategory targetCategory;
+
 	};
 }
 

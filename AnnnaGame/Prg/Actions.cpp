@@ -284,7 +284,7 @@ std::tuple<int32, int32> prg::Actions::_getArea(const int32& activeIndex) const
 prg::StateActions::StateActions(StringView id)
 {
 	this->id = id;
-	setEndCondition(ConditionArray());//リセット
+	setEndCondition();//リセット
 }
 
 void prg::StateActions::start(const int32& startIndex, bool startFirstAction)
@@ -305,6 +305,12 @@ void prg::StateActions::update(double dt)
 	_update(dt);
 
 	_endCheck();
+
+	for (auto it = update_list.begin(), en = update_list.end(); it != en; ++it)
+	{
+		auto& act = (*it);
+		if (act->isEnded()) { act->reset(); }
+	}
 }
 
 IAction& prg::StateActions::relate(StringView from, StringView to)
@@ -328,10 +334,29 @@ IAction& prg::StateActions::relate(Array<String> froms, StringView to)
 	return *ta;
 }
 
+IAction& StateActions::relate(IAction* from_act, IAction* to_act)
+{
+	return to_act->startIf(from_act->lend(), ActState::active);
+}
+
 void prg::StateActions::duplicatable(String a, String b)
 {
 	canDuplicate[a].emplace(b);
 	canDuplicate[b].emplace(a);
+}
+
+IAction& prg::StateActions::operator[](StringView name)
+{
+	return *getAction(name);
+}
+
+Array<String> prg::StateActions::getAllState() const
+{
+	Array<String> res{};
+
+	for (const auto& act : getAll())res << act->id;
+
+	return res;
 }
 
 void prg::StateActions::_startCheck()
@@ -398,7 +423,6 @@ void prg::StateActions::_startCheck()
 			if (not (canDuplicate.contains(startedAct->id) and canDuplicate[startedAct->id].contains(act->id)))
 			{
 				end(act);
-				act->reset();
 			}
 		}		
 	}

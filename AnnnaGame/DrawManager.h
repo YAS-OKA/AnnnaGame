@@ -12,20 +12,23 @@ private:
 	std::function<bool(class IDrawing*)> canDraw;
 	class Camera* m_camera;
 	const MSRenderTexture renderTexture;
-	const MSRenderTexture renderTexture2D;
+	//const MSRenderTexture renderTexture2D;
 public:
-	ColorF backGroundColor = Palette::Black;
+	ColorF backGroundColor;
 	Vec2 scale{ 1,1 };
 	Vec2 scalePos{ 0,0 };
 	Vec2 translate{ 0,0 };
 	double angle = 0;
 
+	std::function<void()>debugDraw=nullptr;
+
 	/*Vec2 scale3D{ 1,1 };
 	Vec2 scalePos3D{ 0,0 };
 	Vec2 translate3D{ 0,0 };*/
 
-	DrawManager();
-	/*~DrawManager();*/
+	DrawManager(const ColorF& backGround = { 0,0,0,1 });
+	DrawManager(Camera* camera, const ColorF& backGround = { 0,0,0,1 });
+	DrawManager(Camera* camera, const MSRenderTexture& renderTexture, const ColorF& backGround = { 0,0,0,1 });
 
 	void setting(Camera* camera, std::function<bool(IDrawing*)> f = [](IDrawing*) {return true; });
 	void set3D(IDraw3D* drawing);
@@ -39,6 +42,6 @@ public:
 	Camera* getCamera()const;
 	util::Convert2DTransform getConverter();
 	virtual void update();
-	virtual void draw()const;
+	virtual void draw(bool draw3D=true)const;
 
 };

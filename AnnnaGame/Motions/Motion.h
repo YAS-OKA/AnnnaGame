@@ -24,7 +24,7 @@ namespace mot
 
 		void Load(PartsManager* pMan,const String& motionName,const String& text);
 
-		void LoadFile(PartsManager* pMan, const String& path,const String& motionName);
+		bool LoadFile(PartsManager* pMan, const String& path,const String& motionName);
 	};
 
 	class PartsMotion :public prg::TimeAction
@@ -52,12 +52,12 @@ namespace mot
 	public:
 		const double angle;
 
-		const double rotation;
+		const int32 rotation;
 
 		const bool clockwizeRotation;
 
 		//clockwizeRotationは時計回りか反時計回りか。rotationは何回転するか。
-		RotateTo(Parts* target, double angle, double time = 0,bool clockwizeRotation = true, double rotation = 0);
+		RotateTo(Parts* target, double angle, double time = 0,bool clockwizeRotation = true, int32 rotation = 0);
 
 		void update(double dt)override;
 	};
@@ -77,7 +77,7 @@ namespace mot
 	public:
 		Vec2 dest;
 
-		MoveTo(Parts* target, const Vec2& dest, double time = 0);
+		MoveTo(Parts* target, double destX,double destY, double time = 0);
 
 		void update(double dt)override;
 	};

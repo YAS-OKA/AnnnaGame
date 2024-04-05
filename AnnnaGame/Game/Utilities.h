@@ -27,7 +27,7 @@ namespace util
 	};
 
 	void loadTexture(my::Scene* scene, const String& name, const String& path);
-
+	//三次元に投影
 	class Convert2DTransform
 	{
 	public:
@@ -37,23 +37,29 @@ namespace util
 
 		Convert2DTransform(DrawManager* dManager, const ProjectionType& type=ProjectionType::Parallel);
 
+		Vec3 convert(const Vec3& pos, const BasicCamera3D& camera)const;
+
 		Vec3 convert(const Vec3& pos, const ProjectionType& type)const;
 
 		Vec3 convert(const Vec3& pos)const;
 
 		Vec3 convert(Transform* transform)const;
 	};
-
+	//カメラからの距離をもとにスケーリングする　遠近法
 	class Convert2DScale
 	{
 	public:
 		Camera::DistanceType type;
 
+		Camera* camera = nullptr;
+
 		DrawManager* dManager;
 
 		double baseLength;
-
-		Convert2DScale(double baseLength,DrawManager* dManager, const Camera::DistanceType& type = Camera::DistanceType::Screen);
+		//カメラの距離に応じて
+		Convert2DScale(double baseLength, DrawManager* dManager);
+		//typeに応じて
+		Convert2DScale(double baseLength,DrawManager* dManager, const Camera::DistanceType& type);
 		//baseLength/distanceを返す
 		double distanceRate(const Vec3& pos, const Camera::DistanceType& type)const;
 		double distanceRate(const Vec3& pos)const;

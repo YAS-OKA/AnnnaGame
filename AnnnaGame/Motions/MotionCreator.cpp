@@ -42,7 +42,7 @@ namespace mot
 
 		void draw()const override
 		{
-			std::get<2>(parts->collider->hitbox.shape).getScaledFig().drawFrame(2, color);
+			std::get<2>(parts->collider->hitbox.shape).getScaledFig().drawFrame(0.5, color);
 		}
 	};
 	using Event = std::function<void()>;
@@ -697,6 +697,9 @@ namespace mot
 			};
 			decoder.add_event_cmd<KillParts, String, bool>(U"kill", killPartsEvent, pmanager);
 			decoder.add_event_cmd<KillParts, String>(U"kill", killPartsEvent, pmanager);
+			sets.motionScriptCmd(pmanager);
+			decoder.add<StartMotion, String>(U"start", pmanager);
+			decoder.add<LoadMotionScript, FilePath, String>(U"load", pmanager);
 		}
 
 		void update(double dt)override
@@ -887,13 +890,14 @@ namespace mot
 				//masterパーツを殺して新しく構築
 				c->decoder.input(U"kill master")->decode()->execute();
 				scene->partsLoader->create(*path, pmanager);
-				//当たり判定を付与
+				//当たり判定を取得
 				for (auto& p : pmanager->partsArray)
 				{
-					if (p == pmanager->master)continue;
+					if (p->collider)partsCollider << p->collider;
+					/*if (p == pmanager->master)continue;
 
 					if (p->base.path) partsCollider << p->createHitbox(resource::texture(*p->base.path).size() / 2, Image{ AssetManager::myAsset(localPath + *p->base.path) }.alphaToPolygons());
-					else partsCollider << p->createHitbox({ 0,0 }, { std::get<1>(p->base.drawing).asPolygon() });
+					else partsCollider << p->createHitbox({ 0,0 }, { std::get<1>(p->base.drawing).asPolygon() });*/
 				}
 			}, U"JSON読み込み", 20, Vec2{ 10,50 });
 
@@ -920,19 +924,6 @@ namespace mot
 				}
 			}, U"キー操作", 20, Vec2{ util::sw() - 470,10 });
 
-			ButtonEvent(this, U"pauseModeChange", Array<Event>{
-				[=] {
-					auto button = scene->findOne<ui::Button>(U"pauseModeChangeButton");
-					button->setText(U"モデル編集");
-					button->box->fitSize();
-
-				}, [=] {
-					auto button = scene->findOne<ui::Button>(U"pauseModeChangeButton");
-					button->setText(U"モーション作成");
-					button->box->fitSize();
-				}
-			}, U"モーション作成", 20, Vec2{ util::sw() - 630,10 });
-
 			//パーツをキー入力で移動させる　回転　拡大させる
 			ACreate(U"keyMove").add(
 				[=](double dt) {
@@ -946,17 +937,23 @@ namespace mot
 					if (KeyD.pressed())moving += Vec2{ 1,0 };
 					if (KeyS.pressed())moving += Vec2{ 0,1 };
 					if (KeyW.pressed())moving += Vec2{ 0,-1 };
-					moving.setLength(speed);
-					selecting->setPos(selecting->getPos() + moving * dt);
+					if (moving.length())
+					{
+						moving.setLength(speed);
+						selecting->setPos(selecting->getPos() + moving * dt);
+					}
 					if (KeyQ.pressed())dAngle -= 1;
 					if (KeyE.pressed())dAngle += 1;
-					selecting->setAngle(selecting->getAngle() + dAngle * speed * dt);
+					if (dAngle)selecting->setAngle(selecting->getAngle() + dAngle * speed * dt);
 					if (KeyJ.pressed())dZoom += Vec2{ -1,0 };
 					if (KeyL.pressed())dZoom += Vec2{ 1,0 };
 					if (KeyI.pressed())dZoom += Vec2{ 0,1 };
 					if (KeyK.pressed())dZoom += Vec2{ 0,-1 };
-					dZoom.setLength(speed / 150);
-					selecting->setScale(selecting->getScale() + dZoom * dt);
+					if (dZoom.length())
+					{
+						dZoom.setLength(speed / 150);
+						selecting->setScale(selecting->getScale() + dZoom * dt);
+					}
 					dw->set();
 				}
 			);

@@ -5,6 +5,31 @@
 
 namespace my
 {
+	void createCollider(Entity* ent, const Box& shape, const Vec3& relative)
+	{
+		auto col = ent->addComponentNamed<Collider>(U"hitbox", shape, relative);
+		auto box = col->hitbox.boudingBox();
+		auto s = shape;
+		s.h = Min(1.0, shape.h * 0.05);
+		s.w = shape.w * 0.7;
+		s.d = shape.d * 0.7;
+		ent->addComponentNamed<Collider>(U"bottom", s, box.bottomCenter());
+		ent->addComponentNamed<Collider>(U"top", s, box.topCenter());
+	}
+	void createCollider(Entity* ent, const Cylinder& shape, const Vec3& relative)
+	{
+		auto col = ent->addComponentNamed<Collider>(U"hitbox", shape, relative);
+		auto box = col->hitbox.boudingBox();
+		auto s = shape;
+		s.h = Min(1.0, shape.h * 0.05);
+		s.r = shape.r * 0.7;
+		ent->addComponentNamed<Collider>(U"bottom", s, box.bottomCenter());
+		ent->addComponentNamed<Collider>(U"top", s, box.topCenter());
+	}
+
+	void Scene::hitboxVisible(const MeshData& data)
+	{
+	}
 	Scene::Scene()
 	{
 		partsLoader = new mot::LoadParts(this);

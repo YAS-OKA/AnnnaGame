@@ -151,4 +151,47 @@ namespace mot
 			motion.addActParallel(action);
 		}
 	};
+
+	class LoadMotionScript:public prg::IAction
+	{
+	public:
+		PartsManager* pman;
+		FilePath path;
+		String motionName;
+
+		LoadMotionScript(FilePath path,String motionName);
+//load asset/motion/sara/motion.txt tmp
+		LoadMotionScript* build(PartsManager* pman);
+
+	protected:
+		void start();
+	};
+
+	class WriteMotionScript :public prg::IAction
+	{
+	public:
+		PartsManager* pman;
+		FilePath path;
+		String motionName;
+
+
+		
+	};
+
+	class StartMotion :public prg::IAction
+	{
+	public:
+		PartsManager* pMan;
+		String motionName;
+
+		StartMotion(String motionName);
+
+		StartMotion* build(PartsManager* pMan)
+		{
+			this->pMan = pMan;
+			return this;
+		}
+	private:
+		void start();
+	};
 }

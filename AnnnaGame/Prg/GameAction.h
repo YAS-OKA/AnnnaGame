@@ -100,6 +100,8 @@ namespace prg
 		MoveAct(const Vec3& initVel, const Optional<double>& t = none);
 
 		void setTransform(Transform* t);
+
+		Vec3 getVel()const;
 	protected:
 		friend class MulMove;
 		Vec3 vel;

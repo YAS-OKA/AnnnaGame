@@ -3,6 +3,7 @@
 #include "../Util/Cmd.hpp"
 #include"../Game/Scenes.h"
 #include"Parts.h"
+#include"Motion.h"
 
 namespace mot
 {
@@ -84,5 +85,40 @@ namespace mot
 		pmanager->killParts(parts);
 
 		killedParts.emplace(parts);
+	}
+	StartMotion::StartMotion(String motionName)
+		:motionName(motionName)
+	{
+	}
+	void StartMotion::start()
+	{
+		bool flag = false;
+		for (auto& parts : pMan->partsArray)
+		{
+			if (parts->actman(motionName))
+			{
+				flag = true;
+				parts->actman.act(motionName);
+			}
+		}
+		if (not flag)Console << U"モーションがセットされてません:{}"_fmt(motionName);
+	}
+	LoadMotionScript::LoadMotionScript(FilePath path,String motionName)
+		:path(path),motionName(motionName)
+	{
+	}
+
+	LoadMotionScript* LoadMotionScript::build(PartsManager* pman)
+	{
+		this->pman = pman;
+		return this;
+	}
+	void LoadMotionScript::start()
+	{
+		if (not MotionScript().LoadFile(pman, path, motionName))
+		{
+			Console << U"モーションスクリプト読み込みに失敗\n\
+					指定されたパス:{}"_fmt(path);
+		}
 	}
 }

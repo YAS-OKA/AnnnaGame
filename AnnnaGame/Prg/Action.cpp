@@ -98,6 +98,9 @@ FuncAction::FuncAction(const UpdateFunc& upd, const Optional<double>& time)
 FuncAction::FuncAction(const TermEvent& ini, const Optional<double>& time)
 	:ini(ini), IAction(time) {}
 
+prg::FuncAction::FuncAction(const TermEvent& ini, const TermEvent& fin, const Optional<double>& time)
+	:ini(ini), fin(fin), IAction(time){}
+
 FuncAction::FuncAction(const TermEvent& ini, const UpdateFunc& upd, const Optional<double>& time)
 	:ini(ini), upd(upd), IAction(time) {}
 

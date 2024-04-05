@@ -60,8 +60,10 @@ void mot::MotionScript::Load(PartsManager* pMan,const String& motionName, const 
 	}
 }
 
-void mot::MotionScript::LoadFile(PartsManager* pMan, const String& path, const String& motionName)
+bool mot::MotionScript::LoadFile(PartsManager* pMan, const String& path, const String& motionName)
 {
+	auto reader = TextReader{ path };
+	if (not reader)return false;
 	auto text = TextReader{ path }.readAll();
 	String inputText = U"";
 	bool find = false;
@@ -70,6 +72,7 @@ void mot::MotionScript::LoadFile(PartsManager* pMan, const String& path, const S
 		if (find)
 		{
 			inputText += line;
+			inputText += U"\n";
 		}
 
 		if (line[0] == U'#')
@@ -86,6 +89,7 @@ void mot::MotionScript::LoadFile(PartsManager* pMan, const String& path, const S
 	}
 
 	if(not inputText.isEmpty()) Load(pMan, motionName, inputText);
+	return true;
 }
 
 mot::PartsMotion::PartsMotion(Parts* target, double time)
@@ -110,7 +114,7 @@ mot::PartsMotion::PartsMotion(Parts* target, double time)
 //	target->setAngle(target->getAngle() + ang * dtPerTime(dt));
 //}
 
-mot::RotateTo::RotateTo(Parts* target, double angle, double time, bool clockwizeRotation, double rotation)
+mot::RotateTo::RotateTo(Parts* target, double angle, double time, bool clockwizeRotation, int32 rotation)
 	:PartsMotion(target, time), angle(angle),clockwizeRotation(clockwizeRotation),rotation(rotation)
 {
 }
@@ -137,8 +141,8 @@ void mot::RotateTo::update(double dt)
 //	target->setPos(target->getPos() + move * dtPerTime(dt));
 //}
 
-mot::MoveTo::MoveTo(Parts* target, const Vec2& dest, double time)
-	:PartsMotion(target,time),dest(dest)
+mot::MoveTo::MoveTo(Parts* target, double destX, double destY, double time)
+	:PartsMotion(target, time), dest({ destX,destY })
 {
 }
 

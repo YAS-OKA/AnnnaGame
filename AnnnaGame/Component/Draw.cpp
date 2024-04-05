@@ -150,19 +150,22 @@ draw_helper::DrawShallow::DrawShallow(IDraw2D* owner)
 {
 }
 
+double draw_helper::DrawShallow::getDepth() const
+{
+	const auto& camera = owner->manager->getCamera();
+	return camera->distance(owner->getDrawPos());
+}
+
 bool draw_helper::DrawShallow::shouldReplace(DrawShallow* other) const
 {
 	const auto& camera=owner->manager->getCamera();
 	//相手の描画が優先される(あとから描写される)場合trueを返すというようにすればいい
 	if (layer == other->layer)
 	{
-		return camera->distance(owner->getDrawPos()) > camera->distance(other->owner->getDrawPos());
+		return getDepth() > other->getDepth();
 	}
 	else
 	{
 		return layer < other->layer;
 	}
-
-	return false;
 }
-

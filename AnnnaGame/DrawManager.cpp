@@ -4,14 +4,20 @@
 #include"Game/Camera.h"
 #include"Game/Utilities.h"
 
-DrawManager::DrawManager()
-	:renderTexture{ Scene::Size(), TextureFormat::R8G8B8A8_Unorm_SRGB, HasDepth::Yes },m_camera(nullptr)
+DrawManager::DrawManager(const ColorF& backGround)
+	:renderTexture{ Scene::Size(), TextureFormat::R8G8B8A8_Unorm_SRGB, HasDepth::Yes },m_camera(nullptr),backGroundColor(backGround)
 {
 }
-//
-//DrawManager::~DrawManager()
-//{
-//}
+
+DrawManager::DrawManager(Camera* camera, const ColorF& backGround)
+	:m_camera(camera), renderTexture{ Scene::Size(), TextureFormat::R8G8B8A8_Unorm_SRGB, HasDepth::Yes }, backGroundColor(backGround)
+{
+}
+
+DrawManager::DrawManager(Camera* camera, const MSRenderTexture& renderTexture, const ColorF& backGround)
+	:m_camera(camera),renderTexture{renderTexture},backGroundColor(backGround)
+{
+}
 
 util::Convert2DTransform DrawManager::getConverter()
 {
@@ -97,11 +103,10 @@ void DrawManager::update()
 	);
 }
 
-void DrawManager::draw()const
+void DrawManager::draw(bool draw3D)const
 {
-	{/*
-		const auto t0 = Transformer2D{ Mat3x2::Translate(-translate3D),TransformCursor::Yes };
-		const auto t1 = Transformer2D{ Mat3x2::Scale(scale3D,scalePos3D),TransformCursor::Yes };*/
+	if(draw3D)
+	{
 		//// 3D シーンにカメラを設定
 		Graphics3D::SetCameraTransform(m_camera->getCamera());
 		{
@@ -127,4 +132,7 @@ void DrawManager::draw()const
 		const auto t2 = Transformer2D{Mat3x2::Rotate(angle * 1_deg * drawing->dManagerInfluence->value.Rotate)};
 		drawing->draw();
 	}
+#if _DEBUG
+	if(debugDraw)debugDraw();
+#endif
 }

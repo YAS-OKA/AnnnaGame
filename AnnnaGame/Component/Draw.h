@@ -48,6 +48,8 @@ namespace draw_helper {
 
 		DrawShallow(IDraw2D* owner);
 
+		virtual double getDepth()const;
+
 		bool shouldReplace(DrawShallow* other)const;
 	};
 
@@ -227,9 +229,11 @@ public:
 	{
 		if (shallow != nullptr)	delete shallow;
 		
-		shallow = new Shallow(this, args...);
+		auto res = new Shallow(this, args...);
 
-		return shallow;
+		shallow = res;
+
+		return res;
 	}
 
 	DrawShallow* getShallow()const;
@@ -316,6 +320,26 @@ public:
 		const Transformer2D t1(getTransformer());
 
 		drawing(text).draw(0, 0, color);
+	};
+};
+
+template<>
+class Draw2D<DrawManager> :public IDraw2D
+{
+public:
+	DrawManager drawing;
+
+	template<class... Args>
+	Draw2D<DrawManager>(DrawManager* manager, Args&&... args)
+		:IDraw2D(manager)
+		, drawing(args...)
+	{}
+
+	virtual void draw()const override
+	{
+		if (not visible)return;
+
+		drawing.draw(false);
 	};
 };
 

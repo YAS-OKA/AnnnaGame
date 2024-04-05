@@ -1,4 +1,21 @@
+#TestMotion
 TIME 0
-JOINT body
 LEN 1
-SetAngle 90
+JOINT body
+SetPos 100 0
+
+SetPos -100 0
+
+SetPos 100 0
+
+SetPos 0 0
+
+SetPos 0 -100
+
+SetPos 0 100
+
+SetPos 0 -100
+
+SetPos 0 100
+
+SetPos 0 0

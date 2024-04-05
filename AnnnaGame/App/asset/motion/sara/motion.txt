@@ -1,0 +1,18 @@
+#tmp
+TIME 0
+LEN 0.3
+JOINT larm
+SetAngle -90
+JOINT rarm
+SetAngle 30
+JOINT ubody
+SetPos 15 0
+JOINT dbody
+SetAngle 15
+JOINT lkutu
+SetAngle 10
+SetPos 17 83
+JOINT rkutu
+SetAngle 40
+SetPos -77 58
+

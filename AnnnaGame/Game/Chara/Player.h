@@ -16,6 +16,6 @@ public:
 
 	void update(double dt)override;
 
-	void behaviorSetting(const state::Inform& info);
+	void behaviorSetting(state::Inform&& info);
 };
 

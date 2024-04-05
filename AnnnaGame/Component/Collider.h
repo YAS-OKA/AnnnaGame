@@ -42,6 +42,8 @@ public:
 		void setAngle(const Vec2& pos, double rad);
 
 		void scale(const Vec2& s);
+
+		RectF boudingRectF()const;
 	};
 
 	//FigureはFigureとしか衝突できない
@@ -63,6 +65,8 @@ public:
 			tmp.setFigure(tmp.getFigure());
 		}
 	}
+
+	Box boudingBox()const;
 
 	bool intersects(const CollideBox& other)const;
 private:

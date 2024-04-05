@@ -88,7 +88,6 @@ void Camera::update(double dt)
 	//	transform->direction.vector = { 0,0,1 };// Quaternion::FromUnitVectorPairs({ {0,0,1},{0,1,0} }, { {0,Sin(theta),Cos(theta)} ,{0,0,1} })* Vec3 { 0, 0, 1 }
 	//}
 
-
 	camera.setView(transform->getPos(), targetPos);
 	//カメラを回す
 	camera.setUpDirection(
@@ -134,7 +133,7 @@ BasicCamera3D Camera::getCameraLatest() const
 
 Vec3 Camera::getForcusDir() const
 {
-	return (camera.getEyePosition() - camera.getFocusPosition()).normalize();
+	return (camera.getFocusPosition()- camera.getEyePosition()).normalize();
 }
 
 void Camera::setFollowTarget(Object* target)

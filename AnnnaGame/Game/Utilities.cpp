@@ -144,11 +144,8 @@ namespace util
 	{
 	}
 
-	Vec3 Convert2DTransform::convert(const Vec3& pos,const ProjectionType& type)const
+	Vec3 Convert2DTransform::convert(const Vec3& pos, const BasicCamera3D& camera)const
 	{
-		const auto& myCamera = dManager->getCamera();
-		auto camera = myCamera->getCameraLatest();
-		
 		const SIMD_Float4 worldPos = DirectX::XMVector3TransformCoord(
 			SIMD_Float4{ pos, 0.0f },
 			camera.getViewProj());
@@ -161,14 +158,24 @@ namespace util
 		v.y *= (camera.getSceneSize().y * 0.5f);
 		v.x *= (camera.getSceneSize().x * 0.5f);
 
-		//カメラのフォーカス方向との内積をとる
-		const auto& dotProduct = (pos - camera.getEyePosition()) * ((camera.getFocusPosition()-camera.getEyePosition()).normalize());
+		//カメラのフォーカス方向との内積をとる(スクリーン距離)
+		const auto& dotProduct = (pos - camera.getEyePosition()) * ((camera.getFocusPosition() - camera.getEyePosition()).normalize());
 		const auto& dotProductValue = dotProduct.x + dotProduct.y + dotProduct.z;
 
-		if (type == ProjectionType::Parse)return { v,dotProductValue };
+		return { v,dotProductValue };
+	}
 
+	Vec3 Convert2DTransform::convert(const Vec3& pos,const ProjectionType& type)const
+	{
+		const auto& myCamera = dManager->getCamera();
+		auto camera = myCamera->getCameraLatest();
+
+		auto tmp = convert(pos, camera);
+		if (type == ProjectionType::Parse)return tmp;
 		if (type == ProjectionType::Parallel)
 		{
+			Vec2 v; double dotProductValue;
+			v = tmp.xy(); dotProductValue = tmp.z;
 			const auto& screenDistance = myCamera->getScreenDistance();
 			const auto& dotProductParScreenDistance = dotProductValue / screenDistance;//(camera.screenToWorldPoint(util::sc(), 0.1f)-camera.getEyePosition()).length();
 			return { v * (1 + dotProductParScreenDistance) - util::sc() * dotProductParScreenDistance,dotProductValue };
@@ -183,6 +190,11 @@ namespace util
 	Vec3 Convert2DTransform::convert(Transform* transform)const
 	{
 		return convert(transform->getPos());
+	}
+
+	Convert2DScale::Convert2DScale(double baseLength, DrawManager* dManager)
+		:baseLength(baseLength), dManager(dManager),camera(dManager->getCamera())
+	{
 	}
 
 	Convert2DScale::Convert2DScale(double baseLength, DrawManager* dmanager, const Camera::DistanceType& type)
@@ -208,7 +220,8 @@ namespace util
 
 	Vec3 Convert2DScale::convert(const Vec3& scale,const Vec3& pos)const
 	{
-		return convert(scale,pos, type);
+		if (camera)return convert(scale, pos, camera->type);
+		else return convert(scale,pos, type);
 	}
 
 	Vec3 Convert2DScale::convert(Transform* transform)const

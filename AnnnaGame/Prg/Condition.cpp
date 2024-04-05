@@ -201,3 +201,13 @@ bool prg::ActivesChecker::check() const
 
 	return activeNum >= threshold;
 }
+
+prg::Touch::Touch(Collider* collider, const ColliderCategory& targetCategory, size_t waitFrame)
+	:collider(collider), targetCategory(targetCategory), ICondition(waitFrame)
+{
+}
+
+bool prg::Touch::check() const
+{
+	return not collider->intersects(targetCategory).isEmpty();
+}

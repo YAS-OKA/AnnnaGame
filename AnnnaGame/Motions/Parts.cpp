@@ -60,11 +60,11 @@ namespace mot
 		switch (drawing.index())
 		{
 		case 0:
-			tex = addComponent<DrawTexture>(scene->getDrawManager(), std::get<0>(drawing));
+			tex = addComponent<DrawTexture>(&parts_manager->dm->drawing, std::get<0>(drawing));
 			tex->relative = { -std::get<0>(drawing).size() / 2, 0 };
 			break;
 		case 1:
-			tex = addComponent<Draw2D<Figure>>(scene->getDrawManager(), std::get<1>(drawing));
+			tex = addComponent<Draw2D<Figure>>(&parts_manager->dm->drawing, std::get<1>(drawing));
 			break;
 		}
 		params.drawing = drawing;
@@ -213,11 +213,16 @@ namespace mot
 	{
 		Object::start();
 
+		auto scene_draw_manager = scene->getDrawManager();
+
+		dm = addComponent<Draw2D<DrawManager>>(scene_draw_manager, scene_draw_manager->getCamera(), MSRenderTexture{ 0,0,HasDepth::No }, ColorF{ 0,0,0,0 });
+
 		createMaster();
 	}
 
 	void PartsManager::update(double dt)
 	{
+		dm->drawing.update();//drawManagerをアプデ
 		Object::update(dt);
 	}
 }
@@ -301,10 +306,11 @@ namespace mot
 		JSON json = JSON::Load(jsonPath);
 
 		HashTable<Parts*, String> parent_list;
+		HashTable<Parts*, double>partsAngle;
 
 		CmdDecoder deco;
 
-		DecoderSet(&deco).registerMakePartsCmd(pm);
+		DecoderSet(&deco).registerMakePartsCmd(pm,true);
 
 		for (const auto& elms : json)
 		{
@@ -320,10 +326,8 @@ namespace mot
 				{
 					tmp += U" " + tex;
 				}
-				//mkpar name pos param
-				deco.input(U"mkpar " + elms.key + tmp);
-
-				deco.decode()->execute();
+				//mkpar name pos param をうちこむ
+				deco.input(U"mkpar " + elms.key + tmp)->decode()->execute();
 				//作成したパーツを取得
 				createdParts = pm->partsArray.back();
 			}
@@ -336,13 +340,21 @@ namespace mot
 			createdParts->setScalePos(elms.value[U"scalePos"].get<Vec2>());
 			createdParts->setScale(elms.value[U"scale"].get<Vec2>());
 			createdParts->setRotatePos(elms.value[U"rotatePos"].get<Vec2>());
-			createdParts->setAngle(elms.value[U"angle"].get<double>());
+			//createdParts->pureRotate(elms.value[U"angle"].get<double>());
 			createdParts->setZ(elms.value[U"z"].get<double>());
 			createdParts->setColor(elms.value[U"color"].get<ColorF>());
 
+			partsAngle[createdParts] = elms.value[U"angle"].get<double>();
+
 			if (elms.key != U"master")parent_list.emplace(createdParts, elms.value[U"parent"].getString());
 		}
-		for (auto& p : parent_list)p.first->setParent(p.second, true);//親子関係は最後に結ぶ(存在しない親を参照してしまうから)
+		for (auto& p : parent_list)p.first->setParent(p.second);//親子関係は最後に結ぶ(存在しない親を参照してしまうから)
+
+		for (auto& [p, v] : partsAngle)
+		{
+			p->pureRotate(v, true);		//その場で回転させる
+			p->params.angle = v;
+		}
 
 		return pm;
 	}
@@ -356,4 +368,15 @@ Vec2 draw_helper::CameraScaleOfParts::getScalePos() const
 double draw_helper::CameraScaleOfParts::operator () () const
 {
 	return (*helper)();
+}
+
+draw_helper::PartsShallow::PartsShallow(mot::PartsManager* p, IDraw2D* d)
+	:pmanager(p), DrawShallow(d)
+{
+
+}
+
+double draw_helper::PartsShallow::getDepth() const
+{
+	return 0.0;
 }

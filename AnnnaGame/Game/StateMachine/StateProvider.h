@@ -5,7 +5,7 @@
 
 namespace state
 {
-	using In = const Inform&;
+	using In = Inform&;
 	using A = StateActions&&;
 
 	class StateCreator
@@ -27,9 +27,9 @@ namespace state
 
 		std::function<StateActions (In, StateActions&&)> method;
 
-		StateActions create(StringView name);
+		StateActions create(StringView name)const;
 
-		StateActions operator()(In info)
+		StateActions operator()(In info) const
 		{
 			return F(method(info, std::move(create(name))));
 		}
@@ -47,6 +47,11 @@ namespace state
 			if (not creators.contains(name))creators.emplace(name, name);
 			return creators[name];
 		}
+
+		const StateCreator& operator[](StringView name)const
+		{
+			return creators.at(name);
+		}
 	};
 
 	class StateProvider
@@ -62,6 +67,6 @@ namespace state
 
 		static void Destroy();
 
-		static StateActions&& Get(StringView name, const Inform& info);
+		static StateActions&& Get(StringView name, In info);
 	};
 }

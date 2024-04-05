@@ -188,6 +188,8 @@ namespace prg
 
 		FuncAction(const TermEvent& ini, const Optional<double>& time = 0);
 
+		FuncAction(const TermEvent& ini, const TermEvent& fin, const Optional<double>& time = 0);
+
 		FuncAction(const TermEvent& ini, const UpdateFunc& upd, const Optional<double>& time = none);
 
 		FuncAction(const TermEvent& ini, const UpdateFunc& upd, const TermEvent& fin, const Optional<double>& time = none);

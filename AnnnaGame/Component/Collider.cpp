@@ -33,7 +33,6 @@ void CollideBox::CollideFigure::operator=(const Figure& fig)
 
 Polygon CollideBox::CollideFigure::getScaledFig()const
 {
-	//return  figure.asPolygon().scaledAt((parent->t->getPos() + parent->relative).xy(), parent->t->getAspect().xy());
 	auto poly = figure.asPolygon();
 	auto rad = util::getRad(parent->t->getScaleDir().first.xy());
 	poly.rotateAt(parent->t->getPos().xy() ,-rad);
@@ -107,34 +106,42 @@ void CollideBox::CollideFigure::setAngle(const Vec2& pos, double rad)
 	rotateAt(pos, rad - this->rad);
 }
 
-//void CollideBox::CollideFigure::fitDrawing()
-//{
-//	Vec2 aspect_ = (d->transformScaleAffectable ? d->transform->getAspect() * d->aspect.aspect.vec : d->aspect.aspect.vec).xy();
-//	double rotation = d->transformDirectionAffectable ? d->transform->getDirection().xy().getAngle() - Vec2{ 1,0 }.getAngle() + d->direction.vector.xy().getAngle() : d->direction.vector.xy().getAngle();
-//	rotation -= Vec2{ 1,0 }.getAngle();
-//
-//	auto p = d->getDrawPos().xy();
-//
-//	figure.setCenter(p+parent->relative.xy());
-//	figure.rotateAt(d->rotateCenter.xy()+figure.center(), rotation);
-//	figure.scale(aspect_.x, aspect_.y);
-//}
-
-//CollideBox::CameraAffectedCollider::CameraAffectedCollider(const Figure& fig, IDraw2D* drawing, bool layerd)
-//	:CollideFigure(fig, layerd), drawing(drawing)
-//{
-//}
-//
-//void CollideBox::CameraAffectedCollider::setPos(const Vec3& pos)
-//{/*
-//	const auto& cameraPos = drawing->manager->getCamera()->transform->getPos().xy();
-//	const auto& moveInfluence = drawing->influence.getMovement();
-//	CollideFigure::setPos(cameraPos * ({}));*/
-//}
+RectF CollideBox::CollideFigure::boudingRectF() const
+{
+	return figure.asPolygon().boundingRect();
+}
 
 void CollideBox::update()
 {
 	std::visit([this](auto& x) { x.setPos(relative  + t->getPos()); }, shape);
+}
+
+Box CollideBox::boudingBox() const
+{
+	Box res{};
+	switch (shape.index())
+	{
+	case 0: {
+		res = std::get<0>(shape);
+	}break;
+	case 1: {
+		auto cylinder = std::get<1>(shape);
+		res.h = cylinder.h;
+		res.w = cylinder.r;
+		res.d = cylinder.r;
+		res.center = cylinder.center;
+	}break;
+	case 2: {
+		auto rect = std::get<2>(shape).boudingRectF();
+		res.h = rect.h;
+		res.w = rect.w;
+		res.d = 0;
+		res.center = Vec3{ rect.center(),relative.z };
+	}break;
+	default: break;
+	}
+
+	return res;
 }
 
 bool CollideBox::intersects(const CollideBox& other)const

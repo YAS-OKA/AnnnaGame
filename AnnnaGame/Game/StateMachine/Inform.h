@@ -25,15 +25,16 @@ namespace state
 		Info(Info&&) = default;
 
 		template<class V>
-		Info(V v)
-			:v(new Value<V>(v))
+		Info(V&& v)
+			: v(new Value<V>(std::forward<V>(v)))
 		{
 		}
 
 		template<class V>
-		Info(V&& v)
-			: v(new Value<V>(std::forward<V>(v)))
+		Info& operator =(V&& v)
 		{
+			this->v(new Value<V>(std::forward<V>(v)));
+			return *this;
 		}
 
 		~Info() { if (v)delete v; }
@@ -50,6 +51,9 @@ namespace state
 	{
 		HashTable<String, Info> info;
 	public:
+		Inform(Inform&&) = default;
+		Inform() = default;
+
 		void set(StringView name, Info value);
 
 		Info get(StringView name, Info&& default_value);

@@ -4,12 +4,13 @@
 #include"../Component/Draw.h"
 #include"../Game/Scenes.h"
 #include"../Figure.h"
-#include"../Game/Utilities.h"
+//#include"../Game/Utilities.h"
 
 class Camera;
 
 namespace draw_helper {
 	class CameraScaleOfParts;
+	class ZShallow;
 }
 
 namespace mot
@@ -103,7 +104,7 @@ namespace mot
 
 		IDraw2D* tex = nullptr;
 
-		draw_helper::CameraScaleOfParts* scaleHelper=nullptr;
+		//draw_helper::CameraScaleOfParts* scaleHelper=nullptr;
 
 		Collider* collider = nullptr;
 
@@ -164,8 +165,20 @@ namespace mot
 
 			params.angle = angle;
 
-			//transform->scale.dir = { util::polar(getAbsAngle() * 1_deg),0 };
 			setScale(transform->scale.aspect.vec.xy());
+		}
+		//ただその場で回る　ローテートポスを無視　recursive=trueなら子のpureRotateを呼ぶ
+		void pureRotate(double angle, bool recursive = true)
+		{
+			double ang = Math::Fmod(angle, 360);
+			auto tmp = transform->affectToChildren;
+			transform->affectToChildren = false;
+			transform->rotate({ 0,0,1 }, ang * 1_deg);
+			transform->affectToChildren = tmp;
+			if (collider != nullptr)std::get<2>(collider->hitbox.shape).rotateAt({ 0,0 }, ang * 1_deg);
+			setScale(transform->scale.aspect.vec.xy());
+			//子どもも回す
+			if (recursive)for (auto& c : partsRelation.getChildren())dynamic_cast<Parts*>(c)->pureRotate(ang, true);
 		}
 
 		void setScale(const Vec2& s)
@@ -241,6 +254,7 @@ namespace mot
 		//マスターパーツ
 		Parts* master=nullptr;
 		Array<Parts*> partsArray;
+		Draw2D<DrawManager>* dm;
 
 		Camera::DistanceType distanceTypeUsedInScaleHelper=Camera::Screen;
 		double scaleHelperBaseLength=100;
@@ -300,7 +314,6 @@ namespace draw_helper
 	{
 	private:
 		ScaleHelper2D* helper = nullptr;
-
 		mot::Parts* parts;
 	public:
 		CameraScaleOfParts(mot::Parts* parts)
@@ -325,5 +338,15 @@ namespace draw_helper
 		virtual Vec2 getScalePos()const override;
 
 		virtual double operator () () const override;
+	};
+
+	class PartsShallow :public DrawShallow
+	{
+	public:
+		mot::PartsManager* pmanager;
+
+		PartsShallow(mot::PartsManager* p,IDraw2D* d);
+
+		double getDepth()const override;
 	};
 }

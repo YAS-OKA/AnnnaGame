@@ -100,12 +100,13 @@ void ActionManager::update(double dt)
 
 Actions& ActionManager::get(StringView name)
 {
+	if (not actions.contains(name))return create(name);
 	return *actions[name];
 }
 
 Actions& ActionManager::operator[](StringView name)
 {
-	return *actions[name];
+	return get(name);
 }
 
 bool ActionManager::operator()(StringView name)

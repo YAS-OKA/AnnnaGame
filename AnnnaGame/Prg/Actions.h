@@ -175,8 +175,15 @@ namespace prg
 		IAction& relate(StringView from, StringView to);
 
 		IAction& relate(Array<String> from, StringView to);
+
+		IAction& relate(IAction* from_act, IAction* to_act);
+		
 		//重複可能
 		void duplicatable(String a, String b);
+
+		IAction& operator[](StringView name);
+
+		Array<String> getAllState()const;
 
 	protected:
 		void _startCheck()override;

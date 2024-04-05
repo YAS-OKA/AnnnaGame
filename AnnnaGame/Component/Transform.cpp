@@ -320,17 +320,17 @@ void Transform::setZ(double z)
 
 void Transform::addX(double x)
 {
-	addPos(getPos() + Vec3{ x,0,0 });
+	addPos(Vec3{ x,0,0 });
 }
 
 void Transform::addY(double y)
 {
-	addPos(getPos() + Vec3{ 0,y,0 });
+	addPos(Vec3{ 0,y,0 });
 }
 
 void Transform::addZ(double z)
 {
-	setPos(getPos() + Vec3{ 0,0,z });
+	setPos(Vec3{ 0,0,z });
 }
 
 void Transform::addPos(const Vec3& pos)
