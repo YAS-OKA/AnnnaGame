@@ -64,13 +64,13 @@ bool mot::MotionScript::LoadFile(PartsManager* pMan, const String& path, const S
 {
 	auto reader = TextReader{ path };
 	if (not reader)return false;
-	auto text = TextReader{ path }.readAll();
 	String inputText = U"";
 	bool find = false;
-	for (const auto& line : text.split_lines())
+	for (const auto& line : TextReader{ path }.readAll().split_lines())
 	{
 		if (find)
 		{
+			if (line[0] == U'#')break;
 			inputText += line;
 			inputText += U"\n";
 		}

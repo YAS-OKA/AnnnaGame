@@ -267,6 +267,9 @@
     <ClCompile Include="Game\StateMachine\Script\PlayerBehabior.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Component\PartsCont\PartsMirrored.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="App\icon.ico">
@@ -1086,6 +1089,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Game\StateMachine\Script\PlayerBehavior.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Component\PartsCont\PartsMirrored.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

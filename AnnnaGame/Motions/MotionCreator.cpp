@@ -682,7 +682,7 @@ namespace mot
 			//パーツを作る命令
 			sets.registerMakePartsCmd(pmanager, true, [=](MakeParts* p) { partsCollider << p->getCreatedParts()->collider; });
 			//パーツを選択する命令
-			decoder.add_event_cmd<FindParts, String>(U"find", [=](FindParts* act) { pd->select(act->getFindParts());}, pmanager);
+			decoder.add_event_cmd<FindParts, String>(U"find", [=](FindParts* act) { pd->select(act->getFindParts()); }, pmanager);
 			//パーツを削除する命令
 			EventFunction<KillParts> killPartsEvent
 				= [=](KillParts* act) {
@@ -694,12 +694,15 @@ namespace mot
 					//マスターが殺されてたら自動生成
 					if (p->getName() == U"master")pmanager->createMaster();
 				}
-			};
+				};
 			decoder.add_event_cmd<KillParts, String, bool>(U"kill", killPartsEvent, pmanager);
 			decoder.add_event_cmd<KillParts, String>(U"kill", killPartsEvent, pmanager);
 			sets.motionScriptCmd(pmanager);
 			decoder.add<StartMotion, String>(U"start", pmanager);
 			decoder.add<LoadMotionScript, FilePath, String>(U"load", pmanager);
+			decoder.add<WriteMotionScript, FilePath, String>(U"write", pmanager);
+			decoder.add<WriteMotionScript, FilePath, String, Optional<String>>(U"write", pmanager);
+			decoder.add<WriteMotionScript, FilePath, String, Optional<String>, Optional<String>>(U"write", pmanager);
 		}
 
 		void update(double dt)override

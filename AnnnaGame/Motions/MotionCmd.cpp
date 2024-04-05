@@ -121,4 +121,94 @@ namespace mot
 					指定されたパス:{}"_fmt(path);
 		}
 	}
+
+	WriteMotionScript::WriteMotionScript(FilePath path, String motionName, Optional<String> time, Optional<String> len)
+		:path(path), motionName(motionName),time(time),len(len)
+	{
+	}
+
+	WriteMotionScript* WriteMotionScript::build(PartsManager* pmana)
+	{
+		this->pman = pmana;
+		return this;
+	}
+
+	Array<String> WriteMotionScript::createMotionText() const
+	{
+		Array<String> res;
+		if (time)res << U"TIME {}"_fmt(*time);
+		if (len)res << U"LEN {}"_fmt(*len);
+
+		for (auto parts : pman->partsArray)
+		{
+			if (parts->name == U"master")continue;//masterパーツは除外
+
+			res << U"JOINT {}"_fmt(parts->name);
+			res << U"SetAngle {}"_fmt(parts->getAngle());
+			res << U"SetPos {} {}"_fmt(parts->getPos().x, parts->getPos().y);
+		}
+
+		return res;
+	}
+
+	void WriteMotionScript::start()
+	{
+		String inputText = U"";
+
+		size_t process = 0;
+
+		Array<String> text;
+
+		{
+			auto reader = TextReader{ path };
+			if(not reader)Console<< U"モーションスクリプト読み込みに失敗\n\
+					指定されたパス:{}"_fmt(path);
+
+			text = reader.readAll().split_lines();
+		}
+
+		for (size_t lineNumber = 0; lineNumber < text.size(); lineNumber++)
+		{
+			auto& line = text[lineNumber];
+
+			if (process == 0)//モーション名が一致するリージョンを探す
+			{
+				if (line[0] == '#' and util::slice(line, 1, line.size()) == motionName)
+				{
+					process++;//次の工程へ
+				}
+				else if (lineNumber + 1 >= text.size())//最後の行まで一致するモーション名が見つからなかった場合
+				{
+					//モーションを追加する
+					text.push_back(U"#" + motionName);
+					lineNumber++;//次の行へ移動
+					process++;//次の工程へ
+				}
+			}
+
+			if (process == 1)//モーションを挿入する
+			{
+				//次の行が　最後の行　または　別のリージョン　の場合
+				if (lineNumber + 1 >= text.size() or text[lineNumber + 1][0] == U'#')
+				{
+					auto newTexts = createMotionText();
+					text.insert(text.begin() + lineNumber + 1, newTexts.begin(), newTexts.end());//モーションを挿入する
+					process++;
+				}
+			}
+
+			if (process == 2)//編集したテキストを反映
+			{
+				TextWriter writer{ path };
+				writer.clear();
+				for (auto it = text.begin(), en = text.end(); it != en; ++it)
+				{
+					writer.writeln(*it);
+				}
+
+				break;//コンプリート
+			}
+		}
+
+	}
 }

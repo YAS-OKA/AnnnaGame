@@ -9,6 +9,7 @@
 #include"../../Component/CameraAffect/Convert2DTransformComponent.h"
 #include"../../Component/CameraAffect/Convert2DScaleComponent.h"
 #include"../Skill/Provider.h"
+#include"../../Component/PartsCont/PartsMirrored.h"
 #include"../StateMachine/Inform.h"
 
 void GameScene::start()
@@ -35,8 +36,6 @@ void GameScene::start()
 
 	player->param.LoadFile(U"Player.txt", U"Annna");
 
-	player->behaviorSetting(state::Inform());
-
 	//カメラ
 	camera = birthObjectNonHitbox<Camera>(BasicCamera3D(drawManager.getRenderTexture().size(), 50_deg, Vec3{ 0,12,-25 }));
 	drawManager.setting(camera);
@@ -53,6 +52,10 @@ void GameScene::start()
 	player->addComponent<Convert2DTransformComponent>(parts->transform, getDrawManager(), ProjectionType::Parse);
 	
 	player->addComponent<Convert2DScaleComponent>(parts->transform, camera->distance(player->transform->getPos()), getDrawManager());
+
+	player->addComponent<PartsMirrored>(parts, player->transform);
+
+	player->behaviorSetting(state::Inform());
 
 	auto enemy = birthObject<Character>(Box(3, 5, 3), {0,0,0});
 

@@ -15,9 +15,9 @@ struct GameMaster::Impl
 	my::Scene* scene;
 	Impl()
 	{
-		//scene = manager.birth<mot::PartsEditor>();
+	/*	scene = manager.birth<mot::PartsEditor>();
 
-		//scene = manager.birth<TestScene>();
+		scene = manager.birth<TestScene>();*/
 
 		scene=manager.birth<GameScene>();
 	}

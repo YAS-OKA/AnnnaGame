@@ -173,9 +173,17 @@ namespace mot
 		PartsManager* pman;
 		FilePath path;
 		String motionName;
+		Optional<String> time;
+		Optional<String> len;
 
+		WriteMotionScript(FilePath path, String motionName, Optional<String> time = none, Optional<String> len = none);
 
-		
+		WriteMotionScript* build(PartsManager* pmana);
+
+		Array<String> createMotionText()const;
+
+	protected:
+		void start();
 	};
 
 	class StartMotion :public prg::IAction

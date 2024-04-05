@@ -2,26 +2,35 @@
 #include"Cmd.hpp"
 
 namespace {
-	template<class Type>
-	inline const Type convert(const String& value)
+
+	template<typename Type>
+	inline Type convert(const String& value)
 	{
 		if (auto result = EvalOpt(value))
 		{
 			return static_cast<Type>(*result);
 		}
-		//例外処理
+		// 例外処理
 	}
 
 	template<>
-	inline const bool convert<bool>(const String& value)
+	inline Optional<String> convert<Optional<String>>(const String& value)
 	{
-		if (value == U"true")return true;
-		else if (value == U"false")return false;
-		//例外処理
+		return static_cast<Optional<String>>(value);
 	}
 
 	template<>
-	inline const String convert<String>(const String& value) { return value; }
+	inline bool convert<bool>(const String& value)
+	{
+		if (value == U"true") return true;
+		else if (value == U"false") return false;
+		// 例外処理
+	}
+
+	template<>
+	inline String convert<String>(const String& value) { return value; }
+
+
 
 	// 配列に対してパック展開を行う関数
 	template <typename T, class... Args, std::size_t... Indices>
