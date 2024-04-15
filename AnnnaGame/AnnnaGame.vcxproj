@@ -137,6 +137,7 @@
     <ClCompile Include="Game\Scenes\GameScene.cpp" />
     <ClCompile Include="Game\StateMachine\Inform.cpp" />
     <ClCompile Include="Game\StateMachine\StateProvider.cpp" />
+    <ClCompile Include="Game\Objects\Card.cpp" />
     <ClCompile Include="Game\UI.cpp" />
     <ClCompile Include="Game\Utilities.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -393,6 +394,7 @@
     <ClInclude Include="Game\Skill\SkillsActor.h" />
     <ClInclude Include="Game\StateMachine\Inform.h" />
     <ClInclude Include="Game\StateMachine\StateProvider.h" />
+    <ClInclude Include="Game\Objects\Card.h" />
     <ClInclude Include="Game\UI.h" />
     <ClInclude Include="Game\Utilities.h" />
     <ClInclude Include="Motions\Motion.h" />
