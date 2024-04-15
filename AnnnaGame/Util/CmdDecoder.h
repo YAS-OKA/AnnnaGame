@@ -30,7 +30,19 @@ namespace {
 	template<>
 	inline String convert<String>(const String& value) { return value; }
 
-
+	template<>
+	inline Optional<bool> convert<Optional<bool>>(const String& value)
+	{
+		if (value == U"none")
+		{
+			return none;
+		}
+		else
+		{
+			return convert<bool>(value);
+		}
+		// 例外処理
+	}
 
 	// 配列に対してパック展開を行う関数
 	template <typename T, class... Args, std::size_t... Indices>
@@ -45,7 +57,7 @@ T* arrayPack(Array<String> arr) {
 	return arrayPackHelper<T, Args...>(arr, std::make_index_sequence<sizeof...(Args)>{});
 }
 
-using Delegate = std::function<ICMD* (Array<String>)>;
+using Delegate = std::function<std::shared_ptr<ICMD> (Array<String>)>;
 using ArgProcessing = std::function<Array<String>(Array<String>)>;
 
 class CmdDecoder
@@ -68,7 +80,7 @@ public:
 	{
 		table[cmd][sizeof...(Args)] = [=](const Array<String> arr)
 		{
-			return new CMD<Act>(postProcessing(arrayPack<Act, Args...>(argProcessing(arr))), Eventa<Act>(ef));
+				return std::shared_ptr<ICMD>(new CMD<Act>(postProcessing(arrayPack<Act, Args...>(argProcessing(arr))), Eventa<Act>(ef)));
 		};
 	}
 	//コマンドを登録する コマンド実行後にイベントが呼ばれる
@@ -84,7 +96,7 @@ public:
 		add_original<Act, Args...>(cmd, Eventa<Act>::NonEvent, buildProcess<Act>(postProcessBuildsArgs...));
 	}
 
-	ICMD* decode();
+	std::shared_ptr<ICMD> decode();
 };
 
 namespace my

@@ -66,6 +66,11 @@ void ActionManager::stop(StringView name)
 	actions[name]->stopped = true;
 }
 
+void ActionManager::endAll()
+{
+	for (auto& a : actions)if (a.second->isActive())a.second->end();
+}
+
 void ActionManager::update(double dt)
 {
 	for (auto& [key, act] : actions) {

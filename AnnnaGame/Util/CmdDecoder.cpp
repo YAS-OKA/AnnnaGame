@@ -1,6 +1,7 @@
 ﻿#include "../stdafx.h"
 #include"CmdDecoder.h"
 //#include"../Prg/Action.h
+#include"Util.h"
 
 CmdDecoder* CmdDecoder::input(const String& input, char spliter)
 {
@@ -13,7 +14,7 @@ CmdDecoder* CmdDecoder::input(Array<String> tokens)
 	return this;
 }
 
-ICMD* CmdDecoder::decode()
+std::shared_ptr<ICMD> CmdDecoder::decode()
 {
 	String head;
 	Array<String> arg;
@@ -22,11 +23,7 @@ ICMD* CmdDecoder::decode()
 
 	head = token[0];
 
-	token.pop_front();
-
-	arg = token;
-
-	token.clear();
+	arg = util::slice(token, 1, token.size());
 
 	if (table.contains(head) and table[head].contains(arg.size()))return table[head][arg.size()](arg);	
 Err:
@@ -42,13 +39,19 @@ void DecoderSet::motionScriptCmd(mot::PartsManager* pmanager)
 {
 	using namespace mot;
 
-	decoder->add<SetMotion<RotateTo>, String, String, double, double, double, bool, int32>(U"SetAngle", pmanager);
-	decoder->add<SetMotion<RotateTo>, String, String, double, double, double, bool>(U"SetAngle", pmanager);
+	decoder->add<SetMotion<RotateTo>, String, String, double, double, double, Optional<bool>, int32>(U"SetAngle", pmanager);
+	decoder->add<SetMotion<RotateTo>, String, String, double, double, double, Optional<bool>>(U"SetAngle", pmanager);
 	decoder->add<SetMotion<RotateTo>, String, String, double, double, double>(U"SetAngle", pmanager);
 	decoder->add<SetMotion<RotateTo>, String, String, double, double>(U"SetAngle", pmanager);
 	decoder->add<SetMotion<MoveTo>, String, String, double, double, double, double>(U"SetPos", pmanager);
 	decoder->add<SetMotion<MoveTo>, String, String, double, double, double>(U"SetPos", pmanager);
-
+	decoder->add<SetMotion<PauseTo>, String, String, double, double, double, double, double, double, double, Optional<bool>, int32>(U"Pause", pmanager);
+	decoder->add<SetMotion<PauseTo>, String, String, double, double, double, double, double, double, double, Optional<bool>>(U"Pause", pmanager);
+	decoder->add<SetMotion<PauseTo>, String, String, double, double, double, double, double, double, double>(U"Pause", pmanager);
+	decoder->add<LoadMotionScript, FilePath, String>(U"load", pmanager);
+	decoder->add<StartMotion, String>(U"start", pmanager);
+	decoder->add<StartMotion, String,bool>(U"start", pmanager);
+	
 }
 
 void DecoderSet::objScriptCmd(Object* obj)

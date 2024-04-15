@@ -24,6 +24,10 @@ namespace prg
 		~Actions();
 
 		void clear();
+		
+		void swapOne(size_t index,IAction* act);
+
+		bool empty()const;
 
 		template<class T = FuncAction, int32 Index = -1, class... Args>
 		T& add(Args&&... args)
@@ -101,6 +105,8 @@ namespace prg
 
 		Array<IAction*> getAction(const int32& index);
 
+		IAction* getAction(const int32& index1, const int32& index2);
+
 		IAction* operator[](const String& id);
 
 		Array<IAction*> operator [](const int32& index);
@@ -133,6 +139,7 @@ namespace prg
 		bool stopped = false;
 		//ループカウントの上限　別にカンストしてもループは続く
 		const int32 maxLoopCount = 10000;
+
 
 
 	protected:

@@ -136,7 +136,6 @@
     <ClCompile Include="Game\Scenes.cpp" />
     <ClCompile Include="Game\Scenes\GameScene.cpp" />
     <ClCompile Include="Game\StateMachine\Inform.cpp" />
-    <ClCompile Include="Game\StateMachine\Script\PlayerBehabior.cpp" />
     <ClCompile Include="Game\StateMachine\StateProvider.cpp" />
     <ClCompile Include="Game\UI.cpp" />
     <ClCompile Include="Game\Utilities.cpp" />
@@ -393,7 +392,6 @@
     <ClInclude Include="Game\Scenes\GameScene.h" />
     <ClInclude Include="Game\Skill\SkillsActor.h" />
     <ClInclude Include="Game\StateMachine\Inform.h" />
-    <ClInclude Include="Game\StateMachine\Script\PlayerBehavior.h" />
     <ClInclude Include="Game\StateMachine\StateProvider.h" />
     <ClInclude Include="Game\UI.h" />
     <ClInclude Include="Game\Utilities.h" />

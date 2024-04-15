@@ -37,7 +37,7 @@ EventFunction<T> Eventa<T>::NonEvent = [](T*) {};
 class ICMD
 {
 public:
-	virtual void execute() = 0;
+	virtual void execute() {};
 };
 
 template <class T = prg::IAction>

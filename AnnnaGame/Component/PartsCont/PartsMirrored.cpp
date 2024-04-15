@@ -3,12 +3,11 @@
 #include"../../Motions/Parts.h"
 
 PartsMirrored::PartsMirrored(mot::PartsManager* pman, bool m)
-	:pman(pman), active(false)
+	:pman(pman), active(false), mirrored(false)
 {
 	if (m)
 	{
-		const auto& s = pman->master->getScale();
-		pman->master->setScale({ s.x * -1,s.y });
+		pman->dm->drawing.scale.x *= -1;
 	}
 }
 
@@ -24,10 +23,11 @@ void PartsMirrored::update(double dt)
 	//反転を検知
 	if (not active)
 	{
-		if (transform->direction.vector.x < 0)
+		if ((mirrored and transform->direction.vector.x > 0.5) or
+			((not mirrored) and transform->direction.vector.x < -0.5))
 		{
 			active = true;
-			firstScale = pman->master->getScale().x;
+			firstScale = pman->dm->drawing.scale.x;
 			timer = 0;
 		}
 	}
@@ -37,8 +37,9 @@ void PartsMirrored::update(double dt)
 		timer += dt;
 		if (timer >= mirroredTime) {
 			timer = mirroredTime;
+			mirrored = !mirrored;
 			active = false;
 		}
-		pman->master->setScale({ firstScale * (1 - 2 * timer / mirroredTime),pman->master->getScale().y });		
+		pman->dm->drawing.scale.x = firstScale * (1 - 2 * timer / mirroredTime);
 	}
 }

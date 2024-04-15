@@ -1,0 +1,8 @@
+﻿
+#tmp
+JOINT a
+Pause 0 0 1 1 0
+JOINT b
+Pause -100.00000762939453 0 1 1 0
+JOINT c
+Pause -300 0 1 1 0

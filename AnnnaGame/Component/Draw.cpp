@@ -124,7 +124,7 @@ Transformer2D IDraw2D::getTransformer() const
 
 	double scaleRad = util::getRad(aspDir);
 
-	const auto& scaleMat = Mat3x2::Rotate(scaleRad-rotation) * Mat3x2::Scale(aspect_, getScalePos()) * Mat3x2::Rotate(rotation-scaleRad);
+	const auto& scaleMat = Mat3x2::Rotate(-scaleRad+rotation) * Mat3x2::Scale(aspect_, getScalePos()) * Mat3x2::Rotate(-rotation+scaleRad);
 
 	return Transformer2D{
 		scaleMat

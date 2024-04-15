@@ -13,6 +13,7 @@ private:
 	int32 firstScale;
 	bool active;
 	class Transform* transform;//これの方向をもとにする
+	bool mirrored;
 
 	double mirroredTime = 0.2;
 	double timer = 0;

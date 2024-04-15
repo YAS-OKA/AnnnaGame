@@ -48,6 +48,16 @@ void prg::IAction::StateCheckType(bool f)
 	endCondition.checkType = Type::Any;//こっちはやらなくていいかも
 }
 
+void prg::IAction::setOwner(const Borrow<Actions>& owner)
+{
+	this->owner = owner;
+}
+
+Borrow<Actions> prg::IAction::getOwner() const
+{
+	return owner;
+}
+
 void IAction::update(double dt)
 {
 	timer += dt * timeScale;
@@ -94,6 +104,11 @@ void MyPrint::update(double dt)
 
 FuncAction::FuncAction(const UpdateFunc& upd, const Optional<double>& time)
 	:upd(upd), IAction(time) {}
+
+prg::FuncAction::FuncAction(const UpdateFunc& upd, const TermEvent& fin, const Optional<double>& time)
+	:upd(upd), fin(fin), IAction(time)
+{
+}
 
 FuncAction::FuncAction(const TermEvent& ini, const Optional<double>& time)
 	:ini(ini), IAction(time) {}

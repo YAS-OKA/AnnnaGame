@@ -165,7 +165,7 @@ namespace prg
 
 		if (constantSpeed)vel.setLength(*constantSpeed);
 		if (limitingSpeed)vel.setLength(Min(vel.length(), *limitingSpeed));
-
+		this->vel = vel;
 		*transform += vel * dt;
 
 		//end

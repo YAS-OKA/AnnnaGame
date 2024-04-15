@@ -11,6 +11,8 @@
 #include"../Skill/Provider.h"
 #include"../../Component/PartsCont/PartsMirrored.h"
 #include"../StateMachine/Inform.h"
+#include"../../Motions/MotionCmd.h"
+#include"../../Util/CmdDecoder.h"
 
 void GameScene::start()
 {
@@ -43,9 +45,9 @@ void GameScene::start()
 	camera->setFollowTarget(player);
 	camera->type = Camera::DistanceType::Z;
 
-	auto parts = partsLoader->create(U"asset/motion/sara/model2.json");
+	auto parts = std::shared_ptr<PartsManager>(partsLoader->create(U"asset/motion/sara/model1.json"));
 
-	parts->master->transform->scale.setAspect({ 0.5,0.5,1 });
+	parts->master->transform->scale.setAspect({ 0.4,0.4,1 });
 
 	this->player = player;
 	
@@ -53,7 +55,27 @@ void GameScene::start()
 	
 	player->addComponent<Convert2DScaleComponent>(parts->transform, camera->distance(player->transform->getPos()), getDrawManager());
 
-	player->addComponent<PartsMirrored>(parts, player->transform);
+	player->addComponent<PartsMirrored>(parts.get());
+
+	auto info = state::Inform();
+
+	auto decoder = std::make_shared<CmdDecoder>();
+
+	DecoderSet(decoder.get()).motionScriptCmd(parts.get());
+
+	decoder->input(U"load asset/motion/sara/motion.txt Stand")->decode()->execute();//モーションをセット
+	decoder->input(U"load asset/motion/sara/motion.txt Jump")->decode()->execute();
+	decoder->input(U"load asset/motion/sara/motion.txt Attack")->decode()->execute();
+	decoder->input(U"load asset/motion/sara/motion.txt Run")->decode()->execute();
+
+	info.set(U"MotionCmdDecoder", state::Info(decoder));//デコーダーを渡す
+	info.set(U"StandMotionCmd", state::Info(U"start Stand"));
+	info.set(U"JumpMotionCmd", state::Info(U"start Jump"));
+	info.set(U"AttackMotionCmd", state::Info(U"start Attack"));
+	info.set(U"RunMotionCmd", state::Info(U"start Run true"));
+	info.set(U"parts", state::Info(parts));
+
+	player->setPlayerAnimator(std::move(info));
 
 	player->behaviorSetting(state::Inform());
 
@@ -75,13 +97,6 @@ void GameScene::start()
 
 	enemy->addComponent<Convert2DScaleComponent>(eparts->transform, camera->distance(enemy->transform->getPos()), getDrawManager());
 
-	//drawManager.debugDraw = [=] {
-	//	auto p = parts->find(U"ubody");
-	//	auto e = eparts->find(U"a");
-	//	Print << p->transform->getPos();
-	//	Print << e->transform->getPos();
-	//	};
-
 	//カードUI
 	auto ui = birthObjectNonHitbox<ui::Card>();
 
@@ -92,4 +107,5 @@ void GameScene::start()
 void GameScene::update(double dt)
 {
 	Scene::update(dt);
+	Scene::updateTransform(dt);
 }

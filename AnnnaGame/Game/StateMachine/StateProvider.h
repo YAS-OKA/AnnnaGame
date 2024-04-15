@@ -54,19 +54,4 @@ namespace state
 		}
 	};
 
-	class StateProvider
-	{
-		StateProvider();
-		~StateProvider() {};
-
-		static StateProvider* instance;
-
-		SCreatorContainer dict;
-	public:
-		static void Init();
-
-		static void Destroy();
-
-		static StateActions&& Get(StringView name, In info);
-	};
 }

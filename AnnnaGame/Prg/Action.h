@@ -120,7 +120,13 @@ namespace prg
 
 		ConditionArray startCondition;
 		ConditionArray endCondition;
+
+		void setOwner(const Borrow<Actions>& owner);
+
+		Borrow<Actions> getOwner()const;
 	protected:
+		Borrow<Actions> owner;
+
 		bool m_stateCheckerType = false;
 
 		String id;
@@ -185,6 +191,8 @@ namespace prg
 		TermEvent fin = [] {};
 
 		FuncAction(const UpdateFunc& upd, const Optional<double>& time = none);
+
+		FuncAction(const UpdateFunc& upd, const TermEvent& fin,const Optional<double>& time = none);
 
 		FuncAction(const TermEvent& ini, const Optional<double>& time = 0);
 

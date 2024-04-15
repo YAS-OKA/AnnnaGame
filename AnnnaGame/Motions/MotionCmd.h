@@ -145,6 +145,7 @@ namespace mot
 		void start()
 		{
 			auto targetParts = pMan->find(targetName);
+			if (not targetParts)return;
 			action->target = targetParts;
 			auto& motion = targetParts->actman[motionName];//motionNameが含まれていたらそいつを返すし、いなければ新しく生成して下でセットする。
 			action->startIf<TimeCondition>(motion, time);
@@ -189,10 +190,11 @@ namespace mot
 	class StartMotion :public prg::IAction
 	{
 	public:
+		bool loop;
 		PartsManager* pMan;
 		String motionName;
 
-		StartMotion(String motionName);
+		StartMotion(String motionName, bool loop = false);
 
 		StartMotion* build(PartsManager* pMan)
 		{

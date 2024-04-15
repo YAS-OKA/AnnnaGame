@@ -48,6 +48,11 @@ void mot::MotionScript::Load(PartsManager* pMan,const String& motionName, const 
 			//lenは第3引数に入れる
 			token.insert(token.begin() + 2, len);
 		}
+		else if (token[0] == U"Pause")
+		{
+			//lenは第7引数に入れる
+			token.insert(token.begin() + 6, len);
+		}
 		else
 		{
 			//lenは第４引数に入れる
@@ -97,63 +102,126 @@ mot::PartsMotion::PartsMotion(Parts* target, double time)
 {
 }
 
-//mot::Rotate::Rotate(Parts* target, double angle, double time)
-//	:PartsMotion(target, time), ang(angle)
-//{
-//}
-//
-//void mot::Rotate::start()
-//{
-//	PartsMotion::start();
-//}
-//
-//void mot::Rotate::update(double dt)
-//{
-//	PartsMotion::update(dt);
-//
-//	target->setAngle(target->getAngle() + ang * dtPerTime(dt));
-//}
-
-mot::RotateTo::RotateTo(Parts* target, double angle, double time, bool clockwizeRotation, int32 rotation)
-	:PartsMotion(target, time), angle(angle),clockwizeRotation(clockwizeRotation),rotation(rotation)
+mot::Rotate::Rotate(Parts* target, double angle, double time)
+	:PartsMotion(target, time), ang(angle)
 {
+}
+
+void mot::Rotate::update(double dt)
+{
+	PartsMotion::update(dt);
+
+	target->setAngle(target->getAngle() + ang * dtPerTime(dt));
+}
+
+mot::RotateTo::RotateTo(Parts* target, double angle, double time, Optional<bool> clockwizeRotation, int32 rotation)
+	:PartsMotion(target, time), angle(angle), clockwizeRotation(clockwizeRotation), rotation(rotation)
+{
+	firstRotateDirectionIsDesignated = (bool)clockwizeRotation;//noneでなければtrue
+}
+//0~360
+double seikika(double theta) {
+	if (0 <= theta)return Fmod(theta, 360.0);//正規化
+	else return 360 + Fmod(theta, 360.0);
+}
+
+void mot::RotateTo::start()
+{
+	PartsMotion::start();
+
+	if (acts.empty())impl = acts.add<Rotate>(target, 0, time);
+
+	double delta = seikika(angle) - seikika(target->getAngle());
+
+	if (not clockwizeRotation)//回転が短い方向を求める
+	{
+		if (delta < 0)
+		{
+			if (abs(delta) < 180)
+			{
+				clockwizeRotation = false;//反時計回り
+			}
+			else
+			{
+				clockwizeRotation = true;//時計回り
+			}
+		}
+		else
+		{
+			if (abs(delta) < 180)
+			{
+				clockwizeRotation = true;//時計回り
+			}
+			else
+			{
+				clockwizeRotation = false;//反時計回り
+			}
+		}
+	}
+
+	if (*clockwizeRotation)
+	{
+		//時計回り
+		impl->ang = delta < 0 ? delta + 360 : delta;
+		impl->ang += 360 * rotation;
+	}
+	else
+	{
+		//反時計回り
+		impl->ang = delta > 0 ? delta - 360 : delta;
+		impl->ang -= 360 * rotation;
+	}
+
+	acts.start(true);
 }
 
 void mot::RotateTo::update(double dt)
 {
 	PartsMotion::update(dt);
 
-	if (timer >= time)target->setAngle(angle);
-	else {
-		target->setAngle(target->getAngle() + dt * (angle - target->getAngle()) / (time - timer));
-	}
+	acts.update(dt);
 }
-//
-//mot::Move::Move(Parts* target, const Vec2& move, double time)
-//	:PartsMotion(target,time),move(move)
-//{
-//}
-//
-//void mot::Move::update(double dt)
-//{
-//	PartsMotion::update(dt);
-//
-//	target->setPos(target->getPos() + move * dtPerTime(dt));
-//}
+
+void mot::RotateTo::reset()
+{
+	PartsMotion::reset();
+
+	if (not firstRotateDirectionIsDesignated)clockwizeRotation = none;
+}
+
+mot::Move::Move(Parts* target, double moveX, double moveY, double time)
+	:PartsMotion(target, time), move({ moveX,moveY })
+{
+}
+
+void mot::Move::update(double dt)
+{
+	PartsMotion::update(dt);
+
+	target->setPos(target->getPos() + move * dtPerTime(dt));
+}
 
 mot::MoveTo::MoveTo(Parts* target, double destX, double destY, double time)
-	:PartsMotion(target, time), dest({ destX,destY })
+	:PartsMotion(target, time),dest({ destX,destY })
 {
+}
+
+void mot::MoveTo::start()
+{
+	PartsMotion::start();
+
+	if (acts.empty())impl = acts.add<Move>(target, 0, 0, time);
+
+	impl->move = dest - target->getPos();
+
+	acts.start(true);
 }
 
 void mot::MoveTo::update(double dt)
 {
 	PartsMotion::update(dt);
 
-	if (timer >= time)
-		target->setPos(dest);
-	else 
-		target->setPos(target->getPos() + dt * (dest - target->getPos()) / (time - timer));
+	acts.update(dt);
 }
 
 mot::AddZ::AddZ(Parts* target, double z, double time)
@@ -190,8 +258,8 @@ void mot::AddScale::update(double dt)
 
 }
 
-mot::SetScale::SetScale(Parts* target, const Vec2& scale, double time)
-	:PartsMotion(target,time),scale(scale)
+mot::SetScale::SetScale(Parts* target, double sX, double sY, double time)
+	:PartsMotion(target,time),scale({sX,sY})
 {
 }
 
@@ -199,4 +267,55 @@ void mot::SetScale::update(double dt)
 {
 	PartsMotion::update(dt);
 
+}
+
+Vec2 mot::PauseTo::calDestination()const
+{
+	//目標から回転後の座標を引く
+	if (target->parent)
+	{
+		const auto& parentAspect = target->parent->transform->getAspect().xy();
+		const auto& d = dest * parentAspect;
+		return (d
+			.rotatedAt(d + (target->getRotatePos() * parentAspect).rotate(ang * 1_deg), (target->getAngle() - ang) * 1_deg)//目標座標を初期角度まで回転させる
+			.rotated(target->parent->transform->getDirection().xy().getAngle() - Vec2{ 1,0 }.getAngle())//親の回転を考慮
+			- target->getPos());//親や自分の回転をなくした場合のずれを返す
+	}
+	//たぶん親がいないなんてことはない(masterpartsに命令を出さない限り)
+	return dest;
+}
+
+mot::PauseTo::PauseTo(Parts* target, double destX, double destY, double sX, double sY, double angle, double time, Optional<bool> clockwizeRotation, int32 rotation)
+	:PartsMotion(target, time), ang(angle), clockwizeRotation(clockwizeRotation), rotation(rotation), dest({ destX,destY }), scale({ sX,sY }),parentDirectionInit(none)
+{
+}
+
+void mot::PauseTo::start()
+{
+	PartsMotion::start();
+
+	if (motions.empty())
+	{
+		rotateTo=motions.addParallel<RotateTo>(target, ang, time, clockwizeRotation, rotation);
+		motions.addParallel<SetScale>(target, scale.x, scale.y, time);
+		move = motions.addParallel<Move>(target, 0, 0, time);
+	}
+	move->move = calDestination();
+
+	moveInit = move->move;
+
+	if (target->parent)parentDirectionInit = target->parent->transform->getDirection().xy();
+
+	motions.start(true);
+}
+
+void mot::PauseTo::update(double dt)
+{
+	if (parentDirectionInit)
+	{
+		move->move = moveInit.rotated(target->parent->transform->getDirection().xy().getAngle() - parentDirectionInit->getAngle());
+	}
+
+	PartsMotion::update(dt);
+	motions.update(dt);
 }

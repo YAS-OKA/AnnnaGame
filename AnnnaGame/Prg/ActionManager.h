@@ -26,6 +26,8 @@ public:
 
 	void stop(StringView name);
 
+	void endAll();
+
 	void update(double dt);
 
 	Actions& get(StringView name);

@@ -54,6 +54,11 @@ namespace mot
 		}
 	}
 
+	void Parts::setPos(const Vec2& pos)
+	{
+		transform->setLocalXY(pos, true);
+	}
+
 	void Parts::setTexture(const PartsDrawing& drawing)
 	{
 		if (tex != nullptr)remove(tex);
@@ -146,7 +151,7 @@ namespace mot
 		}
 		else {
 			partsArray << parts;
-			parts->followDestiny(master);//masterが死んだら死ぬようにする
+			parts->followDestiny(master);//masterが死んだらパーツが死ぬようにする
 		}
 
 		return parts;
@@ -283,7 +288,6 @@ namespace mot
 			json[parts.name][U"pos"] = parts.pos;
 			json[parts.name][U"z"] = parts.z;
 			json[parts.name][U"scale"] = parts.scale;
-			json[parts.name][U"scalePos"] = parts.scalePos;
 			json[parts.name][U"angle"] = parts.angle;
 			json[parts.name][U"rotatePos"] = parts.rotatePos;
 			json[parts.name][U"color"] = parts.color;
@@ -337,7 +341,6 @@ namespace mot
 			}
 
 			createdParts->setPos(elms.value[U"pos"].get<Vec2>());
-			createdParts->setScalePos(elms.value[U"scalePos"].get<Vec2>());
 			createdParts->setScale(elms.value[U"scale"].get<Vec2>());
 			createdParts->setRotatePos(elms.value[U"rotatePos"].get<Vec2>());
 			//createdParts->pureRotate(elms.value[U"angle"].get<double>());
@@ -360,10 +363,6 @@ namespace mot
 	}
 }
 
-Vec2 draw_helper::CameraScaleOfParts::getScalePos() const
-{
-	return parts->getPos() + parts->getScalePos().rotate(parts->getAbsAngle() * 1_deg);
-}
 
 double draw_helper::CameraScaleOfParts::operator () () const
 {

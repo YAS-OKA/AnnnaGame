@@ -3,6 +3,11 @@
 
 using namespace state;
 
+bool state::Inform::contains(StringView name)
+{
+	return info.contains(name);
+}
+
 void Inform::set(StringView name, Info value)
 {
 	info.emplace(name, value);
@@ -10,5 +15,10 @@ void Inform::set(StringView name, Info value)
 
 Info Inform::get(StringView name, Info&& default_value)
 {
-	return info.contains(name) ? info[name] : std::forward<Info>(default_value);
+	return info.contains(name) ? std::forward<Info>(get(name)) : std::forward<Info>(default_value);
+}
+
+Info& Inform::get(StringView name)
+{
+	return info[name];
 }

@@ -117,6 +117,8 @@ namespace prg
 		Optional<double> constantSpeed;
 
 		Optional<double> limitingSpeed;
+		//getter
+		Vec3 vel;
 
 		Transform* transform;
 
@@ -202,9 +204,18 @@ namespace prg
 	{
 		return MulMove(transform, speed)
 			* MoveAct({ 0,0,1 }).activeIf<T1>(upCondition)
-			* MoveAct({ 0,0,-1 }).activeIf<T1>(downCondition)
-			* MoveAct({ -1,0,0 }).activeIf<T1>(leftCondition)
-			* MoveAct({ 1,0,0 }).activeIf<T1>(rightCondition);
+			* MoveAct({ 0,0,-1 }).activeIf<T2>(downCondition)
+			* MoveAct({ -1,0,0 }).activeIf<T3>(leftCondition)
+			* MoveAct({ 1,0,0 }).activeIf<T4>(rightCondition);
+	}
+
+	template<class T1, class T2, class T3, class T4>
+	ActCluster Look4D(Transform* transform, const T1& upCondition, const T2& downCondition, const T3& leftCondition, const T4& rightCondition)
+	{
+		return FuncAction([=] {transform->setDirection({ 0,0,1 }); }).startIf<T1>(upCondition)
+			* FuncAction([=] {transform->setDirection({ 0,0,-1 }); }).startIf<T2>(downCondition)
+			* FuncAction([=] {transform->setDirection({ -1,0,0 }); }).startIf<T3>(leftCondition)
+			* FuncAction([=] {transform->setDirection({ 1,0,0 }); }).startIf<T4>(rightCondition);
 	}
 }
 

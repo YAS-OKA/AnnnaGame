@@ -227,7 +227,6 @@ namespace mot
 			{U"Angle"},
 			{U"RP X",U"RP Y"},
 			{U"S X",U"S Y"},
-			{U"SP X",U"SP Y"},
 			{U"R",U"G",U"B",U"A"}
 		};
 		Array<Array<String>> params_key;
@@ -279,37 +278,6 @@ namespace mot
 					s->setRotatePos(((mouse->getCursorPos(&rp->getComponent<Field<Influence>>(U"dManagerInfluence")->value)).xy() + *offset - s->transform->getPos().xy()).rotate(-s->getAngle() * 1_deg));
 					setText(U"RP X", Format(s->getRotatePos().x));
 					setText(U"RP Y", Format(s->getRotatePos().y));
-				}
-			).endIf([] {return MouseL.up(); });
-		}
-
-		void createScalePoint() {
-			scalePoint = scene->birthObjectNonHitbox();
-			const double r=6;
-			auto tmp = scalePoint->addComponent<DrawCircle>(scene->getDrawManager(), r);
-			tmp->color = Palette::Green;
-			scalePoint->ACreate(U"move", true)
-				.add(
-				[sp = scalePoint, s = selecting](double dt) {
-					sp->transform->setPos(
-						{ s->getScalePos().rotated(s->getAbsAngle() * 1_deg) + s->getPos() + s->transform->getParent()->getPos().xy(),UiZvalue / 2 - 10 }
-					);
-				}
-			);
-			pointCollider << scalePoint->addComponent<Collider>(CollideBox::CollideFigure(Circle{ 0,0,r }));
-
-			std::shared_ptr<Vec2> offset{ new Vec2{0,0} };
-			scalePoint->ACreate(U"grab")
-				.add<prg::FuncAction>(
-				[=, sp = scalePoint]
-				{
-					*offset = sp->transform->getPos().xy() - (mouse->getCursorPos(&sp->getComponent<Field<Influence>>(U"dManagerInfluence")->value)).xy();
-				},
-				[=, sp = scalePoint, s = selecting](double dt)
-				{
-					s->setScalePos(((mouse->getCursorPos(&sp->getComponent<Field<Influence>>(U"dManagerInfluence")->value)).xy() + *offset - s->transform->getPos().xy()).rotate(-s->getAngle() * 1_deg));
-					setText(U"SP X", Format(s->getScalePos().x));
-					setText(U"SP Y", Format(s->getScalePos().y));
 				}
 			).endIf([] {return MouseL.up(); });
 		}
@@ -459,9 +427,6 @@ namespace mot
 
 				//rotatePointの生成
 				createRotatePoint();
-
-				//scalePointの生成
-				createScalePoint();
 			}
 		}
 
@@ -512,8 +477,6 @@ namespace mot
 			setText(U"X", Format(selecting->getPos().x));
 			setText(U"Y", Format(selecting->getPos().y));
 			setText(U"Z", Format(selecting->getZ()));
-			setText(U"SP X", Format(selecting->getScalePos().x));
-			setText(U"SP Y", Format(selecting->getScalePos().y));
 			setText(U"S X", Format(selecting->transform->scale.aspect.vec.x));
 			setText(U"S Y", Format(selecting->transform->scale.aspect.vec.y));
 			setText(U"RP X", Format(selecting->getRotatePos().x));
@@ -612,10 +575,7 @@ namespace mot
 			setText(U"X", Format(selecting->getPos().x));
 			setText(U"Y", Format(selecting->getPos().y));
 
-			selecting->setScalePos({ Parse<double>(params[U"SP X"]->getText()), Parse<double>(params[U"SP Y"]->getText()) });
 			selecting->setScale({ Parse<double>(params[U"S X"]->getText()),Parse<double>(params[U"S Y"]->getText()) });
-			setText(U"SP X", Format(selecting->getScalePos().x));
-			setText(U"SP Y", Format(selecting->getScalePos().y));
 			setText(U"RP X", Format(selecting->getRotatePos().x));
 			setText(U"RP Y", Format(selecting->getRotatePos().y));
 
@@ -698,8 +658,6 @@ namespace mot
 			decoder.add_event_cmd<KillParts, String, bool>(U"kill", killPartsEvent, pmanager);
 			decoder.add_event_cmd<KillParts, String>(U"kill", killPartsEvent, pmanager);
 			sets.motionScriptCmd(pmanager);
-			decoder.add<StartMotion, String>(U"start", pmanager);
-			decoder.add<LoadMotionScript, FilePath, String>(U"load", pmanager);
 			decoder.add<WriteMotionScript, FilePath, String>(U"write", pmanager);
 			decoder.add<WriteMotionScript, FilePath, String, Optional<String>>(U"write", pmanager);
 			decoder.add<WriteMotionScript, FilePath, String, Optional<String>, Optional<String>>(U"write", pmanager);
@@ -935,6 +893,7 @@ namespace mot
 					double dAngle = 0;
 					Vec2 dZoom{ 0,0 };
 					double speed = 100;
+					bool needToUpdate = false;
 					if (KeyShift.pressed())speed *= 2.5;
 					if (KeyA.pressed())moving += Vec2{ -1,0 };
 					if (KeyD.pressed())moving += Vec2{ 1,0 };
@@ -944,6 +903,7 @@ namespace mot
 					{
 						moving.setLength(speed);
 						selecting->setPos(selecting->getPos() + moving * dt);
+						needToUpdate = true;
 					}
 					if (KeyQ.pressed())dAngle -= 1;
 					if (KeyE.pressed())dAngle += 1;
@@ -956,8 +916,9 @@ namespace mot
 					{
 						dZoom.setLength(speed / 150);
 						selecting->setScale(selecting->getScale() + dZoom * dt);
+						needToUpdate = true;
 					}
-					dw->set();
+					if (needToUpdate)dw->set();
 				}
 			);
 
@@ -971,6 +932,14 @@ namespace mot
 		void update(double dt)override
 		{
 			Object::update(dt);
+
+			if ((KeyControl + KeyR).down())
+			{
+				c->decoder.input(U"load asset/motion/sara/motion.txt Stand")->decode()->execute();
+				c->decoder.input(U"load asset/motion/sara/motion.txt Attack")->decode()->execute();
+			
+				//c->decoder.input(U"load asset/motion/test/debug.txt tmp")->decode()->execute();
+			}
 		}
 
 		Array<PartsParams> createAllPartsParams()const

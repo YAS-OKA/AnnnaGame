@@ -6,7 +6,6 @@
     "pos": "(-141.42133, -141.42133)",
     "rotatePos": "(0, 0)",
     "scale": "(1, 1)",
-    "scalePos": "(0, 0)",
     "texture": "rect 100 100",
     "z": 100.0
   },
@@ -17,7 +16,6 @@
     "pos": "(0, 0)",
     "rotatePos": "(0, 0)",
     "scale": "(1, 1)",
-    "scalePos": "(0, 0)",
     "texture": "rect 100 100",
     "z": 100.0
   },
@@ -28,7 +26,6 @@
     "pos": "(0, 0)",
     "rotatePos": "(0, 0)",
     "scale": "(1, 1)",
-    "scalePos": "(0, 0)",
     "texture": "rect 0 0",
     "z": 100.0
   }

@@ -11,5 +11,11 @@ public:
 	{
 		value = init;
 	}
+
+	operator T()
+	{
+		return value;
+	}
+
 	T value;
 };

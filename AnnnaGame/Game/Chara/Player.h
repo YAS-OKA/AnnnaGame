@@ -17,5 +17,6 @@ public:
 	void update(double dt)override;
 
 	void behaviorSetting(state::Inform&& info);
-};
 
+	void setPlayerAnimator(state::Inform&& info);
+};

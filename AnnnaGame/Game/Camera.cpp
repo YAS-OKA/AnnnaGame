@@ -13,21 +13,6 @@ Camera::Camera(const BasicCamera3D& camera)
 	baseScreenSize = camera.getSceneSize();
 }
 
-//void Camera::setScale(const Vec2& s, const Vec2& pos)
-//{
-//	scale = s;
-//	scalePos = pos;
-//
-//	//camera.setSceneSize((baseScreenSize * s).asPoint());
-//
-//	auto fp = camera.getFocusPosition() - transform->getPos();
-//
-//	//これ正負が逆かもしれない　クオータニオンの回転が時計回りか反時計回りか
-//	auto t = Quaternion::RotationAxis(fp, pos.getAngle()) * camera.getUpDirection() * pos.length();
-//
-//	//auto moveVec = (fp + fp.length() / screenDistance * t);
-//}
-
 void Camera::start()
 {
 	Object::start();
@@ -140,6 +125,7 @@ void Camera::setFollowTarget(Object* target)
 {
 	followTarget = target;
 	transform->setParent(target->transform);
+	transform->parentRotationAffectable = false;
 }
 
 Point Camera::getSceneSize() const

@@ -25,7 +25,6 @@ namespace mot
 		String parent;
 		Vec2 pos;
 		Vec2 scale;
-		Vec2 scalePos;
 		double angle;
 		double z;
 		Vec2 rotatePos;
@@ -35,7 +34,7 @@ namespace mot
 
 		PartsParams(const PartsParams& other)
 		{
-			build(other.name, other.parent, other.pos, other.scale, other.scalePos, other.angle, other.z, other.rotatePos, other.color, other.path, other.drawing);
+			build(other.name, other.parent, other.pos, other.scale, other.angle, other.z, other.rotatePos, other.color, other.path, other.drawing);
 		}
 
 		PartsParams(
@@ -45,7 +44,6 @@ namespace mot
 			const String& _parent = U"",
 			const Vec2& _pos = { 0,0 },
 			const Vec2& _scale = { 1,1 },
-			const Vec2& _scalePos = { 0,0 },
 			double _angle = 0,
 			double _z = 100,
 			const Vec2& _rotatePos = { 0,0 },
@@ -55,7 +53,6 @@ namespace mot
 				_parent,
 				_pos,
 				_scale,
-				_scalePos,
 				_angle,
 				_z,
 				_rotatePos,
@@ -69,7 +66,6 @@ namespace mot
 			const String& _parent,
 			const Vec2& _pos,
 			const Vec2& _scale,
-			const Vec2& _scalePos,
 			double _angle,
 			double _z,
 			const Vec2& _rotatePos,
@@ -81,7 +77,6 @@ namespace mot
 			parent = _parent;
 			pos = _pos;
 			scale = _scale;
-			scalePos = _scalePos;
 			angle = _angle;
 			z = _z;
 			rotatePos = _rotatePos;
@@ -126,16 +121,14 @@ namespace mot
 		void setZ(double z)
 		{
 			//この値は子に影響しないようにする
-			transform->affectToChildren = false;
+			//transform->affectToChildren = false;
 			params.z = z;
-			transform->setPos({ transform->getPos().xy(),z });
-			transform->affectToChildren = true;
+			transform->pos.vec.z = z;
+			transform->calculate();
+			//transform->affectToChildren = true;
 		}
 
-		void setPos(const Vec2& pos)
-		{
-			transform->setLocalXY(pos);
-		}
+		void setPos(const Vec2& pos);
 
 		void setAbsPos(const Vec2& pos)
 		{
@@ -157,7 +150,7 @@ namespace mot
 		{
 			double ang = Math::Fmod(angle - getAngle(), 360);
 
-			auto rp = transform->getPos().xy() + getRotatePos().rotated(getAbsAngle()*1_deg);
+			auto rp = transform->pos.vec.xy() + (getRotatePos()).rotated(getAbsAngle() * 1_deg);
 
 			transform->rotateAt({ rp, 0}, {0,0,1}, ang * 1_deg);
 
@@ -183,20 +176,16 @@ namespace mot
 
 		void setScale(const Vec2& s)
 		{
+			if (params.scale == s)return;
+
 			transform->scale.setAspect({ s,1 }, 0, 0, getAngle() * 1_deg);
 
 			if (params.scale.x != 0 and params.scale.y != 0)
 			{
 				setRotatePos(params.rotatePos * s / params.scale);
-				setScalePos(params.scalePos * s / params.scale);
 			}
 
 			params.scale = s;
-		}
-
-		void setScalePos(const Vec2& pos)
-		{
-			params.scalePos = pos;
 		}
 
 		void setColor(const ColorF& color)
@@ -220,7 +209,10 @@ namespace mot
 
 		void build(const PartsParams& params);
 
-		String getParent()const { return transform->getParent()->owner->name; }
+		String getParent()const {
+			auto parent = transform->getParent();
+			return parent ? parent->owner->name : U"None Parent";
+		}
 
 		Vec2 getPos()const { return transform->getLocalPos().xy(); }
 
@@ -237,13 +229,14 @@ namespace mot
 			else return getAngle();
 		}
 
-		Vec2 getRotatePos()const { return params.rotatePos; }
+		Vec2 getRotatePos()const {
+
+			return params.rotatePos;
+		}
 
 		ColorF getColor()const { return tex->color; }
 
-		Vec2 getScalePos()const { return params.scalePos; }
-
-		Vec2 getScale()const { return transform->scale.aspect.vec.xy(); }
+		Vec2 getScale()const { return params.scale; }//transform->scale.aspect.vec.xy(); }
 		
 		void update(double dt)override;
 	};

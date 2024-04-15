@@ -19,6 +19,17 @@ void prg::Actions::clear()
 	update_list.clear();
 }
 
+void prg::Actions::swapOne(size_t index,IAction* act)
+{
+	delete update_list[index];
+	update_list[index] = act;
+}
+
+bool prg::Actions::empty() const
+{
+	return update_list.empty();
+}
+
 int32 Actions::getIndex(IAction* action)
 {
 	int32 count = 0;
@@ -61,6 +72,11 @@ Array<IAction*> Actions::getAction(const int32& index)
 	for (auto itr = update_list.begin() + s, en = update_list.begin() + e; itr != en; ++itr)
 		acts << (*itr);
 	return acts;
+}
+
+IAction* prg::Actions::getAction(const int32& index1, const int32& index2)
+{
+	return getAction(index1)[index2];
 }
 
 IAction* prg::Actions::operator[](const String& id)
@@ -201,6 +217,8 @@ void prg::Actions::_insert(int32 septIndex, IAction* action)
 #endif
 
 	update_list.insert(update_list.begin() + separate[septIndex], action);
+
+	action->setOwner(*this);
 
 	++notFinishedActNum;
 }

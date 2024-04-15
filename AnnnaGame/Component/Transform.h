@@ -79,10 +79,6 @@ private:
 	Vec3 measureDirVel;
 	Vector frameDir;
 
-	void calculate();
-
-	void affectChildren();
-
 	util::PCRelationship<Transform> relation;
 
 	Transform* m_parent;
@@ -93,6 +89,10 @@ public:
 	Direction direction;
 
 	Scale scale;
+
+	void calculate();
+
+	void affectChildren();
 
 	//親の影響に関する設定
 	bool followParent = true;//親の移動に追従
@@ -156,11 +156,11 @@ public:
 
 	void setXY(const Vec2& pos);
 
-	void setLocalXY(const Vec2& pos);
+	void setLocalXY(const Vec2& pos,bool gridScaling=false);
 
 	void setPosAndPrePos(const Vec3& pos);
-
-	void setLocalPos(const Vec3& pos);
+	//第2引数がtrueならスケーリングされた座標系で座標をセットする
+	void setLocalPos(const Vec3& pos, bool gridScaling = false);
 
 	void setLocalPosAndPrePos(const Vec3& pos);
 

@@ -1,14 +1,33 @@
 ﻿{
   "a": {
     "angle": 0.0,
-    "color": "(0, 1, 1, 1)",
+    "color": "(0.5, 0.5, 1, 1)",
     "parent": "master",
     "pos": "(0, 0)",
     "rotatePos": "(0, 0)",
     "scale": "(1, 1)",
-    "scalePos": "(0, 0)",
     "texture": "cir 20",
     "z": 0.0
+  },
+  "b": {
+    "angle": 0.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "a",
+    "pos": "(-100.00001, 0)",
+    "rotatePos": "(0, 0)",
+    "scale": "(1, 1)",
+    "texture": "rect 100 100",
+    "z": 100.0
+  },
+  "c": {
+    "angle": 0.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "b",
+    "pos": "(-250.00001, 0)",
+    "rotatePos": "(0, 0)",
+    "scale": "(1, 1)",
+    "texture": "rect 50 50",
+    "z": 100.0
   },
   "master": {
     "angle": 0.0,
@@ -17,7 +36,6 @@
     "pos": "(0, 0)",
     "rotatePos": "(0, 0)",
     "scale": "(1, 1)",
-    "scalePos": "(0, 0)",
     "texture": "rect 0 0",
     "z": 0.0
   }

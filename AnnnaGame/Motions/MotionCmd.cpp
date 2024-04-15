@@ -86,8 +86,8 @@ namespace mot
 
 		killedParts.emplace(parts);
 	}
-	StartMotion::StartMotion(String motionName)
-		:motionName(motionName)
+	StartMotion::StartMotion(String motionName,bool loop)
+		:motionName(motionName),loop(loop)
 	{
 	}
 	void StartMotion::start()
@@ -98,6 +98,7 @@ namespace mot
 			if (parts->actman(motionName))
 			{
 				flag = true;
+				parts->actman[motionName].loop = loop;
 				parts->actman.act(motionName);
 			}
 		}
@@ -144,8 +145,12 @@ namespace mot
 			if (parts->name == U"master")continue;//masterパーツは除外
 
 			res << U"JOINT {}"_fmt(parts->name);
-			res << U"SetAngle {}"_fmt(parts->getAngle());
-			res << U"SetPos {} {}"_fmt(parts->getPos().x, parts->getPos().y);
+			Vec2 pos = parts->getPos();
+			if (parts->parent)
+			{
+				pos.rotate(-(parts->parent->transform->getDirection().xy().getAngle() - Vec2{ 1,0 }.getAngle()));
+			}
+			res << U"Pause {} {} {} {} {}"_fmt(pos.x, pos.y, parts->getScale().x, parts->getScale().y, parts->getAngle());
 		}
 
 		return res;
@@ -161,10 +166,10 @@ namespace mot
 
 		{
 			auto reader = TextReader{ path };
-			if(not reader)Console<< U"モーションスクリプト読み込みに失敗\n\
-					指定されたパス:{}"_fmt(path);
 
-			text = reader.readAll().split_lines();
+			text = reader ? reader.readAll().split_lines() : Array<String>{};
+
+			if (text.isEmpty())text << U"";
 		}
 
 		for (size_t lineNumber = 0; lineNumber < text.size(); lineNumber++)

@@ -145,6 +145,8 @@ void Transform::Direction::rotate(const Quaternion& qua)
 	accum *= qua;
 	vector = q * vector;
 	vertical = q * vertical;
+	vector.normalize();
+	vertical.normalize();
 }
 ////あえて3次元のrotateは使わない
 //void Transform::Direction::rotateXY(double rad)
@@ -246,6 +248,7 @@ void Transform::setPosAndPrePos(const Vec3& p)
 void Transform::setPos(const Vec3& p)
 {
 	pos.vec = p;
+	
 	affectChildren();
 }
 
@@ -254,19 +257,28 @@ void Transform::setXY(const Vec2& p)
 	setPos({ p,getPos().z });
 }
 
-void Transform::setLocalXY(const Vec2& p)
+void Transform::setLocalXY(const Vec2& p,bool gridScaling)
 {
-	setLocalPos({ p,getLocalPos().z });
+	setLocalPos({ p,getLocalPos().z },gridScaling);
 }
 
-void Transform::setLocalPos(const Vec3& p)
+void Transform::setLocalPos(const Vec3& p, bool gridScaling)
 {
 	auto parent = getParent();
 	if (parent == nullptr) {
 		setPos(p);
 	}
 	else {
-		pos.vec = p + parent->getPos();
+		if (gridScaling)
+		{
+			const auto& s1 = parent->getAspect();
+			if (s1.x * s1.y * s1.z == 0)return;//0の成分あったら計算しない(本当は0の成分以外は計算すべき？)
+			pos.vec = p / s1 + parent->pos.vec;
+		}
+		else {
+			pos.vec = p + parent->pos.vec;
+		}
+
 		affectChildren();
 	}
 }
@@ -353,7 +365,7 @@ void Transform::moveBy(const Vec3& delta)
 Vec3 Transform::getAspect()const
 {
 	auto parent = getParent();
-	return parentScalingAffectable and parent != nullptr ? parent->getAspect()*scale.aspect.vec : scale.aspect.vec;
+	return parentScalingAffectable and parent ? parent->getAspect()*scale.aspect.vec : scale.aspect.vec;
 }
 
 std::pair<Vec3,Vec3> Transform::getScaleDir() const
@@ -486,12 +498,14 @@ void Transform::scaleAt(const Vec3& pos, double s)
 void Transform::calUpdate(double dt)
 {
 	if (dt == 0)return;
+	const auto& nowPos = getPos();
+	const auto& nowDir = getDirection();
 	//速度を求める
-	measureVel = (getPos() - framePos.vec) / dt;
-	measureDirVel = (getDirection() - frameDir.vec) / dt;
+	measureVel = (nowPos - framePos.vec) / dt;
+	measureDirVel = (nowDir - frameDir.vec) / dt;
 	//framePos,frameDirの更新
-	framePos.vec = getPos();
-	frameDir.vec = getDirection();
+	framePos.vec = nowPos;
+	frameDir.vec = nowDir;
 }
 
 Vec3 Transform::operator+(const Vec3& vec)

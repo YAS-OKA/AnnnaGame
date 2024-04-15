@@ -35,49 +35,61 @@ namespace mot
 		PartsMotion(Parts* target, double time = 0);
 	};
 
-	//class Rotate :public PartsMotion
-	//{
-	//public:
-	//	const double ang;
-
-	//	Rotate(Parts* target, double angle, double time = 0);
-
-	//	void start()override;
-
-	//	void update(double dt)override;
-	//};
-
-	class RotateTo :public PartsMotion
+	class Rotate :public PartsMotion
 	{
 	public:
-		const double angle;
+		double ang;
 
-		const int32 rotation;
-
-		const bool clockwizeRotation;
-
-		//clockwizeRotationは時計回りか反時計回りか。rotationは何回転するか。
-		RotateTo(Parts* target, double angle, double time = 0,bool clockwizeRotation = true, int32 rotation = 0);
+		Rotate(Parts* target, double angle, double time = 0);
 
 		void update(double dt)override;
 	};
 
-	/*class Move :public PartsMotion;
+	class RotateTo :public PartsMotion
 	{
-	publ ic:
-		Vec2 move;
+		bool firstRotateDirectionIsDesignated;
+	public:
+		double angle;
 
-		Move(Parts* target, const Vec2& move, double time = 0);
+		const int32 rotation;
+
+		Optional<bool> clockwizeRotation;
+
+		Borrow<Rotate> impl;
+
+		Actions acts;
+		//clockwizeRotationは時計回りか反時計回りか。rotationは何回転するか。
+		RotateTo(Parts* target, double angle, double time = 0,Optional<bool> clockwizeRotation = none, int32 rotation = 0);
+
+		void start()override;
 
 		void update(double dt)override;
-	};*/
+
+		void reset()override;
+	};
+
+	class Move :public PartsMotion
+	{
+	public:
+		Vec2 move;
+
+		Move(Parts* target, double moveX, double moveY, double time = 0);
+
+		void update(double dt)override;
+	};
 
 	class MoveTo :public PartsMotion
 	{
 	public:
 		Vec2 dest;
 
+		Borrow<Move> impl;
+
+		Actions acts;
+
 		MoveTo(Parts* target, double destX,double destY, double time = 0);
+
+		void start()override;
 
 		void update(double dt)override;
 	};
@@ -117,7 +129,32 @@ namespace mot
 	public:
 		Vec2 scale;
 
-		SetScale(Parts* target, const Vec2& scale, double time = 0);
+		SetScale(Parts* target, double sX, double sY, double time = 0);
+
+		void update(double dt)override;
+	};
+
+	class PauseTo :public PartsMotion
+	{
+	private:
+		Optional<Vec2> parentDirectionInit;
+		Vec2 directionInit;
+		Vec2 moveInit;
+		Borrow<Move> move;
+		Borrow<RotateTo> rotateTo;
+		Vec2 calDestination()const;
+	public:
+		Vec2 scale;
+		Vec2 dest;
+		double ang;
+		const int32 rotation;
+		Optional<bool> clockwizeRotation;
+
+		Actions motions;
+
+		PauseTo(Parts* target, double destX, double destY, double sX, double sY, double angle, double time = 0, Optional<bool> clockwizeRotation = none, int32 rotation = 0);
+
+		void start()override;
 
 		void update(double dt)override;
 	};
