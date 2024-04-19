@@ -23,6 +23,8 @@ namespace state
 	class Info {
 		std::shared_ptr<IV> v;
 	public:
+		bool valid = true;
+
 		Info() {};
 
 		template<class V>
@@ -73,10 +75,23 @@ namespace state
 		}
 
 		template<class V>
-		operator V()
+		operator V&()
 		{
-			return *dynamic_cast<Value<V>*>(v.get());
+			return *static_cast<Value<V>*>(v.get());
 		};
+
+		template<class V>
+		Info& setValue(const V& v)
+		{
+			if (not this->v)
+			{
+				this->v = std::shared_ptr<IV>(new Value<V>(v));
+			}
+			else {
+				static_cast<Value<V>*>(this->v.get())->v = v;
+			}
+			return *this;
+		}
 	};
 
 	class Inform

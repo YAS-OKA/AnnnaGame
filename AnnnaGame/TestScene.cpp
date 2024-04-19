@@ -8,7 +8,8 @@
 #include"Component/CameraAffect/Convert2DTransformComponent.h"
 #include"Motions/MotionCreator.h"
 #include"Motions/MotionEditor.h"
-#include"Tools/StateScript.h"
+#include"Game/Objects/Card.h"
+#include"Game/Chara/Player.h"
 
 Actions* ac;
 Object* obj;
@@ -22,22 +23,27 @@ void TestScene::start()
 
 	drawManager.setting(camera);
 
-	obj = birthObjectNonHitbox();
+	//obj = birthObjectNonHitbox();
 
-	Actions attack;
+	//Actions attack;
 
-	attack.loop = true;
+	//attack.loop = true;
 
-	Actions move;
-	move.setEndCondition(ConditionArray());
-	attack += std::move(move.endIf(KeyA));
-	attack += MyPrint(U"attack!", 1);
+	//Actions move;
+	//move.setEndCondition(ConditionArray());
+	//attack += std::move(move.endIf(KeyA));
+	//attack += MyPrint(U"attack!", 1);
 
-	obj->actman.create(U"a", std::move(attack), true);
+	//obj->actman.create(U"a", std::move(attack), true);
+
+	auto player = birthObject<Object>(Box(3, 5, 3), { 0,0,0 });
+
+	auto card= birthObjectNonHitbox();
+	card->addComponent<CardComponent>(U"カード裏.png", player, [] {return 0.4; });
+	card->transform->setPos({ 100,100,0 });
 }
 
 void TestScene::update(double dt)
 {
 	Scene::update(dt);
-	
 }

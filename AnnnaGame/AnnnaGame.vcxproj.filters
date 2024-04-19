@@ -258,9 +258,6 @@
     <ClCompile Include="Game\StateMachine\StateProvider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Tools\StateScript.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Util\Util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -268,6 +265,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Game\Objects\Card.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Computer\EnemyAI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1082,9 +1082,6 @@
     <ClInclude Include="Game\StateMachine\Inform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Tools\StateScript.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Util\Util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1092,6 +1089,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Game\Objects\Card.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Computer\EnemyAI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

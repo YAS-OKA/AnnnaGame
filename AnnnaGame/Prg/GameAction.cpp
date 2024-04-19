@@ -94,7 +94,7 @@ namespace prg
 	}
 
 	MoveAct::MoveAct(const Vec3& initVel, const Optional<double>& t)
-		:initVel(initVel)
+		:initVel(initVel),IAction(t)
 	{
 	}
 

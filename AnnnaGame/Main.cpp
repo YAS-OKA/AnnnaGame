@@ -18,6 +18,12 @@ void Main()
 	{
 		ClearPrint();
 
+		// 1 秒間に何回メインループが実行されているかを取得する
+		int32 fps = Profiler::FPS();
+
+		// 1 秒間に何回メインループが実行されているかを、ウィンドウタイトルに表示する
+		Window::SetTitle(fps);
+		
 		manager.update(Scene::DeltaTime());
 	}
 }

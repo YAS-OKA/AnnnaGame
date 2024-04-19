@@ -1,5 +1,6 @@
 ﻿#include "../../stdafx.h"
 #include "Character.h"
+#include"../Skill/Skills.h"
 #include"../Scenes.h"
 #include"../../Util/DataSaver.h"
 
@@ -52,6 +53,26 @@ void Character::update(double dt)
 {
 	Object::update(dt);
 	Print << name<<U"sHp:" << param.hp;
+}
+
+Field<HashTable<String, skill::Skill*>>* Character::getSkills()
+{
+	auto skills = getComponent<Field<HashTable<String, skill::Skill*>>>(U"Skills");
+
+	if (not skills)skills = addComponentNamed<Field<HashTable<String, skill::Skill*>>>(U"Skills");
+
+	return skills;
+}
+
+skill::Skill* Character::setSkill(skill::Skill* skill, StringView name)
+{
+	auto skills = getSkills();
+
+	skills->value.emplace(name, skill);
+
+	ACreate(name) += FuncAction([=] { skill->act(); });//スキル発動
+
+	return skill;
 }
 
 

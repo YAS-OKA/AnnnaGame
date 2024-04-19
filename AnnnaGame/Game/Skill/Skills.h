@@ -9,6 +9,8 @@ class Character;
 
 namespace my { class Scene; }
 
+namespace prg { class MoveAct; }
+
 using namespace sys;
 
 namespace skill {
@@ -212,6 +214,8 @@ namespace skill {
 		void build();
 
 		void act();
+
+		void end();
 	};
 }
 
@@ -245,9 +249,13 @@ namespace skill
 
 		Formula<Knockback> power;
 
+		Knockback(Skill* s, double time, Formula<Knockback, Vec3> dir, Formula<Knockback>power);
 	protected:
+		Actions action;
+
 		void start()override;
 
+		void update(double dt)override;
 	};
 	//継続ダメージ
 	struct DotDamage :ParamMod

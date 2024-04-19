@@ -45,10 +45,42 @@ void Damage::start()
 	if (params)params->hp -= CalFormula(damage, this);
 }
 
-//相手にノックバックの速度を与える
+skill::Knockback::Knockback(Skill* s, double time, Formula<Knockback, Vec3> dir, Formula<Knockback>power)
+	:ISkillEffect(s, time), dir(dir), power(power)
+{
+}
+
 void Knockback::start()
 {
 	ISkillEffect::start();
+
+	const auto& _dir = CalFormula(dir, this);
+	const auto& _power = CalFormula(power, this);
+
+	auto& tmp = action.add<MoveAct>(_dir * _power, time);
+	tmp.transform = _target->transform;
+	tmp.acc = -_dir * _power / time;
+
+	auto param = _target->getComponent<Field<HashTable<String, state::Info>>>(U"StateMachineParam");
+	auto animatorParam = _target->getComponent<Field<HashTable<String, bool>>>(U"AnimatorParam");
+	//knockbackアニメーションを開始&操作不能
+	action |= FuncAction(
+		[=] {
+			if (param) param->value[U"unOperatable"] = true;
+			if (animatorParam)animatorParam->value[U"knockback"] = true;
+		},
+		[=] {
+			if (param) param->value[U"unOperatable"] = false;
+			if (animatorParam) animatorParam->value[U"knockback"] = false;
+		},time);
+
+	action.start(true);
+}
+
+void skill::Knockback::update(double dt)
+{
+	ISkillEffect::update(dt);
+	action.update(dt);
 }
 
 //継続ダメージ
@@ -154,4 +186,9 @@ void Skill::act()
 {
 	build();
 	actman.act(name);
+}
+
+void skill::Skill::end()
+{
+	actman.endAll();
 }

@@ -20,5 +20,6 @@ Info Inform::get(StringView name, Info&& default_value)
 
 Info& Inform::get(StringView name)
 {
+	if (not info.contains(name))info[name].valid = false;
 	return info[name];
 }

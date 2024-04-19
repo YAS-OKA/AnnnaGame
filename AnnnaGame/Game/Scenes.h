@@ -106,7 +106,7 @@ namespace my
 			return entityManager.findOne<T>(name);
 		}
 		template<class T>
-		Array<T>* find(Optional<String> name=none)
+		Array<T*> find(Optional<String> name=none)
 		{
 			return entityManager.find<T>(name);
 		}

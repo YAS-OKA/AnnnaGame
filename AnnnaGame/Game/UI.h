@@ -10,7 +10,7 @@ namespace my {
 
 namespace ui
 {
-	class Card :public Object
+	/*class Card :public Object
 	{
 	public:
 		Object* cards[4];
@@ -20,6 +20,34 @@ namespace ui
 		~Card();
 
 		virtual void start()override;
+	};*/
+
+	class ProgressBar :public Object
+	{
+		double m_rate = 0;
+		double m_w=0;
+		std::variant<DrawRectF*, Draw2D<RoundRect>*> rect;
+		IDraw2D* back;
+	public:
+		Array<std::pair<double, ColorF>> m_barColors = {
+			{ 1.0, ColorF(0.1, 0.8, 0.2) }
+		};
+
+		ProgressBar() = default;
+
+		void setting(const Vec3& pos, double w, double h, double round = 0.0);
+
+		void setting(const Vec3& pos, double w, double h, const ColorF& backgroundColor, const ColorF& barColor, double round = 0.0);
+
+		void setting(const Vec3& pos, double w, double h, const ColorF& backgroundColor, const Array<std::pair<double, ColorF>>& barColors, double round = 0.0);
+
+		double rate(double r);
+
+		double rate()const;
+
+		bool visible(bool visible);
+
+		bool visible()const;
 	};
 
 	template <class Draw>

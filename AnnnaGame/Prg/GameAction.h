@@ -217,6 +217,24 @@ namespace prg
 			* FuncAction([=] {transform->setDirection({ -1,0,0 }); }).startIf<T3>(leftCondition)
 			* FuncAction([=] {transform->setDirection({ 1,0,0 }); }).startIf<T4>(rightCondition);
 	}
+	//便利?
+	namespace use {
+		template<class T1, class T2, class T3, class T4>
+		ActCluster Move4D(Transform* transform, double speed, const T1& upCondition, const T2& downCondition, const T3& leftCondition, const T4& rightCondition)
+		{
+			return prg::Move4D(transform,
+						speed,
+						upCondition,
+						downCondition,
+						leftCondition,
+						rightCondition).startIf([] {return true; })
+				* Look4D(transform,
+						upCondition,
+						downCondition,
+						leftCondition,
+						rightCondition).startIf([] {return true; });
+		}
+	}
 }
 
 //アクトクラスターを作る

@@ -34,7 +34,12 @@ void GameMaster::start()
 	p_impl->master = this;
 }
 
+bool push = false;
+
 void GameMaster::update(double dt)
 {
-	p_impl->update(dt);
+#if _DEBUG||1
+	if (Key0.down())push = true;
+#endif
+	if(push)p_impl->update(dt);
 }

@@ -71,6 +71,11 @@ void ActionManager::endAll()
 	for (auto& a : actions)if (a.second->isActive())a.second->end();
 }
 
+void ActionManager::end(StringView name)
+{
+	if (actions.contains(name) and actions[name]->isActive())actions[name]->end();
+}
+
 void ActionManager::update(double dt)
 {
 	for (auto& [key, act] : actions) {
@@ -79,11 +84,13 @@ void ActionManager::update(double dt)
 			if (act->startCondition.commonCheck())act->start();
 			else act->startCondition.countFrame();//カウント
 		}
-
-		if (act->isActive()) act->update(dt);
-
-		if (act->isEnded())act->reset();//終了したアクションがいればリセットをかける
 	}
+
+	for (auto& [key, act] : actions) { if (act->isActive()) act->update(dt); }
+
+	//終了したアクションがいればリセットをかける
+	for (auto& [key, act] : actions) { if (act->isEnded())act->reset(); }
+
 	//一度きりのアクションが終了したら、名前をこのリストに入れる。
 	Array<String> eraseList{};
 	for (auto& [key, act] : actions)

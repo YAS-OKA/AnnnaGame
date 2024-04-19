@@ -13,11 +13,22 @@
 #include"../StateMachine/Inform.h"
 #include"../../Motions/MotionCmd.h"
 #include"../../Util/CmdDecoder.h"
+#include"../Objects/Card.h"
+#include"../Computer/EnemyAI.h"
+#include"../Chara/Enemy.h"
+
+GameScene::~GameScene()
+{
+	skill::SkillProvider::Destroy();
+
+	EnemyAIProvider::Destroy();
+}
 
 void GameScene::start()
 {
 	Scene::start();
 	skill::SkillProvider::Init(this);
+	EnemyAIProvider::Init();
 	TextureAsset::Register(U"uv", U"example/texture/uv.png");
 
 	auto ground = birthObject<Object>(Box{ 500,0.5,500 }, { 0,0,0 });
@@ -29,6 +40,8 @@ void GameScene::start()
 	auto player = birthObject<Player>(Box(3, 5, 3),{0,0,0});
 	//*2はデバッグ用　
 	player->transform->setY(2.5 * 2);
+
+	player->getComponent<Collider>()->setCategory(ColliderCategory::hero);
 
 	auto h = player->getComponent<Draw3D>(U"hitbox");
 
@@ -67,19 +80,26 @@ void GameScene::start()
 	decoder->input(U"load asset/motion/sara/motion.txt Jump")->decode()->execute();
 	decoder->input(U"load asset/motion/sara/motion.txt Attack")->decode()->execute();
 	decoder->input(U"load asset/motion/sara/motion.txt Run")->decode()->execute();
+	decoder->input(U"load asset/motion/sara/motion.txt Knockback")->decode()->execute();
 
 	info.set(U"MotionCmdDecoder", state::Info(decoder));//デコーダーを渡す
 	info.set(U"StandMotionCmd", state::Info(U"start Stand"));
 	info.set(U"JumpMotionCmd", state::Info(U"start Jump"));
 	info.set(U"AttackMotionCmd", state::Info(U"start Attack"));
 	info.set(U"RunMotionCmd", state::Info(U"start Run true"));
+	info.set(U"KnockbackMotionCmd", state::Info(U"start Knockback"));
+
 	info.set(U"parts", state::Info(parts));
 
-	player->setPlayerAnimator(std::move(info));
+	player::SetPlayerAnimator(player, std::move(info));
 
-	player->behaviorSetting(state::Inform());
+	info = state::Inform();
 
-	auto enemy = birthObject<Character>(Box(3, 5, 3), {0,0,0});
+	player->setAttackSkill(0, U"旅人/たたく");
+
+	player->behaviorSetting(std::move(info));
+
+	auto enemy = birthObject<Enemy>(Box(3, 5, 3), {0,0,0});
 
 	enemy->transform->setPos({ 8,3,0 });
 
@@ -89,16 +109,53 @@ void GameScene::start()
 
 	enemy->param.LoadFile(U"enemys.txt", U"KirikabuBake");
 
-	auto eparts = partsLoader->create(U"asset/motion/circle.json");
+	auto eparts = std::shared_ptr<PartsManager>(partsLoader->create(U"asset/motion/sara/model1.json"));
 
-	eparts->master->transform->scale.setAspect({ 0.6,0.6,1 });
+	eparts->master->transform->scale.setAspect({ 0.4,0.4,1 });
 
 	enemy->addComponent<Convert2DTransformComponent>(eparts->transform, getDrawManager(), ProjectionType::Parse);
 
 	enemy->addComponent<Convert2DScaleComponent>(eparts->transform, camera->distance(enemy->transform->getPos()), getDrawManager());
 
-	//カードUI
-	auto ui = birthObjectNonHitbox<ui::Card>();
+	enemy->addComponent<PartsMirrored>(eparts.get());
+
+	decoder = std::make_shared<CmdDecoder>();
+
+	DecoderSet(decoder.get()).motionScriptCmd(eparts.get());
+
+	decoder->input(U"load asset/motion/sara/motion.txt Stand")->decode()->execute();//モーションをセット
+	decoder->input(U"load asset/motion/sara/motion.txt Jump")->decode()->execute();
+	decoder->input(U"load asset/motion/sara/motion.txt Attack")->decode()->execute();
+	decoder->input(U"load asset/motion/sara/motion.txt Run")->decode()->execute();
+	decoder->input(U"load asset/motion/sara/motion.txt Knockback")->decode()->execute();
+
+	info = state::Inform();
+
+	info.set(U"MotionCmdDecoder", state::Info(decoder));//デコーダーを渡す
+	info.set(U"StandMotionCmd", state::Info(U"start Stand"));
+	info.set(U"JumpMotionCmd", state::Info(U"start Jump"));
+	info.set(U"AttackMotionCmd", state::Info(U"start Attack"));
+	info.set(U"RunMotionCmd", state::Info(U"start Run true"));
+	info.set(U"KnockbackMotionCmd", state::Info(U"start Knockback"));
+	info.set(U"parts", state::Info(eparts));
+
+	player::SetPlayerAnimator(enemy, std::move(info));
+
+	info = state::Inform();
+
+	auto s = skill::SkillProvider::Get(U"Tmp");
+	s->addInfo<skill::Chara>(U"chara", enemy);
+	s->addInfo<skill::InfoV<Vec3>>(U"dir", enemy->transform->getDirection());
+	enemy->setSkill(s, U"Attack");
+
+	EnemyAIProvider::Set(U"Sample", enemy, std::move(info));
+	//カード
+	auto card = birthObjectNonHitbox();
+	card->addComponent<CardComponent>(U"カード裏.png", player,
+		[gage = player->getComponent<Field<util::StopMax>>(U"A0Gage")] {
+			return gage->value.value / gage->value.max;
+		});
+	card->transform->setPos({ 1000,30,0 });
 
 	player->name = U"Player";
 	enemy->name = U"Enemy";

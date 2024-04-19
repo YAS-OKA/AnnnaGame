@@ -129,6 +129,7 @@
     <ClCompile Include="Game\Chara\Character.cpp" />
     <ClCompile Include="Game\Chara\Enemy.cpp" />
     <ClCompile Include="Game\Chara\Player.cpp" />
+    <ClCompile Include="Game\Computer\EnemyAI.cpp" />
     <ClCompile Include="Game\GameSystem\GameSystem.cpp" />
     <ClCompile Include="Game\Skill\Provider.cpp" />
     <ClCompile Include="Game\Skill\Skills.cpp" />
@@ -157,7 +158,6 @@
     </ClCompile>
     <ClCompile Include="TestScene.cpp" />
     <ClCompile Include="Tools\ObjScript.cpp" />
-    <ClCompile Include="Tools\StateScript.cpp" />
     <ClCompile Include="Util\BorrowImplement\Base.cpp" />
     <ClCompile Include="Util\CmdDecoder.cpp" />
     <ClCompile Include="Util\DataSaver.cpp" />
@@ -383,6 +383,7 @@
     <ClInclude Include="Game\Chara\Character.h" />
     <ClInclude Include="Game\Chara\Enemy.h" />
     <ClInclude Include="Game\Chara\Player.h" />
+    <ClInclude Include="Game\Computer\EnemyAI.h" />
     <ClInclude Include="Game\GameSystem\GameSystem.h" />
     <ClInclude Include="Game\GameSystem\Setting.h" />
     <ClInclude Include="Game\Skill\Provider.h" />
@@ -411,7 +412,6 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TestScene.h" />
     <ClInclude Include="Tools\ObjScript.h" />
-    <ClInclude Include="Tools\StateScript.h" />
     <ClInclude Include="Util\Borrow.h" />
     <ClInclude Include="Util\BorrowImplement\Base.h" />
     <ClInclude Include="Util\BorrowImplement\Borrowable.hpp" />

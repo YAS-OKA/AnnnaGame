@@ -5,38 +5,100 @@
 
 namespace ui
 {
-	Card::~Card()
+	//Card::~Card()
+	//{
+	//	for (auto& card : cards)card->die();
+	//}
+
+	//void Card::start()
+	//{
+	//	Object::start();
+
+	//	for (auto& card : cards)card = scene->birthObjectNonHitbox();
+
+	//	Rect rect{ 0,0,90,130 };
+	//	//ドローマネージャー
+	//	auto dm = scene->getDrawManager();
+
+	//	int32 h, w;
+	//	h = 145;
+	//	w = 100;
+	//	Vec2 pos4[4] = { {0,h},{0,-h},{w,0},{-w,0} };
+
+	//	for (int32 i = 0; i < sizeof(cards) / sizeof(Object*); ++i)
+	//	{
+	//		auto& card = cards[i];
+	//		card->transform->setParent(transform);
+	//		card->transform->setLocalPos({ pos4[i], 0 });
+	//		auto tex = card->addComponent<DrawTexture>(dm, assets[i]);
+	//		tex->aspect.setScale(0.4);
+	//	}
+
+	//	transform->scale.setScale(0.6);
+
+	//	transform->setPos({ Scene::Width() - 200, 500 ,0 });
+	//}
+
+	void ProgressBar::setting(const Vec3& pos, double w, double h, double round)
 	{
-		for (auto& card : cards)card->die();
+		setting(pos, w, h, ColorF(0.25), { { 1.0, ColorF(0.1, 0.8, 0.2) } }, round);
 	}
 
-	void Card::start()
+	void ProgressBar::setting(const Vec3& pos, double w, double h, const ColorF& backgroundColor, const ColorF& barColor, double round)
 	{
-		Object::start();
+		setting(pos, w, h, backgroundColor, { { 1.0, barColor } }, round);
+	}
 
-		for (auto& card : cards)card = scene->birthObjectNonHitbox();
-
-		Rect rect{ 0,0,90,130 };
-		//ドローマネージャー
+	void ProgressBar::setting(const Vec3& pos, double w, double h, const ColorF& backgroundColor, const Array<std::pair<double, ColorF>>& barColors, double round)
+	{
+		m_barColors = barColors;
+		m_barColors.sort_by([](const auto& a, const auto& b) { return a.first > b.first; });
+		transform->setPos(pos);
 		auto dm = scene->getDrawManager();
-
-		int32 h, w;
-		h = 145;
-		w = 100;
-		Vec2 pos4[4] = { {0,h},{0,-h},{w,0},{-w,0} };
-
-		for (int32 i = 0; i < sizeof(cards) / sizeof(Object*); ++i)
+		if (round != 0)
 		{
-			auto& card = cards[i];
-			card->transform->setParent(transform);
-			card->transform->setLocalPos({ pos4[i], 0 });
-			auto tex = card->addComponent<DrawTexture>(dm, assets[i]);
-			tex->aspect.setScale(0.4);
+			back = addComponentNamed<Draw2D<RoundRect>>(U"back", dm, 0.0, 0.0, w, h, round);
+			rect = addComponentNamed<Draw2D<RoundRect>>(U"gage", dm, 0.0, 0.0, 0.0, h, round);
 		}
+		else
+		{
+			back = addComponentNamed<DrawRectF>(U"back", dm, w, h);
+			rect = addComponentNamed<DrawRectF>(U"gage", dm, 0.0, h);
+		}
+		m_w = w;
+		//backより前に描く
+		std::visit([](auto& x) { x->relative.z -= 0.001;}, rect);
+		
+		back->color = backgroundColor;
+	}
 
-		transform->scale.setScale(0.6);
+	double ProgressBar::rate(double r)
+	{
+		m_rate = Clamp(r, 0.0, 1.0);
+		std::visit([&](auto& x) {
+			x->drawing.w = m_w * m_rate;
+			}, rect);//長さを設定
 
-		transform->setPos({ Scene::Width() - 200, 500 ,0 });
+		return rate();
+	}
+
+	double ProgressBar::rate()const
+	{
+		return m_rate;
+	}
+
+	bool ProgressBar::visible(bool vis)
+	{
+		back->visible = vis;
+
+		std::visit([&](auto& x)->void {x->visible = vis; }, rect);
+
+		return visible();
+	}
+
+	bool ProgressBar::visible()const
+	{
+		return back->visible and std::visit([](auto& x)->bool {return x->visible; }, rect);
 	}
 
 	/*TextBox::~TextBox()
@@ -577,4 +639,5 @@ namespace ui
 		button->box->setting(text, assetName, pos, fontColor, boxColor);
 		return button;
 	}
+	
 }

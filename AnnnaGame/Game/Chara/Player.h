@@ -10,13 +10,16 @@ enum class SpotedSkill
 class Player:public Character
 {
 public:
-	SpotedSkill skillState{ SpotedSkill::neutral };
-
 	void start()override;
 
 	void update(double dt)override;
 
 	void behaviorSetting(state::Inform&& info);
 
-	void setPlayerAnimator(state::Inform&& info);
+	void setAttackSkill(size_t cardsNum,StringView skillName);
 };
+
+namespace player
+{
+	void SetPlayerAnimator(Object* obj, state::Inform&& info);
+}

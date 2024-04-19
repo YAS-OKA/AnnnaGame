@@ -228,6 +228,7 @@ namespace mot
 	void PartsManager::update(double dt)
 	{
 		dm->drawing.update();//drawManagerをアプデ
+		dm->drawing.scalePos = transform->getPos().xy() - util::sc();//反転の中心を更新
 		Object::update(dt);
 	}
 }

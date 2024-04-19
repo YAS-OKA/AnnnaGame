@@ -3,5 +3,6 @@
 
 class Enemy :public Character
 {
-
+public:
+	using Character::Character;
 };

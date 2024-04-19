@@ -28,6 +28,8 @@ public:
 
 	void endAll();
 
+	void end(StringView name);
+
 	void update(double dt);
 
 	Actions& get(StringView name);

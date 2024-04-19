@@ -36,6 +36,11 @@ struct CharacterParams
 	void LoadFile(const String& path, const String& name);
 };
 
+namespace skill
+{
+	class Skill;
+}
+
 class Character :public Object
 {
 public:
@@ -44,4 +49,8 @@ public:
 	virtual void start();
 
 	virtual void update(double dt)override;
+
+	Field<HashTable<String, skill::Skill*>>* getSkills();
+
+	skill::Skill* setSkill(skill::Skill* skill, StringView name);
 };

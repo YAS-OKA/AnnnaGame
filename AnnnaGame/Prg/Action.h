@@ -25,7 +25,6 @@ namespace prg
 		{
 			self.editingCondition = &self.startCondition;
 			self.editingCondition->set<C>(std::forward<Args>(args)...);
-
 			return std::forward<Self>(self);
 		}
 		template<class C = FuncCondition, class Self, class... Args>
@@ -64,6 +63,36 @@ namespace prg
 			if (self.editingCondition)self.editingCondition->add<C>(std::forward<Args>(args)...)->Not();
 			return std::forward<Self>(self);
 		}
+		template<class C = FuncCondition, class Self, class... Args>
+		auto andStartIf(this Self&& self, Args&& ...args) -> decltype(self)
+		{
+			self.editingCondition = &self.startCondition;
+			self.editingCondition->add<C>(std::forward<Args>(args)...);
+
+			return std::forward<Self>(self);
+		}
+		template<class C = FuncCondition, class Self, class... Args>
+		auto andStartIfNot(this Self&& self, Args&& ...args) -> decltype(self)
+		{
+			self.editingCondition = &self.startCondition;
+			self.editingCondition->add<C>(std::forward<Args>(args)...)->Not();
+			return std::forward<Self>(self);
+		}
+		template<class C = FuncCondition, class Self, class... Args>
+		auto andEndIf(this Self&& self, Args&& ...args) -> decltype(self)
+		{
+			self.editingCondition = &self.endCondition;
+			self.editingCondition->add<C>(std::forward<Args>(args)...);
+
+			return std::forward<Self>(self);
+		}
+		template<class C = FuncCondition, class Self, class... Args>
+		auto andEndIfNot(this Self&& self, Args&& ...args) -> decltype(self)
+		{
+			self.editingCondition = &self.endCondition;
+			self.editingCondition->add<C>(std::forward<Args>(args)...)->Not();
+			return std::forward<Self>(self);
+		}
 
 		//他のアクションと開始終了を合わせる
 		template<class Self>
@@ -94,6 +123,25 @@ namespace prg
 			self.startIfNot<C>(args...);
 			self.endIf<C>(std::forward<Args>(args)...);
 			self.editingCondition = tmp;//最初の状態に戻す
+			return std::forward<Self>(self);
+		}
+
+		template<class C = FuncCondition, class Self, class... Args >
+		auto andActiveIf(this Self&& self, Args&& ...args) -> decltype(self)
+		{
+			auto tmp = self.editingCondition;
+			self.andStartIf<C>(args...);
+			self.andEndIfNot<C>(std::forward<Args>(args)...);
+			self.editingCondition = tmp;
+			return std::forward<Self>(self);
+		}
+		template<class C = FuncCondition, class Self, class... Args>
+		auto andActiveIfNot(this Self&& self, Args&& ...args) -> decltype(self)
+		{
+			auto tmp = self.editingCondition;
+			self.andStartIfNot<C>(args...);
+			self.andEndIf<C>(std::forward<Args>(args)...);
+			self.editingCondition = tmp;
 			return std::forward<Self>(self);
 		}
 
