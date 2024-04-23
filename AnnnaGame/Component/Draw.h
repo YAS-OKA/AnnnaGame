@@ -44,9 +44,13 @@ namespace draw_helper {
 	public:
 		double layer = 0;
 
+		double m_depth = 0;
+
 		IDraw2D* owner;
 
 		DrawShallow(IDraw2D* owner);
+
+		virtual void cal_depth();
 
 		virtual double getDepth()const;
 
@@ -118,7 +122,9 @@ struct Influence
 
 class IDrawing :public Component
 {
-public:	
+	double m_distanceFromCamera = 0;
+	Vec3 m_drawPos;
+public:
 	bool visible = true;
 	//transformの影響
 	bool transformDirectionAffectable = true;
@@ -145,9 +151,13 @@ public:
 
 	virtual void draw()const = 0;
 
+	void cal_drawPos();
+
 	virtual Vec3 getDrawPos()const;
 
-	Vec3 distanceFromCamera()const;
+	void cal_distanceFromCamera();
+
+	double distanceFromCamera()const;
 };
 
 #include"../DrawManager.h"

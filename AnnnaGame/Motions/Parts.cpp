@@ -45,8 +45,9 @@ namespace mot
 		transform->setParent(parent->transform);
 		if (setLocalPos) {
 			//絶対を相対に！
-			transform->setLocalX(transform->getPos().x);
-			transform->setLocalY(transform->getPos().y);
+			const auto& p = transform->getPos();
+			transform->setLocalX(p.x);
+			transform->setLocalY(p.y);
 			transform->setLocalDirection(transform->getDirection());
 		}
 		else {
@@ -227,9 +228,9 @@ namespace mot
 
 	void PartsManager::update(double dt)
 	{
-		dm->drawing.update();//drawManagerをアプデ
 		dm->drawing.scalePos = transform->getPos().xy() - util::sc();//反転の中心を更新
 		Object::update(dt);
+		dm->drawing.update();//drawManagerをアプデ
 	}
 }
 

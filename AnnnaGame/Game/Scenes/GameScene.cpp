@@ -17,6 +17,8 @@
 #include"../Computer/EnemyAI.h"
 #include"../Chara/Enemy.h"
 
+int32 size;
+
 GameScene::~GameScene()
 {
 	skill::SkillProvider::Destroy();
@@ -99,56 +101,76 @@ void GameScene::start()
 
 	player->behaviorSetting(std::move(info));
 
-	auto enemy = birthObject<Enemy>(Box(3, 5, 3), {0,0,0});
+	/*mot::Parts* hair = nullptr;
+	for (const auto& p : parts->partsArray)
+	{
+		if (p->name == U"kami")hair = p;
+	}
 
-	enemy->transform->setPos({ 8,3,0 });
+	double g = 5;
 
-	enemy->getComponent<Collider>()->setCategory(ColliderCategory::enemy);
+	player->ACreate(U"HairSwing", true) += FuncAction(
+		[=, preV = 0.0](double dt)mutable {
+			auto v = hair->transform->getVel().x + hair->transform->getAngulerVel().x;
+			double a = (v - preV) / dt;
+			preV = v;
+			Print << hair->getAngle();
+			auto aaa = (Math::Sign(a) * (Abs(a) - g) - v / 4) * dt;
+			if(Abs(aaa)<1000)hair->setAngle(hair->getAngle() + aaa);
+		});*/
+	for (auto k : step(1)) {
+		auto enemy = birthObject<Enemy>(Box(3, 5, 3), { 0,0,0 });
 
-	enemy->getComponent<Draw3D>(U"hitbox")->visible = true;
+		enemy->getComponent<Collider>()->setCategory(ColliderCategory::enemy);
 
-	enemy->param.LoadFile(U"enemys.txt", U"KirikabuBake");
+		enemy->getComponent<Draw3D>(U"hitbox")->visible = true;
 
-	auto eparts = std::shared_ptr<PartsManager>(partsLoader->create(U"asset/motion/sara/model1.json"));
+		enemy->param.LoadFile(U"enemys.txt", U"KirikabuBake");
 
-	eparts->master->transform->scale.setAspect({ 0.4,0.4,1 });
+		auto eparts = std::shared_ptr<PartsManager>(partsLoader->create(U"asset/motion/sara/model1.json"));
 
-	enemy->addComponent<Convert2DTransformComponent>(eparts->transform, getDrawManager(), ProjectionType::Parse);
+		eparts->master->transform->scale.setAspect({ 0.4,0.4,1 });
 
-	enemy->addComponent<Convert2DScaleComponent>(eparts->transform, camera->distance(enemy->transform->getPos()), getDrawManager());
+		enemy->addComponent<Convert2DTransformComponent>(eparts->transform, getDrawManager(), ProjectionType::Parse);
 
-	enemy->addComponent<PartsMirrored>(eparts.get());
+		enemy->addComponent<Convert2DScaleComponent>(eparts->transform, camera->distance(enemy->transform->getPos()), getDrawManager());
 
-	decoder = std::make_shared<CmdDecoder>();
+		enemy->addComponent<PartsMirrored>(eparts.get());
 
-	DecoderSet(decoder.get()).motionScriptCmd(eparts.get());
+		enemy->transform->setPos({ 8 * (k%10) - 10,3,4*(k/10)+10 });
 
-	decoder->input(U"load asset/motion/sara/motion.txt Stand")->decode()->execute();//モーションをセット
-	decoder->input(U"load asset/motion/sara/motion.txt Jump")->decode()->execute();
-	decoder->input(U"load asset/motion/sara/motion.txt Attack")->decode()->execute();
-	decoder->input(U"load asset/motion/sara/motion.txt Run")->decode()->execute();
-	decoder->input(U"load asset/motion/sara/motion.txt Knockback")->decode()->execute();
+		decoder = std::make_shared<CmdDecoder>();
 
-	info = state::Inform();
+		DecoderSet(decoder.get()).motionScriptCmd(eparts.get());
 
-	info.set(U"MotionCmdDecoder", state::Info(decoder));//デコーダーを渡す
-	info.set(U"StandMotionCmd", state::Info(U"start Stand"));
-	info.set(U"JumpMotionCmd", state::Info(U"start Jump"));
-	info.set(U"AttackMotionCmd", state::Info(U"start Attack"));
-	info.set(U"RunMotionCmd", state::Info(U"start Run true"));
-	info.set(U"KnockbackMotionCmd", state::Info(U"start Knockback"));
-	info.set(U"parts", state::Info(eparts));
+		decoder->input(U"load asset/motion/sara/motion.txt Stand")->decode()->execute();//モーションをセット
+		decoder->input(U"load asset/motion/sara/motion.txt Jump")->decode()->execute();
+		decoder->input(U"load asset/motion/sara/motion.txt Attack")->decode()->execute();
+		decoder->input(U"load asset/motion/sara/motion.txt Run")->decode()->execute();
+		decoder->input(U"load asset/motion/sara/motion.txt Knockback")->decode()->execute();
 
-	player::SetPlayerAnimator(enemy, std::move(info));
+		info = state::Inform();
 
-	info = state::Inform();
+		info.set(U"MotionCmdDecoder", state::Info(decoder));//デコーダーを渡す
+		info.set(U"StandMotionCmd", state::Info(U"start Stand"));
+		info.set(U"JumpMotionCmd", state::Info(U"start Jump"));
+		info.set(U"AttackMotionCmd", state::Info(U"start Attack"));
+		info.set(U"RunMotionCmd", state::Info(U"start Run true"));
+		info.set(U"KnockbackMotionCmd", state::Info(U"start Knockback"));
+		info.set(U"parts", state::Info(eparts));
 
-	auto s = skill::SkillProvider::Get(U"Tmp");
-	s->addInfo<skill::Chara>(U"chara", enemy);
-	s->addInfo<skill::InfoV<Vec3>>(U"dir", enemy->transform->getDirection());
-	enemy->setSkill(s, U"Attack");
+		player::SetPlayerAnimator(enemy, std::move(info));
 
-	EnemyAIProvider::Set(U"Sample", enemy, std::move(info));
+		info = state::Inform();
+
+		auto s = skill::SkillProvider::Get(U"Tmp");
+		s->addInfo<skill::Chara>(U"chara", enemy);
+		s->addInfo<skill::InfoV<Vec3>>(U"dir", enemy->transform->getDirection());
+		enemy->setSkill(s, U"Attack");
+
+		EnemyAIProvider::Set(U"Sample", enemy, std::move(info));
+		enemy->name = U"Enemy";
+	}
 	//カード
 	auto card = birthObjectNonHitbox();
 	card->addComponent<CardComponent>(U"カード裏.png", player,
@@ -158,11 +180,13 @@ void GameScene::start()
 	card->transform->setPos({ 1000,30,0 });
 
 	player->name = U"Player";
-	enemy->name = U"Enemy";
+	size=entityManager.allEntitys().size();
 }
 
 void GameScene::update(double dt)
 {
 	Scene::update(dt);
 	Scene::updateTransform(dt);
+
+	Print << size;
 }

@@ -112,7 +112,8 @@ BasicCamera3D Camera::getCamera()const
 BasicCamera3D Camera::getCameraLatest() const
 {
 	BasicCamera3D c = camera;
-	c.setView(transform->getPos(), transform->getPos()+getForcusDir());
+	const auto& p = transform->getPos();
+	c.setView(p, p+getForcusDir());
 	return c;
 }
 

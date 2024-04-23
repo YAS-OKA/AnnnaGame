@@ -1,7 +1,6 @@
 ﻿#include "../stdafx.h"
 #include "Collider.h"
 #include"../Game/Camera.h"
-//#include"Draw.h"
 #include"../Game/Object.h"
 #include"../DrawManager.h"
 #include"../Util/Util.h"
@@ -35,9 +34,10 @@ Polygon CollideBox::CollideFigure::getScaledFig()const
 {
 	auto poly = figure.asPolygon();
 	auto rad = util::getRad(parent->t->getScaleDir().first.xy());
-	poly.rotateAt(parent->t->getPos().xy() ,-rad);
-	poly.scaleAt(parent->t->getPos().xy(), parent->t->getAspect().xy());
-	poly.rotateAt(parent->t->getPos().xy(), rad);
+	const auto& p = parent->t->getPos().xy();
+	poly.rotateAt(p ,-rad);
+	poly.scaleAt(p, parent->t->getAspect().xy());
+	poly.rotateAt(p, rad);
 	return poly;
 }
 

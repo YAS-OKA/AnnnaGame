@@ -61,6 +61,7 @@ namespace my
 
 	void Scene::updateTransform(double dt)
 	{
-		for (auto& ent : entityManager.allEntitys())ent->getComponent<Transform>(U"original")->calUpdate(dt);
+		for (auto& t : entitysTransform)t.second->calUpdate(dt);
+		//for (auto& ent : entityManager.allEntitys())ent->getComponent<Transform>(U"original")->calUpdate(dt);
 	}
 }

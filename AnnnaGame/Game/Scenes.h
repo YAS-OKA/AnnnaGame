@@ -37,11 +37,11 @@ namespace my
 		DrawManager drawManager;
 		Camera* camera;
 		GameMaster* master;
-
 		void hitboxVisible(const MeshData& data);
 	public:
 		RegisterAssets r;
 		mot::LoadParts* partsLoader;
+		HashTable<Object*,Transform*> entitysTransform;
 
 		Scene();
 

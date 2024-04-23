@@ -13,6 +13,7 @@
 
 Actions* ac;
 Object* obj;
+Array<Object*> en;
 void TestScene::start()
 {
 	Scene::start();
@@ -36,14 +37,27 @@ void TestScene::start()
 
 	//obj->actman.create(U"a", std::move(attack), true);
 
+
 	auto player = birthObject<Object>(Box(3, 5, 3), { 0,0,0 });
+	obj = player;
+
+	for (auto k : step(72))
+	{
+		en << birthObject<Object>(Box(1, 1, 1), { 0,0,0 });
+		en.back()->transform->setParent(player->transform);
+		
+	}
 
 	auto card= birthObjectNonHitbox();
 	card->addComponent<CardComponent>(U"カード裏.png", player, [] {return 0.4; });
 	card->transform->setPos({ 100,100,0 });
+
 }
 
 void TestScene::update(double dt)
 {
 	Scene::update(dt);
+	for (auto e : en)
+		e->transform->getPos();
+	obj->transform->setPos({ 1,1,1 });
 }

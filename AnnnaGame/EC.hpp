@@ -228,6 +228,7 @@ private:
 	}
 
 public:
+
 	~EntityManager() {
 		clean();
 		freshGarbages();
@@ -245,7 +246,7 @@ public:
 		std::stable_sort(
 			entitys.begin(),
 			entitys.end(),
-			[=](const auto ent1, const auto ent2) {return ent1.second->priority.getPriority() > ent2.second->priority.getPriority(); }
+			[=](const auto ent1, const auto ent2) { return ent1.second->priority.getPriority() > ent2.second->priority.getPriority(); }
 		);
 
 		//更新

@@ -624,7 +624,7 @@ namespace mot
 			auto f = ui::makeUiLike(area->owner->addComponent<DrawFont>(scene->getDrawManager(), Font(20, Typeface::Bold)));
 			f->text = U"Command >";
 			f->relative = { -130,0,0 };
-			f->color = Palette::Gray;
+			f->color = Palette::White;
 
 			area->transform->setPos({ pos,UiZvalue });
 

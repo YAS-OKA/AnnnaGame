@@ -20,26 +20,48 @@ void IDrawing::start()
 	transform=owner->getComponent<Transform>();
 }
 
+void IDrawing::cal_drawPos()
+{
+	Vec3 localPos = transformScaleAffectable ? relative * transform->getAspect() : relative;
+	//回転
+	auto q = direction.accum;
+
+	auto rq = q.inverse();
+
+	if (transformDirectionAffectable) {
+		q = q * transform->get2Direction().accum;
+	}
+	localPos = rq * localPos;
+	localPos = q * localPos;
+	//基準に戻し、目的の方向を向かせたものをgetPosに足す
+	m_drawPos = transform->getPos() + localPos;
+}
+
 Vec3 IDrawing::getDrawPos() const
 {
 	Vec3 localPos = transformScaleAffectable?relative*transform->getAspect():relative;
 	//回転
-	auto q1 = direction.accum;
+	auto q = direction.accum;
 
-	auto rq = q1.inverse();
+	auto rq = q.inverse();
 
 	if (transformDirectionAffectable) {
-		q1 = q1 * transform->get2Direction().accum;
+		q = q * transform->get2Direction().accum;
 	}
-	localPos = rq * localPos;//基準に戻す
-	localPos = q1 * localPos;//目的の方向を向かせる
-
+	localPos = rq * localPos;
+	localPos = q * localPos;
+	//基準に戻し、目的の方向を向かせたものをgetPosに足す
 	return transform->getPos() + localPos;
 }
 
-Vec3 IDrawing::distanceFromCamera()const
+void IDrawing::cal_distanceFromCamera()
 {
-	return getDrawPos() - manager->getCamera()->transform->getPos();
+	m_distanceFromCamera = (getDrawPos() - manager->getCamera()->transform->getPos()).length();
+}
+
+double IDrawing::distanceFromCamera()const
+{
+	return m_distanceFromCamera;
 }
 
 Draw3D::Draw3D(DrawManager* manager, const MeshData& data)
@@ -150,15 +172,19 @@ draw_helper::DrawShallow::DrawShallow(IDraw2D* owner)
 {
 }
 
+void draw_helper::DrawShallow::cal_depth()
+{
+	const auto & camera = owner->manager->getCamera();
+	m_depth = camera->distance(owner->getDrawPos());
+}
+
 double draw_helper::DrawShallow::getDepth() const
 {
-	const auto& camera = owner->manager->getCamera();
-	return camera->distance(owner->getDrawPos());
+	return m_depth;
 }
 
 bool draw_helper::DrawShallow::shouldReplace(DrawShallow* other) const
 {
-	const auto& camera=owner->manager->getCamera();
 	//相手の描画が優先される(あとから描写される)場合trueを返すというようにすればいい
 	if (layer == other->layer)
 	{

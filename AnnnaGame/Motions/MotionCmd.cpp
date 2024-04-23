@@ -54,37 +54,36 @@ namespace mot
 
 	void KillParts::start()
 	{
-		auto parts = pmanager->find(name);
-
-		if (parts == nullptr)return;
-
-		if (killChildren or parts->getName() == U"master")
+		if (auto parts = pmanager->find(name))
 		{
-			//子を殺す
-			prg::Actions actions;
-			Array<KillParts*>acts;
-			for (const auto& child : parts->partsRelation.getChildren())
+			if (killChildren or parts->getName() == U"master")
 			{
-				acts << actions.addParallel<KillParts>(child->name, true).build(pmanager);
+				//子を殺す
+				prg::Actions actions;
+				Array<KillParts*>acts;
+				for (const auto& child : parts->partsRelation.getChildren())
+				{
+					acts << actions.addParallel<KillParts>(child->name, true).build(pmanager);
+				}
+				actions.start(true);
+
+				for (const auto& act : acts)
+				{
+					for (const auto& p : act->getKilledParts())
+						killedParts.emplace(p);
+				}
 			}
-			actions.start(true);
+			else {
+				auto parent = parts->partsRelation.getParent();
 
-			for (const auto& act : acts)
-			{
-				for (const auto& p : act->getKilledParts())
-					killedParts.emplace(p);
+				auto child = parts->partsRelation.getChild();
+				//自分の親を自分の子の親にする
+				if (child != nullptr and parent != nullptr)child->setParent(parent->getName());
 			}
-		}
-		else {
-			auto parent = parts->partsRelation.getParent();
+			pmanager->killParts(parts);
 
-			auto child = parts->partsRelation.getChild();
-			//自分の親を自分の子の親にする
-			if (child != nullptr and parent != nullptr)child->setParent(parent->getName());
+			killedParts.emplace(parts);
 		}
-		pmanager->killParts(parts);
-
-		killedParts.emplace(parts);
 	}
 	StartMotion::StartMotion(String motionName,bool loop)
 		:motionName(motionName),loop(loop)

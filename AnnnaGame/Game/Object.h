@@ -33,6 +33,8 @@ public:
 
 	prg::Actions& ACreate(StringView actionName, bool immediatelyStart = false, bool loopAction = false);
 
+	virtual void onTrashing()override;
+
 	virtual void start()override;
 
 	virtual void update(double dt)override;

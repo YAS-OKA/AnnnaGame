@@ -236,7 +236,7 @@ namespace mot
 
 		ColorF getColor()const { return tex->color; }
 
-		Vec2 getScale()const { return params.scale; }//transform->scale.aspect.vec.xy(); }
+		Vec2 getScale()const { return params.scale; }
 		
 		void update(double dt)override;
 	};

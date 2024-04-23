@@ -33,7 +33,7 @@ namespace util
 
 		static Array<T*> GetParents(T* child)
 		{
-			if (CtoP_list.contains(child) and (not CtoP_list[child].isEmpty()))
+			if (CtoP_list.contains(child))
 				return CtoP_list[child];
 			else
 				return Array<T*>{};
@@ -41,7 +41,7 @@ namespace util
 
 		static Array<T*> GetChildren(T* parent)
 		{
-			if (PtoC_list.contains(parent) and (not PtoC_list[parent].isEmpty()))
+			if (PtoC_list.contains(parent))
 				return PtoC_list[parent];
 			else
 				return Array<T*>{};
@@ -130,6 +130,7 @@ namespace util
 			CtoP_list[child].remove(owner);
 		};
 	};
+	//定義
 	template<class T> HashTable<T*, Array<T*>> PCTree<T>::PtoC_list = HashTable<T*, Array<T*>>();
 	template<class T> HashTable<T*, Array<T*>> PCTree<T>::CtoP_list = HashTable<T*, Array<T*>>();
 

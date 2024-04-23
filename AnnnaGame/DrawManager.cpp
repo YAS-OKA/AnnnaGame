@@ -90,11 +90,24 @@ Camera* DrawManager::getCamera()const
 
 void DrawManager::update()
 {
+	//深さ 座標　計算
+	for (auto it = m_drawings3D.begin(), en = m_drawings3D.end(); it != en; ++it)
+	{
+		(*it)->cal_drawPos();
+		(*it)->cal_distanceFromCamera();
+	}
+
 	std::stable_sort(
 		m_drawings3D.begin(),
 		m_drawings3D.end(),
-		[=](const IDraw3D* d1, const IDraw3D* d2) {return d1->distanceFromCamera().length() < d2->distanceFromCamera().length(); }
+		[=](const IDraw3D* d1, const IDraw3D* d2) {return d1->distanceFromCamera() < d2->distanceFromCamera(); }
 	);
+	//深さ 座標　計算
+	for (auto it = m_drawings2D.begin(), en = m_drawings2D.end(); it != en; ++it)
+	{
+		(*it)->cal_drawPos();
+		(*it)->shallow->cal_depth();
+	}
 
 	std::stable_sort(
 		m_drawings2D.begin(),

@@ -236,7 +236,7 @@ void Transform::setLocalDirAndPreDir(const Vec3& dir, double verRad)
 
 	auto q = Quaternion::FromUnitVectors({ 1,0,0 }, dir);
 	direction.setDirection(q * parent->getDirection(), verRad);
-	frameDir.vec = frameDir.pre = getDirection();;
+	frameDir.vec = frameDir.pre = getDirection();
 }
 
 void Transform::setPosAndPrePos(const Vec3& p)
@@ -254,7 +254,9 @@ void Transform::setPos(const Vec3& p)
 
 void Transform::setXY(const Vec2& p)
 {
-	setPos({ p,getPos().z });
+	pos.vec.x = p.x;
+	pos.vec.y = p.y;
+	affectChildren();
 }
 
 void Transform::setLocalXY(const Vec2& p,bool gridScaling)
@@ -264,11 +266,7 @@ void Transform::setLocalXY(const Vec2& p,bool gridScaling)
 
 void Transform::setLocalPos(const Vec3& p, bool gridScaling)
 {
-	auto parent = getParent();
-	if (parent == nullptr) {
-		setPos(p);
-	}
-	else {
+	if (auto parent = getParent()) {
 		if (gridScaling)
 		{
 			const auto& s1 = parent->getAspect();
@@ -281,26 +279,30 @@ void Transform::setLocalPos(const Vec3& p, bool gridScaling)
 
 		affectChildren();
 	}
+	else {
+		setPos(p);
+	}
 }
 
 void Transform::setLocalPosAndPrePos(const Vec3& p)
 {
-	auto parent = getParent();
-	if (parent == nullptr) {
-		setPosAndPrePos(p);
-		return;
+	if (auto parent = getParent())
+	{
+		pos.vec
+			= pos.pre
+			= framePos.vec
+			= framePos.pre
+			= p + parent->getPos();
 	}
-
-	pos.vec
-		= pos.pre
-		= framePos.vec
-		= framePos.pre
-		= p + parent->getPos();
+	else{
+		setPosAndPrePos(p);	
+	}
 }
 
 void Transform::setX(double x)
 {
-	setPos({ x,getPos().yz() });
+	pos.vec.x = x;
+	affectChildren();
 }
 
 void Transform::setLocalX(double x)
@@ -347,14 +349,8 @@ void Transform::addZ(double z)
 
 void Transform::addPos(const Vec3& pos)
 {
-	setPos(getPos() + pos);
+	moveBy(pos);
 }
-//
-//void Transform::setAbsPos(const Vec3& pos)
-//{
-//	auto local = (pos - getParent()->getPos());
-//
-//}
 
 void Transform::moveBy(const Vec3& delta)
 {
@@ -365,33 +361,56 @@ void Transform::moveBy(const Vec3& delta)
 Vec3 Transform::getAspect()const
 {
 	auto parent = getParent();
-	return parentScalingAffectable and parent ? parent->getAspect()*scale.aspect.vec : scale.aspect.vec;
+
+	Vec3 res = scale.aspect.vec;
+	if (parentScalingAffectable) {
+		while (parent)
+		{
+			res *= parent->scale.aspect.vec;
+			parent = parent->getParent();
+		}
+	}
+	return res;
+	//再帰だとなぜか遅い...
+	//return parentScalingAffectable and parent ? parent->getAspect()*scale.aspect.vec : scale.aspect.vec;
 }
 
 std::pair<Vec3,Vec3> Transform::getScaleDir() const
 {
 	if (not rotatableAspect)return { {1,0,0},{0,1,0} };
 
-	auto parent = getParent();
 	auto [dir, ver] = scale.getDir();
-
-	if (parentScalingAffectable and parent != nullptr)
+	auto parent = getParent();
+	while (parent and parent->rotatableAspect)
 	{
-		auto q = Quaternion::FromUnitVectorPairs({ {1,0,0},{0,1,0} }, parent->getScaleDir());
-		return { q * dir,q * ver };
+		const auto& q = Quaternion::FromUnitVectorPairs({ {1,0,0},{0,1,0} }, parent->scale.getDir());
+		dir = q * dir;
+		ver = q * ver;
+		parent = parent->getParent();
 	}
 
-	return { dir , ver };
+	return { dir,ver };
+
+	//if (parentScalingAffectable) {
+	//	if (auto parent = getParent())
+	//	{
+	//		const auto& q = Quaternion::FromUnitVectorPairs({ {1,0,0},{0,1,0} }, parent->getScaleDir());
+	//		return { q * dir,q * ver };
+	//	}
+	//}
+	//return { dir , ver };
 }
 
 Vec3 Transform::getPos()const
 {
-	auto parent = getParent();
-	//親がいなければ座標をそのまま返す
-	if (parent == nullptr)return pos.vec;
-
-	auto q = Quaternion::FromUnitVectorPairs({ {1,0,0},{0,1,0} }, parent->getScaleDir());
-	return parent->getPos() + q * ((q.inverse() * (pos.vec - parent->pos.vec)) * parent->getAspect());
+	if (auto parent = getParent())
+	{
+		return parent->getPos() +getLocalPos();
+	}
+	else
+	{
+		return pos.vec;
+	}
 }
 
 Vec2 Transform::getXY()const
@@ -401,8 +420,15 @@ Vec2 Transform::getXY()const
 
 Vec3 Transform::getLocalPos()const
 {
-	auto parent = getParent();
-	return parent != nullptr ? getPos() - parent->getPos() : getPos();
+	if (auto parent = getParent())
+	{
+		const auto& q = Quaternion::FromUnitVectorPairs({ {1,0,0},{0,1,0} }, parent->getScaleDir());
+		return q * ((q.inverse() * (pos.vec - parent->pos.vec)) * parent->getAspect());
+	}
+	else
+	{
+		return pos.vec;
+	}
 }
 
 Vec3 Transform::getVel()const
@@ -422,18 +448,22 @@ Transform::Direction Transform::get2Direction()const
 
 Vec3 Transform::getLocalDirection()const
 {
-	auto parent = getParent();
-	if (parent == nullptr)return getDirection();
-	//親がいる場合
-	auto q = Quaternion::FromUnitVectors(parent->getDirection(), getDirection());
-	return q*Vec3{ 1,0,0 };
+	if (auto parent = getParent())
+	{
+		//親がいる場合
+		auto q = Quaternion::FromUnitVectors(parent->getDirection(), getDirection());
+		return q * Vec3{ 1,0,0 };
+	}
+	else
+	{
+		return getDirection();
+	}
 }
 
 Vec3 Transform::getAngulerVel()const
 {
 	return measureDirVel;
 }
-
 
 void Transform::affectChildren()
 {
@@ -515,7 +545,8 @@ Vec3 Transform::operator+(const Vec3& vec)
 
 Vec3 Transform::operator+=(const Vec3& vec)
 {
-	setPos(*this + vec);
+	moveBy(vec);
+	//setPos(*this + vec);
 	return pos.vec;
 }
 
@@ -526,18 +557,11 @@ void Transform::scaleXYAt(const Vec2& _pos, double scale, double rad)
 
 void Transform::scaleXYAt(const Vec2& _pos, const Vec2& scale, double rad)
 {
-	//Vec2 tmp{ util::invXY(getPos().xy() - _pos).rotate(rad) };
-	////現在地を_posを中心に回転した時の座標を得る
-	//auto xx = tmp.y;
-	//auto yy = tmp.x;
-
 	Vec2 relative = (getPos().xy() - _pos).rotate(rad);
 
 	relative *= scale;
 
 	setXY(relative.rotate(-rad) + _pos);
 
-	//this->scale.aspect.vec.x = scale.x;
-	//this->scale.aspect.vec.x = scale.y;
 	this->scale.setAspect({ scale,this->scale.aspect.vec.z }, 0, 0, rad);
 }
