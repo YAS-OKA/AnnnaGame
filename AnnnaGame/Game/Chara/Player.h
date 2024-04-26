@@ -22,5 +22,5 @@ public:
 namespace player
 {
 
-	void SetPlayerAnimator(Object* obj, state::Inform&& info);
+	void SetPlayerAnimator(const Borrow<Object>& obj, state::Inform&& info);
 }

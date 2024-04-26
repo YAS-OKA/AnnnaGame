@@ -88,7 +88,7 @@ namespace prg
 	}
 
 
-	MoveAct::MoveAct(Transform* transform, const Vec3& initVel, const Optional<double>& t)
+	MoveAct::MoveAct(const Borrow<Transform>& transform, const Vec3& initVel, const Optional<double>& t)
 		:transform(transform), initVel(initVel), IAction(t)
 	{
 	}
@@ -98,7 +98,7 @@ namespace prg
 	{
 	}
 
-	void MoveAct::setTransform(Transform* t)
+	void MoveAct::setTransform(const Borrow<Transform>& t)
 	{
 		transform = t;
 	}
@@ -121,7 +121,7 @@ namespace prg
 		if(transform)*transform += vel * dt;
 	}
 
-	MulMove::MulMove(Transform* transform, const Optional<double>& constantSpeed, const Optional<double>& t)
+	MulMove::MulMove(const Borrow<Transform>& transform, const Optional<double>& constantSpeed, const Optional<double>& t)
 		:IAction(t), transform(transform), constantSpeed(constantSpeed)
 	{
 	}
@@ -196,7 +196,7 @@ namespace prg
 		}
 	}
 
-	FreeFall::FreeFall(Transform* transform, const Vec3& initVel, double acc, const Optional<double>& t)
+	FreeFall::FreeFall(const Borrow<Transform>& transform, const Vec3& initVel, double acc, const Optional<double>& t)
 		:MoveAct(transform, initVel, t)
 	{
 		setAcc(acc);
@@ -207,7 +207,7 @@ namespace prg
 		acc = Vec3{ 0,a,0 };
 	}
 
-	LifeSpan::LifeSpan(Object* target, const Optional<double>& time)
+	LifeSpan::LifeSpan(const Borrow<Object>& target, const Optional<double>& time)
 		:target(target), IAction(time)
 	{}
 
@@ -253,7 +253,7 @@ namespace prg
 		hitbox->getComponent<Draw3D>(U"hitbox")->visible = false;
 	}
 
-	ShowParam::ShowParam(Character* c, const Optional<double>& t)
+	ShowParam::ShowParam(const Borrow<Character>& c, const Optional<double>& t)
 		:chara(c),IAction(t)
 	{}
 

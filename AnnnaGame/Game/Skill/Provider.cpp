@@ -13,7 +13,7 @@ SkillProvider::SkillProvider()
 	using enum EffectType;
 	auto& d = skillDict;
 
-	d[U"Tmp"] = [](Skill* s, Actions& act)
+	d[U"Tmp"] = [](const Borrow<Skill>& s, Actions& act)
 		{
 			const double hitableTime = 1;//のちのちテキストファイルとかに書くべきパラメータ
 			
@@ -40,7 +40,7 @@ SkillProvider::SkillProvider()
 		};
 
 	//アタックスキル
-	d[U"旅人/たたく"] = [](Skill* s, Actions& act)
+	d[U"旅人/たたく"] = [](const Borrow<Skill>& s, Actions& act)
 		{
 			const double hitableTime = 1;//のちのちテキストファイルとかに書くべきパラメータ
 
@@ -71,7 +71,7 @@ SkillProvider::SkillProvider()
 		};
 }
 
-void SkillProvider::Init(my::Scene* scene)
+void SkillProvider::Init(const Borrow<my::Scene>& scene)
 {
 	if (instance)return;//すでにインスタンスが生成されていたらここで終了
 	instance = new SkillProvider();
@@ -84,7 +84,7 @@ void SkillProvider::Destroy()
 	instance = nullptr;
 }
 
-Skill* SkillProvider::Get(StringView name)
+Borrow<Skill> SkillProvider::Get(StringView name)
 {
 	if (instance)
 	{

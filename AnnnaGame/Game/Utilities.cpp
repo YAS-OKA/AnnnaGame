@@ -34,9 +34,9 @@ namespace util
 		return { pos,transform->getPos().z };
 	}
 
-	Array<Entity*> MouseObject::getClickedObjects(Array<Collider*> colliders)const
+	Array<Borrow<Entity>> MouseObject::getClickedObjects(Array<Borrow<Collider>> colliders)const
 	{
-		Array<Entity*> ret{};
+		Array<Borrow<Entity>> ret{};
 		const auto& camera = manager->getCamera();
 		
 		const auto& fp = camera->getForcusDir();
@@ -69,24 +69,24 @@ namespace util
 			switch (hitbox.shape.index())
 			{
 			case 0:
-				if (std::get<0>(hitbox.shape).intersects(ray))ret << collider->owner;
+				if (std::get<0>(hitbox.shape).intersects(ray))ret << *collider->owner;
 				break;
 			case 1:
-				if (ray.intersects(std::get<1>(hitbox.shape)))ret << collider->owner;
+				if (ray.intersects(std::get<1>(hitbox.shape)))ret << *collider->owner;
 				break;
 			case 2:
-				if (collider->intersects(mouseHitbox))ret << collider->owner;
+				if (collider->intersects(mouseHitbox))ret << *collider->owner;
 				break;
 			}
 		}
 		return ret;
 	}
 
-	Entity* MouseObject::getClickedSurfaceObject(Array<Collider*> colliders,const SurfaceType& type)
+	Borrow<Entity> MouseObject::getClickedSurfaceObject(Array<Borrow<Collider>> colliders,const SurfaceType& type)
 	{
-		Array<Entity*> obj = getClickedObjects(colliders);
+		auto obj = getClickedObjects(colliders);
 
-		Entity* ret=nullptr;
+		Borrow<Entity> ret;
 		//表面のエンティティを求める
 		if (type == depth)
 		{
@@ -110,10 +110,10 @@ namespace util
 		return ret;
 	}
 
-	Entity* MouseObject::getClickedSurfaceObject2DPrior(Array<Collider*> colliders, const SurfaceType& type2d, const SurfaceType& type3d)
+	Borrow<Entity> MouseObject::getClickedSurfaceObject2DPrior(Array<Borrow<Collider>> colliders, const SurfaceType& type2d, const SurfaceType& type3d)
 	{
-		Array<Collider*> col3D{};
-		Array<Collider*> col2D{};
+		Array<Borrow<Collider>> col3D{};
+		Array<Borrow<Collider>> col2D{};
 
 		//クリックした当たり判定からエンティティを取得
 		for (const auto& collider : colliders)
@@ -132,11 +132,11 @@ namespace util
 			}
 		}
 
-		Entity* ret = nullptr;
+		Borrow<Entity> ret;
 
 		ret = getClickedSurfaceObject(col2D, type2d);
 
-		return ret != nullptr ? ret : getClickedSurfaceObject(col3D, type3d);
+		return (bool)ret ? ret : getClickedSurfaceObject(col3D, type3d);
 	}
 
 	Convert2DTransform::Convert2DTransform(DrawManager* dmanager,const ProjectionType& type)
@@ -187,7 +187,7 @@ namespace util
 		return convert(pos, type);
 	}
 
-	Vec3 Convert2DTransform::convert(Transform* transform)const
+	Vec3 Convert2DTransform::convert(const Borrow<Transform>& transform)const
 	{
 		return convert(transform->getPos());
 	}
@@ -224,7 +224,7 @@ namespace util
 		else return convert(scale,pos, type);
 	}
 
-	Vec3 Convert2DScale::convert(Transform* transform)const
+	Vec3 Convert2DScale::convert(const Borrow<Transform>& transform)const
 	{
 		return convert(transform->scale.aspect.vec, transform->getPos());
 	}

@@ -12,15 +12,15 @@ class Object;
 class CardComponent :public Component
 {
 public:
-	ui::ProgressBar* m_bar=nullptr;
+	Borrow<ui::ProgressBar> m_bar;
 
 	std::function<double()> gageRate = nullptr;
 
 	String assetPath = U"";
 
-	Object* player = nullptr;
+	Borrow<Object> player;
 
-	CardComponent(StringView assetPath, Object* player, const std::function<double()>& gageRate);
+	CardComponent(StringView assetPath, const Borrow<Object>& player, const std::function<double()>& gageRate);
 
 	void start()override;
 

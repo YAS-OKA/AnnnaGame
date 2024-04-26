@@ -11,8 +11,8 @@ struct GameMaster::Impl
 {
 	EntityManager manager;
 	double timeScale = 1.0;
-	GameMaster* master;
-	my::Scene* scene;
+	Borrow<GameMaster> master;
+	Borrow<my::Scene> scene;
 	Impl()
 	{
 		//scene = manager.birth<TestScene>();
@@ -31,7 +31,7 @@ struct GameMaster::Impl
 void GameMaster::start()
 {
 	p_impl = std::make_shared<Impl>();
-	p_impl->master = this;
+	p_impl->master = *this;
 }
 
 #if _DEBUG&&0

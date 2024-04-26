@@ -18,9 +18,9 @@ using SkillEffectContainer = WeakTypeContainer<skill::ISkillEffect>;
 class Object :public Entity
 {
 public:
-	my::Scene* scene;
+	Borrow<my::Scene> scene;
 
-	Transform* transform;
+	Borrow<Transform> transform;
 
 	SkillEffectContainer skillEffects;
 

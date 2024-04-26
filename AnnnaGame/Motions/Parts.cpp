@@ -34,7 +34,7 @@ namespace mot
 	void Parts::setParent(const String& name, bool setLocalPos)
 	{
 		auto nextParent = parts_manager->find(name);
-		if (nextParent == nullptr)return;
+		if (not nextParent)return;
 
 		partsRelation.setParent(nextParent);
 
@@ -62,7 +62,7 @@ namespace mot
 
 	void Parts::setTexture(const PartsDrawing& drawing)
 	{
-		if (tex != nullptr)remove(tex);
+		if (tex)remove(*tex);
 		switch (drawing.index())
 		{
 		case 0:
@@ -112,10 +112,10 @@ namespace mot
 		Object::update(dt);
 	}
 
-	Collider* Parts::createHitbox(const Vec2& pos,const MultiPolygon& fig)
+	Borrow<Collider> Parts::createHitbox(const Vec2& pos,const MultiPolygon& fig)
 	{
 		//今はfig[0]を当たり判定にしてるけど、いつかMultiPolygon対応の当たり判定を作るべき
-		if (collider != nullptr)remove(collider);
+		if (collider)remove(*collider);
 
 		collider = addComponent<Collider>(CollideBox::CollideFigure(fig[0]));
 
@@ -130,12 +130,12 @@ namespace mot
 		distanceTypeUsedInScaleHelper = distanceType;
 	}
 
-	Parts* PartsManager::birthParts()
+	Borrow<Parts> PartsManager::birthParts()
 	{
-		return scene->birthObjectNonHitbox<Parts>(this);
+		return scene->birthObjectNonHitbox<Parts>(*this);
 	}
 
-	Parts* PartsManager::addParts(const PartsParams& params)
+	Borrow<Parts> PartsManager::addParts(const PartsParams& params)
 	{
 		if (master == nullptr and params.name != U"master")return nullptr;
 
@@ -158,10 +158,10 @@ namespace mot
 		return parts;
 	}
 
-	Parts* PartsManager::setMaster(Parts* masterParts)
+	Borrow<Parts> PartsManager::setMaster(const Borrow<Parts>& masterParts)
 	{
-		if (master != nullptr) {
-			execute(new KillParts(U"master", true), this);
+		if (master) {
+			execute(new KillParts(U"master", true), this->lend());
 		}
 
 		masterParts->setName(U"master");
@@ -175,7 +175,7 @@ namespace mot
 		return master;
 	}
 
-	Parts* PartsManager::createMaster()
+	Borrow<Parts> PartsManager::createMaster()
 	{
 		//masterパーツを作成
 		auto m = birthParts();
@@ -189,7 +189,7 @@ namespace mot
 		return setMaster(m);
 	}
 
-	Parts* PartsManager::find(const String& name)
+	Borrow<Parts> PartsManager::find(const String& name)
 	{
 		for (auto itr = partsArray.begin(), en = partsArray.end(); itr != en; ++itr)
 		{
@@ -198,7 +198,7 @@ namespace mot
 		return nullptr;
 	}
 
-	void PartsManager::killParts(Parts* parts)
+	void PartsManager::killParts(const Borrow<Parts>& parts)
 	{
 		parts->die();
 	}
@@ -236,7 +236,7 @@ namespace mot
 
 namespace mot
 {
-	void loadPartsTexture(my::Scene* scene, const String& relativePath)
+	void loadPartsTexture(const Borrow<my::Scene>& scene, const String& relativePath)
 	{
 		//アセットが登録されていなければ
 		if (not scene->r.textures.contains(relativePath))
@@ -248,7 +248,7 @@ namespace mot
 		}
 	}
 
-	bool savePartsJson(PartsManager* pm, const String& path)
+	bool savePartsJson(const Borrow<PartsManager>& pm, const String& path)
 	{
 		Array<PartsParams> many_parts;
 		for (const auto& parts : pm->partsArray)
@@ -298,14 +298,14 @@ namespace mot
 		return json.save(path);
 	}
 
-	PartsManager* LoadParts::create(const String& jsonPath)
+	Borrow<PartsManager> LoadParts::create(const String& jsonPath)
 	{
 		auto pm = m_scene->birthObjectNonHitbox<PartsManager>();
 
 		return create(jsonPath, pm);
 	}
 
-	PartsManager* LoadParts::create(const String& jsonPath,PartsManager* pmanager)
+	Borrow<PartsManager> LoadParts::create(const String& jsonPath,const Borrow<PartsManager>& pmanager)
 	{
 		auto& pm = pmanager;
 
@@ -371,7 +371,7 @@ double draw_helper::CameraScaleOfParts::operator () () const
 	return (*helper)();
 }
 
-draw_helper::PartsShallow::PartsShallow(mot::PartsManager* p, IDraw2D* d)
+draw_helper::PartsShallow::PartsShallow(const Borrow<mot::PartsManager>& p, const Borrow<IDraw2D>& d)
 	:pmanager(p), DrawShallow(d)
 {
 

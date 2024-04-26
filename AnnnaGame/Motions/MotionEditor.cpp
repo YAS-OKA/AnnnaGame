@@ -44,16 +44,16 @@ namespace motionEditor
 class motionEditor::Impl
 {
 public:
-	Object* editor;
-	my::Scene* scene;
+	Borrow<Object> editor;
+	Borrow<my::Scene> scene;
 
 	double h = 70;
 	double w = 500;
 	const double downOffset = 15;
 
-	Object* window;
+	Borrow<Object> window;
 
-	Impl(Object* e):editor(e){
+	Impl(const Borrow<Object>& e):editor(e){
 		scene = editor->scene;
 	}
 
@@ -79,7 +79,7 @@ public:
 void motionEditor::MotionEditor::start()
 {
 	Object::start();
-	impl = new Impl(this);
+	impl = new Impl(*this);
 	impl->start();
 }
 

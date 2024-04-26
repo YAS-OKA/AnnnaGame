@@ -13,12 +13,12 @@ namespace skill
 
 		static SkillProvider* instance;
 
-		my::Scene* scene;
+		Borrow<my::Scene> scene;
 	public:
-		static void Init(my::Scene* scene);
+		static void Init(const Borrow<my::Scene>& scene);
 
 		static void Destroy();
 
-		static Skill* Get(StringView name);
+		static Borrow<Skill> Get(StringView name);
 	};
 }

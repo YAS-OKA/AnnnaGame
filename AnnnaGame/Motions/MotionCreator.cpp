@@ -16,15 +16,15 @@ namespace {
 	constexpr auto UiZvalue = 0;//-100000;
 	constexpr auto CameraZvalue = -200000;
 	constexpr double UiPriority = Math::Inf;
-	util::MouseObject* mouse = nullptr;
-	Entity* clickedSurfaceUiEntity = nullptr;
-	Entity* clickedSurfaceParts = nullptr;
-	Array<Collider*>uiCollider;//ui
-	Array<Collider*>partsCollider;//parts
-	Array<Collider*>pointCollider;//rotatePoint/scalePoint
-	mot::PartsManager* pmanager = nullptr;
-	mot::Parts* selecting=nullptr;
-	mot::Parts* grabbing=nullptr;
+	Borrow<util::MouseObject> mouse;
+	Borrow<Entity> clickedSurfaceUiEntity;
+	Borrow<Entity> clickedSurfaceParts;
+	Array<Borrow<Collider>>uiCollider;//ui
+	Array<Borrow<Collider>>partsCollider;//parts
+	Array<Borrow<Collider>>pointCollider;//rotatePoint/scalePoint
+	Borrow<mot::PartsManager> pmanager;
+	Borrow<mot::Parts> selecting;
+	Borrow<mot::Parts> grabbing;
 }
 
 namespace mot
@@ -32,10 +32,10 @@ namespace mot
 	class DrawPartsFrame :public IDraw2D
 	{
 	private:
-		Parts* parts;
+		Borrow<Parts> parts;
 	public:
 
-		DrawPartsFrame(DrawManager* manager, Parts* parts)
+		DrawPartsFrame(DrawManager* manager, const Borrow<Parts>& parts)
 			:IDraw2D(manager), parts(parts)
 		{
 		}
@@ -47,7 +47,7 @@ namespace mot
 	};
 	using Event = std::function<void()>;
 	template<class... Args>
-	ui::Button* ButtonEvent(Object* act_owner, const String& eventName, Array<Event> events, Args&& ...args)
+	Borrow<ui::Button> ButtonEvent(const Borrow<Object>& act_owner, const String& eventName, Array<Event> events, Args&& ...args)
 	{
 		auto button = ui::createButton(act_owner->scene, args...);
 		button->name = eventName + U"Button";
@@ -83,7 +83,7 @@ namespace mot
 	}
 
 	template<class... Args>
-	ui::Button* ButtonEvent(Object* act_owner, const String& eventName, const Event& event, Args&& ...args)
+	Borrow<ui::Button> ButtonEvent(const Borrow<Object> act_owner, const String& eventName, const Event& event, Args&& ...args)
 	{
 		return ButtonEvent(act_owner, eventName, Array<Event>{ event }, args...);
 	}
@@ -286,9 +286,9 @@ namespace mot
 		const double init_y = 10;
 		const double w = 330;
 		const double box_w = 200;
-		DrawRectF* window;//自分のコンポーネント
-		Collider* windowCollider;
-		ui::Button* fitButton;
+		Borrow<DrawRectF> window;//自分のコンポーネント
+		Borrow<Collider> windowCollider;
+		Borrow<ui::Button> fitButton;
 
 		void start()override
 		{
@@ -305,7 +305,7 @@ namespace mot
 
 			partsParamsSetting(PartsType::master);
 
-			auto button = ButtonEvent(this, U"fitting", [=] {
+			auto button = ButtonEvent(*this, U"fitting", [=] {
 				if (selecting != nullptr)fit();
 			}, U"適応する", 18, Vec2{ 0,0 });
 
@@ -322,7 +322,7 @@ namespace mot
 			ACreate(U"selectParts").add(
 				[=] {
 					auto pre = selecting;
-					Parts* selectedParts = nullptr;
+					Borrow<Parts> selectedParts;
 					for (const auto& parts : pmanager->partsArray)
 					{
 						if (parts == clickedSurfaceParts)
@@ -342,7 +342,7 @@ namespace mot
 			//パーツを動かす
 			std::shared_ptr<Vec2> offset{ new Vec2{0,0} };
 			ACreate(U"move")
-				.startIf([=] {return grabbing != nullptr; })
+				.startIf([=] {return grabbing; })
 				.add(
 				[=]
 				{
@@ -377,7 +377,7 @@ namespace mot
 					//rotatePosとかscalePosとか
 					auto ent = mouse->getClickedSurfaceObject(pointCollider);
 					if (ent != nullptr) {
-						dynamic_cast<Object*>(ent)->startAction(U"grab");
+						dynamic_cast<Object*>(ent.get())->startAction(U"grab");
 					}
 					else {
 						clickedSurfaceParts = nullptr;
@@ -398,7 +398,7 @@ namespace mot
 			params[param]->tex.text = te;
 		};
 
-		void select(Parts* target)
+		void select(const Borrow<Parts>& target)
 		{
 			selecting = target;
 			//フレームなどを描く
@@ -420,10 +420,10 @@ namespace mot
 
 			set();
 
-			if (selecting != nullptr)
+			if (selecting)
 			{
 				//フレームを生成
-				if(selecting->collider != nullptr) createPartsFrame();
+				if(selecting->collider) createPartsFrame();
 
 				//rotatePointの生成
 				createRotatePoint();
@@ -434,7 +434,7 @@ namespace mot
 		{
 			for (const auto& param : params)param.second->tex.text = U"";
 
-			if (selecting == nullptr)return;
+			if (not selecting)return;
 
 			setText(U"Name", selecting->getName());
 			setText(U"Parent", selecting->getParent());
@@ -684,10 +684,10 @@ namespace mot
 		bool touch_thumb;
 		bool touch_bar_thumb;
 		double x, y, r;
-		DrawRectF* bar_thumb;
-		DrawRectF* scale_bar;
-		DrawCircle* range;
-		DrawCircle* thumb;
+		Borrow<DrawRectF> bar_thumb;
+		Borrow<DrawRectF> scale_bar;
+		Borrow<DrawCircle> range;
+		Borrow<DrawCircle> thumb;
 		double sensitivity;
 		double mouse_sensitivity;
 
@@ -703,8 +703,8 @@ namespace mot
 			}
 		}
 
-		Collider* c1;
-		Collider* c2;
+		Borrow<Collider> c1;
+		Borrow<Collider> c2;
 	public:
 		DrawManager* manager;
 
@@ -816,7 +816,7 @@ namespace mot
 
 		void birthPartsManager()
 		{
-			if (pmanager != nullptr)pmanager->die();
+			if (pmanager)pmanager->die();
 			pmanager = scene->birthObjectNonHitbox<PartsManager>();
 			pmanager->scaleHelperParamsSetting(Abs(CameraZvalue), Camera::Z);
 		}
@@ -832,7 +832,7 @@ namespace mot
 			c = scene->birthObjectNonHitbox<CmdArea>();
 
 			//画像読み込み
-			ButtonEvent(this, U"readImg", [=] {
+			ButtonEvent(*this, U"readImg", [=] {
 				Array<String>path = Dialog::OpenFiles({ FileFilter::AllImageFiles() });
 				if (path.isEmpty())return;
 				//パーツ追加
@@ -845,7 +845,7 @@ namespace mot
 			}, U"画像読み込み", 20, Vec2{ 10,10 });
 
 			//JSON読み込み
-			ButtonEvent(this, U"loadJSON", [=] {
+			ButtonEvent(*this, U"loadJSON", [=] {
 				Optional<FilePath> path = Dialog::OpenFile({ FileFilter::JSON() });
 				if (not path)return;
 				//masterパーツを殺して新しく構築
@@ -855,21 +855,17 @@ namespace mot
 				for (auto& p : pmanager->partsArray)
 				{
 					if (p->collider)partsCollider << p->collider;
-					/*if (p == pmanager->master)continue;
-
-					if (p->base.path) partsCollider << p->createHitbox(resource::texture(*p->base.path).size() / 2, Image{ AssetManager::myAsset(localPath + *p->base.path) }.alphaToPolygons());
-					else partsCollider << p->createHitbox({ 0,0 }, { std::get<1>(p->base.drawing).asPolygon() });*/
 				}
 			}, U"JSON読み込み", 20, Vec2{ 10,50 });
 
 			//保存
-			ButtonEvent(this, U"save", [=] {
+			ButtonEvent(*this, U"save", [=] {
 				Optional<FilePath> path = Dialog::SaveFile({ FileFilter::JSON() });
 				if (path)savePartsJson(pmanager, *path);
 			}, U"保存", 20, Vec2{ 10,90 });
 
 			//操作方法切り替え
-			ButtonEvent(this, U"keyMoveModeChange", Array<Event>{
+			ButtonEvent(*this, U"keyMoveModeChange", Array<Event>{
 				[=] {
 					auto button = scene->findOne<ui::Button>(U"keyMoveModeChangeButton");
 					button->setText(U"キー操作終了");

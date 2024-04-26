@@ -4,7 +4,7 @@
 class Camera :public Object
 {
 	BasicCamera3D camera;
-	Object* followTarget;
+	Borrow<Object> followTarget;
 	Vec2 baseScreenSize;
 	double screenDistance;
 public:
@@ -46,7 +46,7 @@ public:
 
 	Vec3 getForcusDir()const;
 
-	void setFollowTarget(Object* obj);
+	void setFollowTarget(const Borrow<Object>& obj);
 
 	Point getSceneSize()const;
 

@@ -6,7 +6,7 @@
 #include"../UI.h"
 #include"../Scenes.h"
 
-CardComponent::CardComponent(StringView assetPath, Object* player, const std::function<double()>& gageRate)
+CardComponent::CardComponent(StringView assetPath, const Borrow<Object>& player, const std::function<double()>& gageRate)
 	:assetPath(assetPath), player(player), gageRate(gageRate)
 {
 }

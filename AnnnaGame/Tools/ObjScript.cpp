@@ -4,7 +4,7 @@
 #include"../Game/Scenes.h"
 #include"../Asset/AssetManager.h"
 
-Object* tool::ObjScript::create(const DataSaver& data,Optional<String> objName)
+Borrow<Object> tool::ObjScript::create(const DataSaver& data,Optional<String> objName)
 {
 	auto obj = scene->birthObjectNonHitbox();
 
@@ -87,7 +87,7 @@ Object* tool::ObjScript::create(const DataSaver& data,Optional<String> objName)
 	return obj;
 }
 
-Object* tool::ObjScript::_loadImpl(const String& text, const String& name)
+Borrow<Object> tool::ObjScript::_loadImpl(const String& text, const String& name)
 {
 	auto data = DataSaver(U"", text).getDataSaver(name);
 

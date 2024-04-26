@@ -43,7 +43,7 @@ namespace util
 
 		Vec3 convert(const Vec3& pos)const;
 
-		Vec3 convert(Transform* transform)const;
+		Vec3 convert(const Borrow<Transform>& transform)const;
 	};
 	//カメラからの距離をもとにスケーリングする　遠近法
 	class Convert2DScale
@@ -51,7 +51,7 @@ namespace util
 	public:
 		Camera::DistanceType type;
 
-		Camera* camera = nullptr;
+		Borrow<Camera> camera = nullptr;
 
 		DrawManager* dManager;
 
@@ -68,7 +68,7 @@ namespace util
 
 		Vec3 convert(const Vec3& scale,const Vec3& pos)const;
 
-		Vec3 convert(Transform* transform)const;
+		Vec3 convert(const Borrow<Transform>& transform)const;
 	};
 
 	constexpr auto sc = s3d::Scene::Center;
@@ -80,7 +80,7 @@ namespace util
 	public:
 		DrawManager* manager;
 
-		Collider* mouseHitbox;
+		Borrow<Collider> mouseHitbox;
 
 		void start()override;
 
@@ -88,15 +88,15 @@ namespace util
 
 		Vec3 getCursorPos(Influence* dManagerInfluence)const;
 
-		Array<Entity*> getClickedObjects(Array<Collider*> colliders) const;
+		Array<Borrow<Entity>> getClickedObjects(Array<Borrow<Collider>> colliders) const;
 
 		enum SurfaceType {
 			depth,
 			z,
 		};
 		//クリックされた表面のエンティティを返す
-		Entity* getClickedSurfaceObject(Array<Collider*> collider, const SurfaceType& type = depth);
+		Borrow<Entity> getClickedSurfaceObject(Array<Borrow<Collider>> collider, const SurfaceType& type = depth);
 		//クリックされた表面のエンティティを返す　2D(FigureCollider)を優先する
-		Entity* getClickedSurfaceObject2DPrior(Array<Collider*> colliders, const SurfaceType& type2d = z, const SurfaceType& type3d = depth);
+		Borrow<Entity> getClickedSurfaceObject2DPrior(Array<Borrow<Collider>> colliders, const SurfaceType& type2d = z, const SurfaceType& type3d = depth);
 	};	
 }

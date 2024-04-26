@@ -122,12 +122,12 @@ public:
 		decoder = target;
 	}
 
-	void motionScriptCmd(mot::PartsManager* pmanager);
+	void motionScriptCmd(const Borrow<mot::PartsManager>& pmanager);
 
-	void objScriptCmd(Object* obj);
+	void objScriptCmd(const Borrow<Object>& obj);
 
 	// mkpar(name,path or figuretype,x,y (and w,h case fig)) MakeParts
-	void registerMakePartsCmd(mot::PartsManager* pmanager, bool createHitbox = false, const EventFunction<mot::MakeParts>& ef = Eventa<mot::MakeParts>::NonEvent);
+	void registerMakePartsCmd(const Borrow<mot::PartsManager>& pmanager, bool createHitbox = false, const EventFunction<mot::MakeParts>& ef = Eventa<mot::MakeParts>::NonEvent);
 	using MakePartsPostProcessing = PostProcessing<mot::MakeParts>;
-	void registerMakePartsCmd(mot::PartsManager* pmanager, MakePartsPostProcessing processing, const EventFunction<mot::MakeParts>& ef = Eventa<mot::MakeParts>::NonEvent);
+	void registerMakePartsCmd(const Borrow<mot::PartsManager>& pmanager, MakePartsPostProcessing processing, const EventFunction<mot::MakeParts>& ef = Eventa<mot::MakeParts>::NonEvent);
 };

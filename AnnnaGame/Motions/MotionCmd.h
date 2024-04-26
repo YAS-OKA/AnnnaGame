@@ -9,7 +9,7 @@ namespace mot
 	class MakeParts :public prg::IAction
 	{
 	private:
-		class Parts* createdParts = nullptr;
+		Borrow<class Parts> createdParts;
 	public:
 		String name;
 
@@ -19,7 +19,7 @@ namespace mot
 
 		double x, y;
 
-		class PartsManager* pmanager;
+		Borrow<class PartsManager> pmanager;
 
 		bool createHitbox = false;
 
@@ -52,14 +52,14 @@ namespace mot
 			}
 		}
 
-		MakeParts* build(PartsManager* pmanager, bool createHitbox)
+		MakeParts* build(const Borrow<PartsManager>& pmanager, bool createHitbox)
 		{
 			this->pmanager = pmanager;
 			this->createHitbox = createHitbox;
 			return this;
 		};
 		//keepParts=falseの場合、現在のcreatedPartsを返して、このクラスのcreatedParts=nullptrにする。
-		Parts* getCreatedParts(bool keepParts = false);
+		Borrow<Parts> getCreatedParts(bool keepParts = false);
 
 	private:
 		virtual void start()override;
@@ -68,22 +68,22 @@ namespace mot
 	class FindParts :public prg::IAction
 	{
 	private:
-		class Parts* foundParts = nullptr;
+		Borrow<class Parts> foundParts;
 	public:
 		String name;
 
-		class PartsManager* pmanager;
+		Borrow<class PartsManager> pmanager;
 
 		FindParts(const String& name)
 			:name(name) {};
 
-		FindParts* build(PartsManager* pmanager)
+		FindParts* build(const Borrow<PartsManager>& pmanager)
 		{
 			this->pmanager = pmanager;
 			return this;
 		};
 
-		Parts* getFindParts(bool keepParts = false);
+		Borrow<Parts> getFindParts(bool keepParts = false);
 	private:
 		virtual void start()override;
 	};
@@ -97,14 +97,14 @@ namespace mot
 
 		bool killChildren;
 
-		class PartsManager* pmanager;
+		Borrow<class PartsManager> pmanager;
 
 		KillParts(const String& name, bool killChildren = false)
 			:name(name), killChildren(killChildren)
 		{
 		}
 
-		KillParts* build(PartsManager* pmanager)
+		KillParts* build(const Borrow<PartsManager>& pmanager)
 		{
 			this->pmanager = pmanager;
 			return this;
@@ -119,7 +119,7 @@ namespace mot
 	class SetMotion:public prg::IAction
 	{
 	public:
-		PartsManager* pMan;
+		Borrow<PartsManager> pMan;
 		String targetName;
 		String motionName;
 		double time;
@@ -131,7 +131,7 @@ namespace mot
 		{
 		}
 
-		SetMotion<T>* build(PartsManager* pMan)
+		SetMotion<T>* build(const Borrow<PartsManager>& pMan)
 		{
 			this->pMan = pMan;
 			return this;
@@ -156,13 +156,13 @@ namespace mot
 	class LoadMotionScript:public prg::IAction
 	{
 	public:
-		PartsManager* pman;
+		Borrow<PartsManager> pman;
 		FilePath path;
 		String motionName;
 
 		LoadMotionScript(FilePath path,String motionName);
 //load asset/motion/sara/motion.txt tmp
-		LoadMotionScript* build(PartsManager* pman);
+		LoadMotionScript* build(const Borrow<PartsManager>& pman);
 
 	protected:
 		void start();
@@ -171,7 +171,7 @@ namespace mot
 	class WriteMotionScript :public prg::IAction
 	{
 	public:
-		PartsManager* pman;
+		Borrow<PartsManager> pman;
 		FilePath path;
 		String motionName;
 		Optional<String> time;
@@ -179,7 +179,7 @@ namespace mot
 
 		WriteMotionScript(FilePath path, String motionName, Optional<String> time = none, Optional<String> len = none);
 
-		WriteMotionScript* build(PartsManager* pmana);
+		WriteMotionScript* build(const Borrow<PartsManager>& pmana);
 
 		Array<String> createMotionText()const;
 
@@ -191,12 +191,12 @@ namespace mot
 	{
 	public:
 		bool loop;
-		PartsManager* pMan;
+		Borrow<PartsManager> pMan;
 		String motionName;
 
 		StartMotion(String motionName, bool loop = false);
 
-		StartMotion* build(PartsManager* pMan)
+		StartMotion* build(const Borrow<PartsManager>& pMan)
 		{
 			this->pMan = pMan;
 			return this;

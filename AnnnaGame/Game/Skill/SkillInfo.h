@@ -15,6 +15,6 @@ namespace skill
 
 		InfoV(const Value& v) :v(v) {}
 	};
-	using Chara = InfoV<Character*>;
+	using Chara = InfoV<Borrow<Character>>;
 	using Pro = InfoV<size_t>;
 }

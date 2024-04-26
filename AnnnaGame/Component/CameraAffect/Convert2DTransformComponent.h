@@ -13,13 +13,13 @@ class Convert2DTransformComponent :public Component
 public:
 	Convert2DTransform converter;
 
-	Transform* target;
+	Borrow<Transform> target;
 
-	Transform* ownerTransform;
+	Borrow<Transform> ownerTransform;
 	
-	Convert2DTransformComponent(Transform* convTarget, const Convert2DTransform& converter);
+	Convert2DTransformComponent(const Borrow<Transform>& convTarget, const Convert2DTransform& converter);
 
-	Convert2DTransformComponent(Transform* convTarget, DrawManager* dm, const ProjectionType& type = ProjectionType::Parallel);
+	Convert2DTransformComponent(const Borrow<Transform>& convTarget, DrawManager* dm, const ProjectionType& type = ProjectionType::Parallel);
 
 	void convert();
 	

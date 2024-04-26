@@ -93,13 +93,13 @@ namespace prg
 	public:
 		Vec3 initVel{ 0,0,0 };
 		Vec3 acc{ 0,0,0 };
-		Transform* transform = nullptr;
+		Borrow<Transform> transform;
 
-		MoveAct(Transform* transform, const Vec3& initVel, const Optional<double>& t = none);
+		MoveAct(const Borrow<Transform>& transform, const Vec3& initVel, const Optional<double>& t = none);
 
 		MoveAct(const Vec3& initVel, const Optional<double>& t = none);
 
-		void setTransform(Transform* t);
+		void setTransform(const Borrow<Transform>& t);
 
 		Vec3 getVel()const;
 	protected:
@@ -120,9 +120,9 @@ namespace prg
 		//getter
 		Vec3 vel;
 
-		Transform* transform;
+		Borrow<Transform> transform;
 
-		MulMove(Transform* transform, const Optional<double>& constantSpeed = none, const Optional<double>& t = none);
+		MulMove(const Borrow<Transform>& transform, const Optional<double>& constantSpeed = none, const Optional<double>& t = none);
 
 		void setLimit(double limitingSpeed);
 
@@ -135,7 +135,7 @@ namespace prg
 	class FreeFall :public MoveAct
 	{
 	public:
-		FreeFall(Transform* transform, const Vec3& initVel, double acc, const Optional<double>& t = none);
+		FreeFall(const Borrow<Transform>& transform, const Vec3& initVel, double acc, const Optional<double>& t = none);
 
 		void setAcc(double a);
 	};
@@ -143,9 +143,9 @@ namespace prg
 	class LifeSpan :public IAction
 	{
 	public:
-		Object* target;
+		Borrow<Object> target;
 
-		LifeSpan(Object* target, const Optional<double>& time = none);
+		LifeSpan(const Borrow<Object>& target, const Optional<double>& time = none);
 	protected:
 		void end()override;
 	};
@@ -153,16 +153,16 @@ namespace prg
 	class Hitbox:public IAction
 	{
 	public:
-		Collider* collider;
+		Borrow<Collider> collider;
 
-		Object* hitbox;
+		Borrow<Object> hitbox;
 		//衝突するカテゴリー
 		HashSet<ColliderCategory> targetCategory{};
 		//衝突したエンティティを保管 一フレームごとに更新
 		HashTable<ColliderCategory, HashSet<Entity*>> collidedEntitys{};
 
 		template <class Shape>
-		Hitbox(Object* chara,const Shape& shape, const Vec3& relative, const Optional<double> time = none)
+		Hitbox(const Borrow<Object>& chara,const Shape& shape, const Vec3& relative, const Optional<double> time = none)
 			:IAction(time)
 		{
 			hitbox = chara->scene->birthObject(shape, Vec3{ 0,0,0 });
@@ -192,15 +192,15 @@ namespace prg
 	class ShowParam:public IAction
 	{
 	public:
-		Character* chara;
-		ShowParam(Character* chara, const Optional<double>& time = Math::Inf);
+		Borrow<Character> chara;
+		ShowParam(const Borrow<Character>& chara, const Optional<double>& time = Math::Inf);
 
 	protected:
 		void update(double dt)override;
 	};
 
 	template<class T1, class T2, class T3, class T4>
-	MulMove Move4D(Transform* transform ,double speed, const T1& upCondition, const T2& downCondition, const T3& leftCondition, const T4& rightCondition)
+	MulMove Move4D(const Borrow<Transform>& transform ,double speed, const T1& upCondition, const T2& downCondition, const T3& leftCondition, const T4& rightCondition)
 	{
 		return MulMove(transform, speed)
 			* MoveAct({ 0,0,1 }).activeIf<T1>(upCondition)
@@ -210,7 +210,7 @@ namespace prg
 	}
 
 	template<class T1, class T2, class T3, class T4>
-	ActCluster Look4D(Transform* transform, const T1& upCondition, const T2& downCondition, const T3& leftCondition, const T4& rightCondition)
+	ActCluster Look4D(const Borrow<Transform>& transform, const T1& upCondition, const T2& downCondition, const T3& leftCondition, const T4& rightCondition)
 	{
 		return FuncAction([=] {transform->setDirection({ 0,0,1 }); }).startIf<T1>(upCondition)
 			* FuncAction([=] {transform->setDirection({ 0,0,-1 }); }).startIf<T2>(downCondition)
@@ -220,7 +220,7 @@ namespace prg
 	//便利?
 	namespace use {
 		template<class T1, class T2, class T3, class T4>
-		ActCluster Move4D(Transform* transform, double speed, const T1& upCondition, const T2& downCondition, const T3& leftCondition, const T4& rightCondition)
+		ActCluster Move4D(const Borrow<Transform>& transform, double speed, const T1& upCondition, const T2& downCondition, const T3& leftCondition, const T4& rightCondition)
 		{
 			return prg::Move4D(transform,
 						speed,

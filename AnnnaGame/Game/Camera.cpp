@@ -58,7 +58,7 @@ void Camera::update(double dt)
 //	}
 //#endif
 		
-	auto targetPos = followTarget == nullptr ? Vec3{0,0,0} : followTarget->transform->getPos();
+	auto targetPos = not(followTarget) ? Vec3{0,0,0} : followTarget->transform->getPos();
 
 	//if (KeyQ.pressed()) {
 	//	theta += 5 * dt;
@@ -122,7 +122,7 @@ Vec3 Camera::getForcusDir() const
 	return (camera.getFocusPosition()- camera.getEyePosition()).normalize();
 }
 
-void Camera::setFollowTarget(Object* target)
+void Camera::setFollowTarget(const Borrow<Object>& target)
 {
 	followTarget = target;
 	transform->setParent(target->transform);

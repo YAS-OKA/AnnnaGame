@@ -13,7 +13,7 @@
 #include"../../Component/PartsCont/PartsMirrored.h"
 #include"../../Motions/Parts.h"
 
-void setSimple(Enemy*, state::Inform&&);
+void setSimple(const Borrow<Enemy>&, state::Inform&&);
 
 EnemyAIProvider* EnemyAIProvider::instance = nullptr;
 
@@ -34,7 +34,7 @@ void EnemyAIProvider::Destroy()
 	instance = nullptr;
 }
 
-void EnemyAIProvider::Set(StringView name, Enemy* e, state::Inform&& info)
+void EnemyAIProvider::Set(StringView name, const Borrow<Enemy>& e, state::Inform&& info)
 {
 	if (instance)
 	{
@@ -43,13 +43,13 @@ void EnemyAIProvider::Set(StringView name, Enemy* e, state::Inform&& info)
 	}
 }
 //サンプル状態遷移
-void setSimple(Enemy* e, state::Inform&& info)
+void setSimple(const Borrow<Enemy>& e, state::Inform&& info)
 {
 	using namespace prg;
 	using namespace state;
 	using namespace setting;
 
-	auto target = e->addComponentNamed<Field<Player*>>(U"Target");
+	auto target = e->addComponentNamed<Field<Borrow<Player>>>(U"Target");
 
 	auto param = e->getComponent<Field<HashTable<String, Info>>>(U"StateMachineParam");
 	if (not param)param = e->addComponentNamed<Field<HashTable<String, Info>>>(U"StateMachineParam");

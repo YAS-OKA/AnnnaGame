@@ -10,7 +10,7 @@ void Object::start()
 	Entity::start();
 	name = U"Object";
 	transform = addComponentNamed<Transform>(U"original");
-	scene->entitysTransform.emplace(this, transform);
+	scene->entitysTransform << transform;
 }
 
 void Object::startAction(StringView actionName)
@@ -44,10 +44,9 @@ prg::Actions& Object::ACreate(StringView actionName,bool startAction,bool loopAc
 void Object::onTrashing()
 {
 	Entity::onTrashing();
-	scene->entitysTransform.erase(this);
 }
 
 void Object::die()
 {
-	owner->kill(this);
+	owner->kill(*this);
 }

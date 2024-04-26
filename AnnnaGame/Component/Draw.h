@@ -32,9 +32,9 @@ namespace draw_helper {
 	public:
 		util::Convert2DScale converter;
 
-		Transform* transform;
+		Borrow<Transform> transform;
 
-		ScaleCalculation2D(Transform* transform, DrawManager* m, double baseLength=100,const Camera::DistanceType& type=Camera::DistanceType::XYZ);
+		ScaleCalculation2D(const Borrow<Transform>& transform, DrawManager* m, double baseLength=100,const Camera::DistanceType& type=Camera::DistanceType::XYZ);
 
 		virtual double operator ()() const;
 	};
@@ -46,9 +46,9 @@ namespace draw_helper {
 
 		double m_depth = 0;
 
-		IDraw2D* owner;
+		Borrow<IDraw2D> owner;
 
-		DrawShallow(IDraw2D* owner);
+		DrawShallow(const Borrow<IDraw2D>& owner);
 
 		virtual void cal_depth();
 
@@ -134,7 +134,7 @@ public:
 	//xyz比
 	Transform::Scale aspect;
 
-	Transform* transform;
+	Borrow<Transform> transform;
 	//相対座標
 	Vec3 relative{ 0,0,0 };
 
@@ -170,7 +170,7 @@ public:
 
 	void start() override {
 		IDrawing::start();
-		manager->set3D(this);
+		manager->set3D(*this);
 	};
 	virtual void draw()const = 0;
 };
@@ -198,9 +198,9 @@ public:
 	ScaleHelper2D* _scale_calculation = nullptr;
 	DrawShallow* shallow = nullptr;
 	
-	Field<Influence>* dManagerInfluence;
+	Borrow<Field<Influence>> dManagerInfluence;
 
-	Field<Influence>* cameraInfluence;//まだ使ってない
+	Borrow<Field<Influence>> cameraInfluence;//まだ使ってない
 
 	IDraw2D(DrawManager* manager);
 
@@ -211,11 +211,11 @@ public:
 	RectF viewport{ 0,0,Scene::Size() };
 	void start() override{
 		IDrawing::start();
-		manager->set2D(this);
+		manager->set2D(*this);
 		_scale_calculation = new NonScaleByCamera();
-		shallow = new DrawShallow(this);
+		shallow = new DrawShallow(*this);
 		dManagerInfluence = owner->getComponent<Field<Influence>>(U"dManagerInfluence");
-		if (dManagerInfluence == nullptr)dManagerInfluence = owner->addComponentNamed<Field<Influence>>(U"dManagerInfluence", Influence());
+		if (not dManagerInfluence)dManagerInfluence = owner->addComponentNamed<Field<Influence>>(U"dManagerInfluence", Influence());
 	};
 
 	template<class ScaleHelper,class... Args>

@@ -95,7 +95,7 @@ public:
 
 	static HashSet<ColliderCategory> AllCategory;
 
-	Transform* transform;
+	Borrow<Transform> transform;
 
 	bool collidable = true;
 
@@ -114,13 +114,13 @@ public:
 
 	void update(double dt)override;
 
-	Array<Entity*> intersects(const HashSet<ColliderCategory> targets)const;
+	Array<Borrow<Entity>> intersects(const HashSet<ColliderCategory> targets)const;
 
-	Array<Entity*> intersects(const ColliderCategory& target)const;
+	Array<Borrow<Entity>> intersects(const ColliderCategory& target)const;
 
-	Array<Entity*> intersectsAll()const;
+	Array<Borrow<Entity>> intersectsAll()const;
 
-	bool intersects(const Collider* target)const;
+	bool intersects(const Borrow<Collider>& target)const;
 
 	void setCategory(const ColliderCategory& category);
 

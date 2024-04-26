@@ -7,7 +7,7 @@ namespace
 	HashSet<String> simpleMotion{U"SetAngle", U"SetZ"};
 }
 
-void mot::MotionScript::Load(PartsManager* pMan,const String& motionName, const String& text)
+void mot::MotionScript::Load(const Borrow<PartsManager>& pMan,const String& motionName, const String& text)
 {
 	DecoderSet(&deco).motionScriptCmd(pMan);
 	String target = U"";
@@ -65,7 +65,7 @@ void mot::MotionScript::Load(PartsManager* pMan,const String& motionName, const 
 	}
 }
 
-bool mot::MotionScript::LoadFile(PartsManager* pMan, const String& path, const String& motionName)
+bool mot::MotionScript::LoadFile(const Borrow<PartsManager>& pMan, const String& path, const String& motionName)
 {
 	auto reader = TextReader{ path };
 	if (not reader)return false;
@@ -97,12 +97,12 @@ bool mot::MotionScript::LoadFile(PartsManager* pMan, const String& path, const S
 	return true;
 }
 
-mot::PartsMotion::PartsMotion(Parts* target, double time)
+mot::PartsMotion::PartsMotion(const Borrow<Parts>& target, double time)
 	:TimeAction(time), target(target)
 {
 }
 
-mot::Rotate::Rotate(Parts* target, double angle, double time)
+mot::Rotate::Rotate(const Borrow<Parts>& target, double angle, double time)
 	:PartsMotion(target, time), ang(angle)
 {
 }
@@ -114,7 +114,7 @@ void mot::Rotate::update(double dt)
 	target->setAngle(target->getAngle() + ang * dtPerTime(dt));
 }
 
-mot::RotateTo::RotateTo(Parts* target, double angle, double time, Optional<bool> clockwizeRotation, int32 rotation)
+mot::RotateTo::RotateTo(const Borrow<Parts>& target, double angle, double time, Optional<bool> clockwizeRotation, int32 rotation)
 	:PartsMotion(target, time), angle(angle), clockwizeRotation(clockwizeRotation), rotation(rotation)
 {
 	firstRotateDirectionIsDesignated = (bool)clockwizeRotation;//noneでなければtrue
@@ -189,7 +189,7 @@ void mot::RotateTo::reset()
 	if (not firstRotateDirectionIsDesignated)clockwizeRotation = none;
 }
 
-mot::Move::Move(Parts* target, double moveX, double moveY, double time)
+mot::Move::Move(const Borrow<Parts>& target, double moveX, double moveY, double time)
 	:PartsMotion(target, time), move({ moveX,moveY })
 {
 }
@@ -201,7 +201,7 @@ void mot::Move::update(double dt)
 	target->setPos(target->getPos() + move * dtPerTime(dt));
 }
 
-mot::MoveTo::MoveTo(Parts* target, double destX, double destY, double time)
+mot::MoveTo::MoveTo(const Borrow<Parts>& target, double destX, double destY, double time)
 	:PartsMotion(target, time),dest({ destX,destY })
 {
 }
@@ -224,7 +224,7 @@ void mot::MoveTo::update(double dt)
 	acts.update(dt);
 }
 
-mot::AddZ::AddZ(Parts* target, double z, double time)
+mot::AddZ::AddZ(const Borrow<Parts>& target, double z, double time)
 	:PartsMotion(target,time),z(z)
 {
 }
@@ -236,7 +236,7 @@ void mot::AddZ::update(double dt)
 	target->setZ(target->getZ() + z * dtPerTime(dt));
 }
 
-mot::SetZ::SetZ(Parts* target, double z, double time)
+mot::SetZ::SetZ(const Borrow<Parts>& target, double z, double time)
 	:PartsMotion(target,time),z(z)
 {
 }
@@ -247,7 +247,7 @@ void mot::SetZ::update(double dt)
 
 }
 
-mot::AddScale::AddScale(Parts* target, const Vec2& scale, double time)
+mot::AddScale::AddScale(const Borrow<Parts>& target, const Vec2& scale, double time)
 	:PartsMotion(target,time),scale(scale)
 {
 }
@@ -258,7 +258,7 @@ void mot::AddScale::update(double dt)
 
 }
 
-mot::SetScale::SetScale(Parts* target, double sX, double sY, double time)
+mot::SetScale::SetScale(const Borrow<Parts>& target, double sX, double sY, double time)
 	:PartsMotion(target,time),scale({sX,sY})
 {
 }
@@ -285,7 +285,7 @@ Vec2 mot::PauseTo::calDestination()const
 	return dest;
 }
 
-mot::PauseTo::PauseTo(Parts* target, double destX, double destY, double sX, double sY, double angle, double time, Optional<bool> clockwizeRotation, int32 rotation)
+mot::PauseTo::PauseTo(const Borrow<Parts>& target, double destX, double destY, double sX, double sY, double angle, double time, Optional<bool> clockwizeRotation, int32 rotation)
 	:PartsMotion(target, time), ang(angle), clockwizeRotation(clockwizeRotation), rotation(rotation), dest({ destX,destY }), scale({ sX,sY }),parentDirectionInit(none)
 {
 }

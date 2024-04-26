@@ -18,7 +18,7 @@ namespace skill
 using namespace skill;
 
 //キャラのパラメータをいじるスキル効果のインターフェース
-ParamMod::ParamMod(Skill* s, double time)
+ParamMod::ParamMod(const Borrow<Skill>& s, double time)
 	:ISkillEffect(s, time)
 {
 };
@@ -30,13 +30,13 @@ void ParamMod::start()
 		params = &_CTarget->param;
 	}
 	else if (_target) {
-		if (auto target = dynamic_cast<Character*>(_target))
+		if (auto target = dynamic_cast<Character*>(_target.get()))
 			params = &target->param;
 	}
 };
 
 //ダメージ
-Damage::Damage(Skill* s, Formula<Damage> damage)
+Damage::Damage(const Borrow<Skill>& s, Formula<Damage> damage)
 	:ParamMod(s, 0), damage(damage) {}
 
 void Damage::start()
@@ -45,7 +45,7 @@ void Damage::start()
 	if (params)params->hp -= CalFormula(damage, this);
 }
 
-skill::Knockback::Knockback(Skill* s, double time, Formula<Knockback, Vec3> dir, Formula<Knockback>power)
+skill::Knockback::Knockback(const Borrow<Skill>& s, double time, Formula<Knockback, Vec3> dir, Formula<Knockback>power)
 	:ISkillEffect(s, time), dir(dir), power(power)
 {
 }
@@ -84,7 +84,7 @@ void skill::Knockback::update(double dt)
 }
 
 //継続ダメージ
-DotDamage::DotDamage(Skill* s, double span, double time, Formula<DotDamage> damage)
+DotDamage::DotDamage(const Borrow<Skill>& s, double span, double time, Formula<DotDamage> damage)
 	: ParamMod(s, time), timeSpan(span), damage(damage)
 {
 }
@@ -120,13 +120,13 @@ void DotDamage::update(double dt)
 }
 
 
-ISkillEffect::ISkillEffect(Skill* skill, double time)
+ISkillEffect::ISkillEffect(const Borrow<Skill>& skill, double time)
 	:skill(skill)
 {
 	setTime(time);
 }
 
-ISkillEffect::ISkillEffect(Skill* skill)
+ISkillEffect::ISkillEffect(const Borrow<Skill>& skill)
 	:skill(skill)
 {
 }
@@ -144,12 +144,12 @@ void ISkillEffect::end()
 	removeTargetEffects();
 }
 
-void ISkillEffect::setTarget(Object* obj)
+void ISkillEffect::setTarget(const Borrow<Object>& obj)
 {
 	_target = obj;
 }
 
-void ISkillEffect::setCTarget(Character* chara)
+void ISkillEffect::setCTarget(const Borrow<Character>& chara)
 {
 	_CTarget = chara;
 }
@@ -179,7 +179,7 @@ Borrow<SHitbox> Skill::getHitbox(StringView name)
 void Skill::build()
 {
 	//もし変更が起こっていたら まだ判定してないけど
-	collback(this, ACreate(name));
+	collback(*this, ACreate(name));
 }
 
 void Skill::act()

@@ -1,12 +1,12 @@
 ﻿#include "../../stdafx.h"
 #include "Convert2DScaleComponent.h"
 
-Convert2DScaleComponent::Convert2DScaleComponent(Transform* convTarget, const util::Convert2DScale& converter)
+Convert2DScaleComponent::Convert2DScaleComponent(const Borrow<Transform>& convTarget, const util::Convert2DScale& converter)
 	:converter(converter),target(convTarget)
 {
 }
 
-Convert2DScaleComponent::Convert2DScaleComponent(Transform* convTarget, double baseLength, DrawManager* dm, const Camera::DistanceType& type)
+Convert2DScaleComponent::Convert2DScaleComponent(const Borrow<Transform>& convTarget, double baseLength, DrawManager* dm, const Camera::DistanceType& type)
 	:converter(util::Convert2DScale(baseLength, dm, type)), target(convTarget)
 {
 }

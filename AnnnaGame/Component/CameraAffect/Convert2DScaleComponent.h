@@ -8,13 +8,13 @@ class Convert2DScaleComponent:public Component
 public:
 	util::Convert2DScale converter;
 
-	Transform* target;
+	Borrow<Transform> target;
 
-	Transform* ownerTransform;
+	Borrow<Transform> ownerTransform;
 
-	Convert2DScaleComponent(Transform* convTarget, const util::Convert2DScale& converter);
+	Convert2DScaleComponent(const Borrow<Transform>& convTarget, const util::Convert2DScale& converter);
 
-	Convert2DScaleComponent(Transform* convTarget, double baseLength,DrawManager* dm, const Camera::DistanceType& type = Camera::DistanceType::Screen);
+	Convert2DScaleComponent(const Borrow<Transform>& convTarget, double baseLength,DrawManager* dm, const Camera::DistanceType& type = Camera::DistanceType::Screen);
 
 	void convert();
 

@@ -5,6 +5,7 @@ namespace mot
 {
 	class PartsManager;
 }
+class Transform;
 
 class PartsMirrored:public Component
 {
@@ -12,15 +13,15 @@ private:
 	double scale = 1;
 	int32 firstScale;
 	bool active;
-	class Transform* transform;//これの方向をもとにする
+	Borrow<Transform> transform;//これの方向をもとにする
 	bool mirrored;
 
 	double mirroredTime = 0.2;
 	double timer = 0;
 public:
-	mot::PartsManager* pman;
+	Borrow<mot::PartsManager> pman;
 	//パーツマネージャー　最初から反転するか
-	PartsMirrored(mot::PartsManager* pman,bool mirrorStart = false);
+	PartsMirrored(const Borrow<mot::PartsManager>& pman,bool mirrorStart = false);
 
 	void start()override;
 

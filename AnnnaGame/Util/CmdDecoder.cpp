@@ -35,7 +35,7 @@ Err:
 #include"../Motions/Motion.h"
 #include"../Tools/ObjScript.h"
 
-void DecoderSet::motionScriptCmd(mot::PartsManager* pmanager)
+void DecoderSet::motionScriptCmd(const Borrow<mot::PartsManager>& pmanager)
 {
 	using namespace mot;
 
@@ -54,7 +54,7 @@ void DecoderSet::motionScriptCmd(mot::PartsManager* pmanager)
 	
 }
 
-void DecoderSet::objScriptCmd(Object* obj)
+void DecoderSet::objScriptCmd(const Borrow<Object>& obj)
 {
 	using namespace objScriptCmdAction;
 	//textureをアタッチ
@@ -92,7 +92,7 @@ void DecoderSet::objScriptCmd(Object* obj)
 	decoder->add<AttachCircle, double, double, double>(U"circle", obj);
 }
 
-void DecoderSet::registerMakePartsCmd(mot::PartsManager* pmana,bool createHitbox, const EventFunction<mot::MakeParts>& e)
+void DecoderSet::registerMakePartsCmd(const Borrow<mot::PartsManager>& pmana,bool createHitbox, const EventFunction<mot::MakeParts>& e)
 {
 	using namespace mot;
 
@@ -102,7 +102,7 @@ void DecoderSet::registerMakePartsCmd(mot::PartsManager* pmana,bool createHitbox
 	decoder->add_event_cmd< MakeParts, String, String, double, double, double>(U"mkpar",e, pmana,createHitbox);
 }
 
-void DecoderSet::registerMakePartsCmd(mot::PartsManager* pmanager, MakePartsPostProcessing processing, const EventFunction<mot::MakeParts>& e)
+void DecoderSet::registerMakePartsCmd(const Borrow<mot::PartsManager>& pmanager, MakePartsPostProcessing processing, const EventFunction<mot::MakeParts>& e)
 {
 	using namespace mot;
 	decoder->add_original<MakeParts, String, String, double, double>(U"mkpar",e, processing);

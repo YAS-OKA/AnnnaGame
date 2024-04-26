@@ -27,13 +27,14 @@ namespace mot
 		}
 	}
 
-	Parts* MakeParts::getCreatedParts(bool keepParts)
+	Borrow<Parts> MakeParts::getCreatedParts(bool keepParts)
 	{
 		auto ret = createdParts;
 		if (not keepParts)createdParts = nullptr;
 		return ret;
 	}
-	Parts* FindParts::getFindParts(bool keepParts)
+
+	Borrow<Parts> FindParts::getFindParts(bool keepParts)
 	{
 		auto ret = foundParts;
 		if (not keepParts)foundParts = nullptr;
@@ -108,7 +109,7 @@ namespace mot
 	{
 	}
 
-	LoadMotionScript* LoadMotionScript::build(PartsManager* pman)
+	LoadMotionScript* LoadMotionScript::build(const Borrow<PartsManager>& pman)
 	{
 		this->pman = pman;
 		return this;
@@ -127,7 +128,7 @@ namespace mot
 	{
 	}
 
-	WriteMotionScript* WriteMotionScript::build(PartsManager* pmana)
+	WriteMotionScript* WriteMotionScript::build(const Borrow<PartsManager>& pmana)
 	{
 		this->pman = pmana;
 		return this;

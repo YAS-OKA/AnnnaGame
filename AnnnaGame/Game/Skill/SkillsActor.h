@@ -10,15 +10,15 @@ namespace skill
 	class STarget
 	{
 	public:
-		skill::Skill* s;
-		Object* target;
-		Character* CTarget;
+		Borrow<skill::Skill> s;
+		Borrow<Object> target;
+		Borrow<Character> CTarget;
 		Actions& se;
 
-		STarget(skill::Skill* s, Object* target)
+		STarget(const Borrow<skill::Skill>& s, const Borrow<Object>& target)
 			:s(s), target(target), se(target->ACreate(U"Skill/" + s->name, true))
 		{
-			if (auto c = dynamic_cast<Character*>(target)) CTarget = c;
+			if (auto c = dynamic_cast<Character*>(target.get())) CTarget = *c;
 		}
 
 		template<class Act, std::enable_if_t<std::is_base_of_v<skill::ISkillEffect, Act>>* = nullptr>
@@ -37,12 +37,12 @@ namespace skill
 			se |= std::forward<Act>(act);
 		}
 
-		operator Object* ()const
+		operator Borrow<Object>()const
 		{
 			return target;
 		}
 
-		Object* operator ->()const
+		Borrow<Object> operator ->()const
 		{
 			return target;
 		}
@@ -51,13 +51,13 @@ namespace skill
 	class SHitbox :public prg::Hitbox
 	{
 	public:
-		skill::Skill* sk;
+		Borrow<skill::Skill> sk;
 		String name;
 
 		HashTable<ColliderCategory, HashSet<Entity*>> hitted;
 
 		template <class Shape>
-		SHitbox(skill::Skill* s, StringView name, Object* chara, const Shape& shape, const Vec3& relative, double time = Math::Inf, HashSet<ColliderCategory> catego = {})
+		SHitbox(const Borrow<skill::Skill>& s, StringView name, const Borrow<Object>& chara, const Shape& shape, const Vec3& relative, double time = Math::Inf, HashSet<ColliderCategory> catego = {})
 			:Hitbox(chara, shape, relative, time), sk(s), name(name)
 		{
 			setTarget(catego);
@@ -66,7 +66,7 @@ namespace skill
 		}
 
 		template <class Shape>
-		SHitbox(skill::Skill* s, Object* chara, const Shape& shape, const Vec3& relative, double time = Math::Inf, HashSet<ColliderCategory> catego = {})
+		SHitbox(const Borrow<skill::Skill>& s, const Borrow<Object>& chara, const Shape& shape, const Vec3& relative, double time = Math::Inf, HashSet<ColliderCategory> catego = {})
 			: Hitbox(chara, shape, relative, time), sk(s), name(Format(s->hitboxs.size()))
 		{
 			setTarget(catego);
@@ -81,9 +81,9 @@ namespace skill
 			{
 				if (not hitted.contains(category))continue;
 
-				for (const auto& entity : hitted.at(category))
+				for (auto& entity : hitted.at(category))
 				{
-					res << STarget(sk, dynamic_cast<Object*>(entity));
+					res << STarget(*sk, *dynamic_cast<Object*>(entity));
 				}
 			}
 			return res;
@@ -97,7 +97,7 @@ namespace skill
 				if (not collidedEntitys.contains(category))continue;
 				for (const auto& entity : collidedEntitys.at(category))
 				{
-					res << STarget(sk, dynamic_cast<Object*>(entity));
+					res << STarget(*sk, *dynamic_cast<Object*>(entity));
 				}
 			}
 			return res;
@@ -114,7 +114,7 @@ namespace skill
 				{
 					//初めてぶつかったオブジェクトなら追加
 					if (not (hitted.contains(category) and hitted.at(category).contains(entity)))
-						res << STarget(sk, dynamic_cast<Object*>(entity));
+						res << STarget(*sk, *dynamic_cast<Object*>(entity));
 				}
 			}
 			return res;
@@ -132,7 +132,7 @@ namespace skill
 			//死んだエンティティを持っていたら排除する
 			for (auto& [key, entitys] : hitted)
 			{
-				for (auto& entity : entitys)if (IsKilled(entity))hitted[key].erase(entity);
+				for (auto& entity : entitys)if (IsKilled(entity->lend()))hitted[key].erase(entity);
 			}
 		}
 

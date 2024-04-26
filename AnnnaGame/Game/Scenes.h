@@ -27,21 +27,21 @@ namespace my
 
 	//}
 
-	void createCollider(Entity* ent, const Box& shape, const Vec3& relative);
-	void createCollider(Entity* ent, const Cylinder& shape, const Vec3& relative);
+	void createCollider(const Borrow<Entity>& ent, const Box& shape, const Vec3& relative);
+	void createCollider(const Borrow<Entity>& ent, const Cylinder& shape, const Vec3& relative);
 
 	class Scene :public Entity
 	{
 	protected:
 		EntityManager entityManager;
 		DrawManager drawManager;
-		Camera* camera;
-		GameMaster* master;
+		Borrow<Camera> camera;
+		Borrow<GameMaster> master;
 		void hitboxVisible(const MeshData& data);
 	public:
 		RegisterAssets r;
 		mot::LoadParts* partsLoader;
-		HashTable<Object*,Transform*> entitysTransform;
+		Array<Borrow<Transform>> entitysTransform;
 
 		Scene();
 
@@ -49,20 +49,20 @@ namespace my
 
 		//entityManager.birth<T>(...)->scene=thisを省略
 		template<class T = Object, class ...Args>
-		T* birthObjectNonHitbox(Args&& ...args)
+		Borrow<T> birthObjectNonHitbox(Args&& ...args)
 		{
 			auto obj = entityManager.birthNonStart<T>(args...);
-			obj->scene = this;
+			obj->scene = *this;
 			obj->start();
 			return obj;
 		}
 		
 		//Hitboxがついてくる Box
 		template<class T=Object,class ...Args>
-		T* birthObject(const Box& shape,const Vec3& relative,Args&& ...args)
+		Borrow<T> birthObject(const Box& shape,const Vec3& relative,Args&& ...args)
 		{
 			auto obj=entityManager.birthNonStart<T>(args...);
-			obj->scene = this;
+			obj->scene = *this;
 			obj->start();
 			createCollider(obj,shape, relative);
 			auto vis = obj->addComponentNamed<Draw3D>(U"hitbox", getDrawManager(), MeshData::Box(shape.size));
@@ -73,10 +73,10 @@ namespace my
 		}
 		//Hitboxがついてくる Cylinder
 		template<class T = Object, class ...Args>
-		T* birthObject(const Cylinder& shape, const Vec3& relative, Args&& ...args)
+		Borrow<T> birthObject(const Cylinder& shape, const Vec3& relative, Args&& ...args)
 		{
 			auto obj = entityManager.birthNonStart<T>(args...);
-			obj->scene = this;
+			obj->scene = *this;
 			obj->start();
 			createCollider(obj,shape, relative);
 			auto vis = obj->addComponentNamed<Draw3D>(U"hitbox", getDrawManager(), MeshData::Cylinder(shape.r, shape.h));
@@ -87,10 +87,10 @@ namespace my
 		}
 		//Hitboxがついてくる
 		template<class T = Object, class ...Args>
-		T* birthObject(const Figure& shape, const Vec3& relative, Args&& ...args)
+		Borrow<T> birthObject(const Figure& shape, const Vec3& relative, Args&& ...args)
 		{
 			auto obj = entityManager.birthNonStart<T>(args...);
-			obj->scene = this;
+			obj->scene = *this;
 			obj->start();
 			obj->addComponent<Collider>(shape, relative);
 			//createCollider(obj, shape, relative);
@@ -101,12 +101,12 @@ namespace my
 			return obj;
 		}
 		template<class T>
-		T* findOne(Optional<String> name=none)
+		Borrow<T> findOne(Optional<String> name=none)
 		{
 			return entityManager.findOne<T>(name);
 		}
 		template<class T>
-		Array<T*> find(Optional<String> name=none)
+		Array<Borrow<T>> find(Optional<String> name=none)
 		{
 			return entityManager.find<T>(name);
 		}

@@ -49,17 +49,20 @@ public:
 
 	C* get()const
 	{
-		return ptr.get()->get();
+		if (auto p = ptr.get()) return p->get();
+		else return nullptr;
 	}
 
 	operator C* ()const
 	{
-		return ptr.get()->get();
+		if (auto p = ptr.get()) return p->get();
+		else return nullptr;
 	}
 
 	C* operator -> ()const
 	{
-		return ptr.get()->get();
+		if (auto p = ptr.get()) return p->get();
+		else return nullptr;
 	}
 
 	template<class T, std::enable_if_t<std::is_base_of_v<BaseBorrowable, T>>* = nullptr>

@@ -50,7 +50,7 @@ public:
 
 	virtual void update(double dt)override;
 
-	Field<HashTable<String, skill::Skill*>>* getSkills();
+	Borrow<Field<HashTable<String, Borrow<skill::Skill>>>> getSkills();
 
-	skill::Skill* setSkill(skill::Skill* skill, StringView name);
+	Borrow<skill::Skill> setSkill(const Borrow<skill::Skill>& skill, StringView name);
 };

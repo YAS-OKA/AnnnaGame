@@ -55,7 +55,7 @@ void Character::update(double dt)
 	Print << name<<U"sHp:" << param.hp;
 }
 
-Field<HashTable<String, skill::Skill*>>* Character::getSkills()
+Borrow<Field<HashTable<String, Borrow<skill::Skill>>>> Character::getSkills()
 {
 	auto skills = getComponent<Field<HashTable<String, skill::Skill*>>>(U"Skills");
 
@@ -64,7 +64,7 @@ Field<HashTable<String, skill::Skill*>>* Character::getSkills()
 	return skills;
 }
 
-skill::Skill* Character::setSkill(skill::Skill* skill, StringView name)
+Borrow<skill::Skill> Character::setSkill(const Borrow<skill::Skill>& skill, StringView name)
 {
 	auto skills = getSkills();
 

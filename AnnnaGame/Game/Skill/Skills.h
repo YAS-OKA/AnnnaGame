@@ -20,24 +20,24 @@ namespace skill {
 	//スキルの効果クラス　インターフェース
 	struct ISkillEffect :public prg::IAction
 	{
-		class Skill* skill;
+		Borrow<class Skill> skill;
 
-		Object* _target = nullptr;
-		Character* _CTarget = nullptr;
+		Borrow<Object> _target = nullptr;
+		Borrow<Character> _CTarget = nullptr;
 
 		double time;//これは今だけ　　後々アクションが自分の終了時間を計算する関数を作る。
 
-		ISkillEffect(Skill* skill, double time);
+		ISkillEffect(const Borrow<Skill>& skill, double time);
 
-		ISkillEffect(Skill* skill);
+		ISkillEffect(const Borrow<Skill>& skill);
 
 		virtual void start()override;
 
 		virtual void end()override;
 
-		virtual void setTarget(Object* obj);
+		virtual void setTarget(const Borrow<Object>& obj);
 
-		virtual void setCTarget(Character* obj);
+		virtual void setCTarget(const Borrow<Character>& obj);
 
 		void setTime(double t);
 
@@ -84,7 +84,7 @@ namespace skill {
 	{
 		std::unique_ptr<Actions> effects;
 
-		SEffect(Skill* s = nullptr)
+		SEffect(const Borrow<Skill>& s = Borrow<Skill>())
 			:ISkillEffect(s , 0)
 		{
 			effects = std::make_unique<Actions>();
@@ -117,19 +117,19 @@ namespace skill {
 			return std::move(*this);
 		}
 
-		virtual void setTarget(Object* obj)override
+		virtual void setTarget(const Borrow<Object>& obj)override
 		{
 			ISkillEffect::setTarget(obj);
 			_setTarget(obj, effects.get());//安全なアクセスなので生ポインタを渡す
 		};
 
-		virtual void setCTarget(Character* chara)override
+		virtual void setCTarget(const Borrow<Character>& chara)override
 		{
 			ISkillEffect::setCTarget(chara);
 			_setCTarget(chara, effects.get());//安全なアクセスなので生ポインタを渡す
 		}
 
-		void _setTarget(Object* obj, Actions* effects)
+		void _setTarget(const Borrow<Object>& obj, Actions* effects)
 		{
 			for (auto& act : effects->getAll())
 			{
@@ -143,7 +143,7 @@ namespace skill {
 				}
 			}
 		}
-		void _setCTarget(Character* chara, Actions* effects)
+		void _setCTarget(const Borrow<Character>& chara, Actions* effects)
 		{
 			for (auto& act : effects->getAll())
 			{
@@ -186,7 +186,7 @@ namespace skill {
 		////効果を参照できるように格納しておく
 		//WeakTypeContainer<ISkillEffect> effects;
 		//このコールバックを呼び出して効果を作る
-		using Collback = std::function<void(Skill*,Actions& act)>;
+		using Collback = std::function<void(Borrow<Skill>,Actions& act)>;
 		Collback collback;
 		//ヒットボックスを格納できる
 		HashTable<String, Borrow<SHitbox>> hitboxs;
@@ -228,7 +228,7 @@ namespace skill
 	struct ParamMod :ISkillEffect
 	{
 		CharacterParams* params = nullptr;
-		ParamMod(Skill* s, double time = 0);
+		ParamMod(const Borrow<Skill>& s, double time = 0);
 
 		void start()override;
 	};
@@ -236,7 +236,7 @@ namespace skill
 	//ダメージ
 	struct Damage :ParamMod
 	{
-		Damage(Skill* s, Formula<Damage> damage);
+		Damage(const Borrow<Skill>& s, Formula<Damage> damage);
 
 		Formula<Damage> damage;
 	protected:
@@ -249,7 +249,7 @@ namespace skill
 
 		Formula<Knockback> power;
 
-		Knockback(Skill* s, double time, Formula<Knockback, Vec3> dir, Formula<Knockback>power);
+		Knockback(const Borrow<Skill>& s, double time, Formula<Knockback, Vec3> dir, Formula<Knockback>power);
 	protected:
 		Actions action;
 
@@ -260,7 +260,7 @@ namespace skill
 	//継続ダメージ
 	struct DotDamage :ParamMod
 	{
-		DotDamage(Skill* s, double span, double time, Formula<DotDamage> damage = [](DotDamage*) {return 0; });
+		DotDamage(const Borrow<Skill>& s, double span, double time, Formula<DotDamage> damage = [](DotDamage*) {return 0; });
 
 		//何回ダメージを与えたか
 		int32 getCount();

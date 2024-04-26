@@ -238,7 +238,7 @@ void Player::behaviorSetting(state::Inform&& info)
 	ACreate(U"State", true) += dict[U"PlayerBehabior"](info);
 }
 
-void player::SetPlayerAnimator(Object* obj, state::Inform&& info)
+void player::SetPlayerAnimator(const Borrow<Object>& obj, state::Inform&& info)
 {
 	using namespace prg;
 	using namespace state;
@@ -288,7 +288,7 @@ void player::SetPlayerAnimator(Object* obj, state::Inform&& info)
 						{
 							decoder->input(cmd)->decode()->execute();
 						},
-						[pman = info.get(U"parts").getValue<util::sPtr<mot::PartsManager>>()
+						[pman = info.get(U"parts").getValue<Borrow<mot::PartsManager>>()
 						, motionName = info.get(s + U"MotionCmd").getValue<String>().split(' ')[1]] {
 							for (const auto& p : pman->partsArray)
 							{
@@ -368,6 +368,6 @@ void player::SetPlayerAnimator(Object* obj, state::Inform&& info)
 void Player::setAttackSkill(size_t cardsNum, StringView skillName)
 {
 	auto s = skill::SkillProvider::Get(skillName);//スキル取得
-	s->addInfo<skill::Chara>(U"chara", this);
+	s->addInfo<skill::Chara>(U"chara", this->lend());
 	setSkill(s, U"Attack{}"_fmt(cardsNum));
 }

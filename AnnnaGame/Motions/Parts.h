@@ -97,24 +97,22 @@ namespace mot
 		
 		PartsParams params;
 
-		IDraw2D* tex = nullptr;
+		Borrow<IDraw2D> tex;
 
-		//draw_helper::CameraScaleOfParts* scaleHelper=nullptr;
+		Borrow<Collider> collider;
 
-		Collider* collider = nullptr;
+		Borrow<PartsManager> parts_manager;
 
-		PartsManager* parts_manager;
-
-		Parts* parent=nullptr;
+		Borrow<Parts> parent=nullptr;
 
 		util::PCRelationship<Parts> partsRelation;
 
-		Parts(PartsManager* manager)
+		Parts(const Borrow<PartsManager>& manager)
 			:parts_manager(manager),partsRelation(this) {};
 		
 		void onTrashing()override;
 
-		Collider* createHitbox(const Vec2& pos, const MultiPolygon& fig);
+		Borrow<Collider> createHitbox(const Vec2& pos, const MultiPolygon& fig);
 
 		void setParent(const String& name, bool setLocalPos = false);
 
@@ -138,7 +136,7 @@ namespace mot
 	private:
 		void rotateCollider(double ang)
 		{
-			if(collider!=nullptr)std::get<2>(collider->hitbox.shape).rotateAt({ 0,0 }, ang * 1_deg);
+			if (collider)std::get<2>(collider->hitbox.shape).rotateAt({ 0,0 }, ang * 1_deg);
 			for (auto& c : partsRelation.getChildren())
 			{
 				c->rotateCollider(ang);
@@ -225,7 +223,7 @@ namespace mot
 		};
 
 		double getAbsAngle()const {
-			if (parent != nullptr)return params.angle + parent->getAbsAngle();
+			if (parent)return params.angle + parent->getAbsAngle();
 			else return getAngle();
 		}
 
@@ -245,9 +243,9 @@ namespace mot
 	{
 	public:
 		//マスターパーツ
-		Parts* master=nullptr;
-		Array<Parts*> partsArray;
-		Draw2D<DrawManager>* dm;
+		Borrow<Parts> master;
+		Array<Borrow<Parts>> partsArray;
+		Borrow<Draw2D<DrawManager>> dm;
 
 		Camera::DistanceType distanceTypeUsedInScaleHelper=Camera::Screen;
 		double scaleHelperBaseLength=100;
@@ -256,17 +254,17 @@ namespace mot
 
 		void scaleHelperParamsSetting(double baseLength, const Camera::DistanceType& distanceType = Camera::Screen);
 
-		Parts* birthParts();
+		Borrow<Parts> birthParts();
 
-		Parts* addParts(const PartsParams& params);
+		Borrow<Parts> addParts(const PartsParams& params);
 
-		Parts* setMaster(Parts* masterParts);
+		Borrow<Parts> setMaster(const Borrow<Parts>& masterParts);
 
-		Parts* createMaster();
+		Borrow<Parts> createMaster();
 
-		Parts* find(const String& name);
+		Borrow<Parts> find(const String& name);
 
-		void killParts(Parts* parts);
+		void killParts(const Borrow<Parts>& parts);
 
 		void killParts(const String& name);
 
@@ -281,22 +279,22 @@ namespace mot
 namespace mot
 {
 	//path->localPath+relativePath
-	void loadPartsTexture(my::Scene* scene, const String& relativePath);
+	void loadPartsTexture(const Borrow<my::Scene>& scene, const String& relativePath);
 
-	bool savePartsJson(PartsManager* pm, const String& path);
+	bool savePartsJson(const Borrow<PartsManager>& pm, const String& path);
 
 	class LoadParts
 	{
 	private:
-		my::Scene* m_scene;
+		Borrow<my::Scene> m_scene;
 	public:
-		LoadParts(my::Scene* scene) :m_scene(scene) {};
+		LoadParts(const Borrow<my::Scene>& scene) :m_scene(scene) {};
 
-		void setScene(my::Scene* scene) { m_scene = scene; };
+		void setScene(const Borrow<my::Scene>& scene) { m_scene = scene; };
 
-		PartsManager* create(const String& jsonPath);
+		Borrow<PartsManager> create(const String& jsonPath);
 
-		PartsManager* create(const String& jsonPath, PartsManager* pmanager);
+		Borrow<PartsManager> create(const String& jsonPath, const Borrow<PartsManager>& pmanager);
 	};
 }
 
@@ -307,9 +305,9 @@ namespace draw_helper
 	{
 	private:
 		ScaleHelper2D* helper = nullptr;
-		mot::Parts* parts;
+		Borrow<mot::Parts> parts;
 	public:
-		CameraScaleOfParts(mot::Parts* parts)
+		CameraScaleOfParts(const Borrow<mot::Parts>& parts)
 			: parts(parts)
 		{
 		}
@@ -336,9 +334,9 @@ namespace draw_helper
 	class PartsShallow :public DrawShallow
 	{
 	public:
-		mot::PartsManager* pmanager;
+		Borrow<mot::PartsManager> pmanager;
 
-		PartsShallow(mot::PartsManager* p,IDraw2D* d);
+		PartsShallow(const Borrow<mot::PartsManager>& p, const Borrow<IDraw2D>& d);
 
 		double getDepth()const override;
 	};

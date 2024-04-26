@@ -11,7 +11,7 @@ IDrawing::IDrawing(DrawManager* manager)
 
 IDrawing::~IDrawing()
 {
-	manager->drop(this);
+	manager->drop(*this);
 }
 
 void IDrawing::start()
@@ -156,7 +156,7 @@ Transformer2D IDraw2D::getTransformer() const
 	};
 }
 
-draw_helper::ScaleCalculation2D::ScaleCalculation2D(Transform* transform, DrawManager* m, double baseLength, const Camera::DistanceType& type)
+draw_helper::ScaleCalculation2D::ScaleCalculation2D(const Borrow<Transform>& transform, DrawManager* m, double baseLength, const Camera::DistanceType& type)
 	:converter(baseLength, m, type),transform(transform)
 {
 }
@@ -167,7 +167,7 @@ double draw_helper::ScaleCalculation2D::operator() ()const
 	return converter.distanceRate(transform->getPos());
 }
 
-draw_helper::DrawShallow::DrawShallow(IDraw2D* owner)
+draw_helper::DrawShallow::DrawShallow(const Borrow<IDraw2D>& owner)
 	:owner(owner)
 {
 }

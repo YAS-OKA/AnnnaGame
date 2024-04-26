@@ -22,17 +22,17 @@ namespace mot
 	public:
 		CmdDecoder deco;
 
-		void Load(PartsManager* pMan,const String& motionName,const String& text);
+		void Load(const Borrow<PartsManager>& pMan,const String& motionName,const String& text);
 
-		bool LoadFile(PartsManager* pMan, const String& path,const String& motionName);
+		bool LoadFile(const Borrow<PartsManager>& pMan, const String& path,const String& motionName);
 	};
 
 	class PartsMotion :public prg::TimeAction
 	{
 	public:
-		Parts* target;
+		Borrow<Parts> target;
 
-		PartsMotion(Parts* target, double time = 0);
+		PartsMotion(const Borrow<Parts>& target, double time = 0);
 	};
 
 	class Rotate :public PartsMotion
@@ -40,7 +40,7 @@ namespace mot
 	public:
 		double ang;
 
-		Rotate(Parts* target, double angle, double time = 0);
+		Rotate(const Borrow<Parts>& target, double angle, double time = 0);
 
 		void update(double dt)override;
 	};
@@ -59,7 +59,7 @@ namespace mot
 
 		Actions acts;
 		//clockwizeRotationは時計回りか反時計回りか。rotationは何回転するか。
-		RotateTo(Parts* target, double angle, double time = 0,Optional<bool> clockwizeRotation = none, int32 rotation = 0);
+		RotateTo(const Borrow<Parts>& target, double angle, double time = 0,Optional<bool> clockwizeRotation = none, int32 rotation = 0);
 
 		void start()override;
 
@@ -73,7 +73,7 @@ namespace mot
 	public:
 		Vec2 move;
 
-		Move(Parts* target, double moveX, double moveY, double time = 0);
+		Move(const Borrow<Parts>& target, double moveX, double moveY, double time = 0);
 
 		void update(double dt)override;
 	};
@@ -87,7 +87,7 @@ namespace mot
 
 		Actions acts;
 
-		MoveTo(Parts* target, double destX,double destY, double time = 0);
+		MoveTo(const Borrow<Parts>& target, double destX, double destY, double time = 0);
 
 		void start()override;
 
@@ -99,7 +99,7 @@ namespace mot
 	public :
 		double z;
 
-		AddZ(Parts* target, double z, double time = 0);
+		AddZ(const Borrow<Parts>& target, double z, double time = 0);
 
 		void update(double dt)override;
 	};
@@ -109,7 +109,7 @@ namespace mot
 	public:
 		double z;
 
-		SetZ(Parts* target, double z, double time = 0);
+		SetZ(const Borrow<Parts>& target, double z, double time = 0);
 
 		void update(double dt)override;
 	};
@@ -119,7 +119,7 @@ namespace mot
 	public:
 		Vec2 scale;
 
-		AddScale(Parts* target, const Vec2& scale, double time = 0);
+		AddScale(const Borrow<Parts>& target, const Vec2& scale, double time = 0);
 
 		void update(double dt)override;
 	};
@@ -129,7 +129,7 @@ namespace mot
 	public:
 		Vec2 scale;
 
-		SetScale(Parts* target, double sX, double sY, double time = 0);
+		SetScale(const Borrow<Parts>& target, double sX, double sY, double time = 0);
 
 		void update(double dt)override;
 	};
@@ -152,7 +152,7 @@ namespace mot
 
 		Actions motions;
 
-		PauseTo(Parts* target, double destX, double destY, double sX, double sY, double angle, double time = 0, Optional<bool> clockwizeRotation = none, int32 rotation = 0);
+		PauseTo(const Borrow<Parts>& target, double destX, double destY, double sX, double sY, double angle, double time = 0, Optional<bool> clockwizeRotation = none, int32 rotation = 0);
 
 		void start()override;
 

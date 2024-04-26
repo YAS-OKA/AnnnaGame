@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include"Util/Borrow.h"
 
 namespace util {
 	class Convert2DTransform;
@@ -10,13 +11,18 @@ struct PSFog
 	float fogCoefficient;
 };
 
+class IDraw3D;
+class IDraw2D;
+class IDrawing;
+class Camera;
+
 class DrawManager
 {
 private:
-	Array<class IDraw3D*> m_drawings3D;
-	Array<class IDraw2D*> m_drawings2D;
-	std::function<bool(class IDrawing*)> canDraw;
-	class Camera* m_camera;
+	Array<Borrow<IDraw3D>> m_drawings3D;
+	Array<Borrow<IDraw2D>> m_drawings2D;
+	std::function<bool(const Borrow<IDrawing>&)> canDraw;
+	Borrow<Camera> m_camera;
 	const MSRenderTexture renderTexture;
 	PixelShader ps;
 	double fogParam = 0.6;
@@ -35,19 +41,19 @@ public:
 	Vec2 translate3D{ 0,0 };*/
 
 	DrawManager(const ColorF& backGround = { 0,0,0,1 });
-	DrawManager(Camera* camera, const ColorF& backGround = { 0,0,0,1 });
-	DrawManager(Camera* camera, const MSRenderTexture& renderTexture, const ColorF& backGround = { 0,0,0,1 });
+	DrawManager(const Borrow<Camera>& camera, const ColorF& backGround = { 0,0,0,1 });
+	DrawManager(const Borrow<Camera>& camera, const MSRenderTexture& renderTexture, const ColorF& backGround = { 0,0,0,1 });
 
-	void setting(Camera* camera, std::function<bool(IDrawing*)> f = [](IDrawing*) {return true; });
-	void set3D(IDraw3D* drawing);
-	void set2D(IDraw2D* drawing);
-	IDraw2D* get2D(std::function<bool(IDraw2D*)> filter = [](IDraw2D*) {return true; });
-	Array<IDraw2D*> get2Ds(std::function<bool(IDraw2D*)> filter = [](IDraw2D*) {return true; });
-	void drop(IDrawing* drawing);
-	void remove3D(IDraw3D* drawing);
-	void remove2D(IDraw2D* drawing);
+	void setting(const Borrow<Camera>& camera, std::function<bool(const Borrow<IDrawing>&)> f = [](const Borrow<IDrawing>&) {return true; });
+	void set3D(const Borrow<IDraw3D>& drawing);
+	void set2D(const Borrow<IDraw2D>& drawing);
+	Borrow<IDraw2D> get2D(std::function<bool(const Borrow<IDraw2D>&)> filter = [](const Borrow<IDraw2D>&) {return true; });
+	Array<Borrow<IDraw2D>> get2Ds(std::function<bool(const Borrow<IDraw2D>&)> filter = [](const Borrow<IDraw2D>&) {return true; });
+	void drop(const Borrow<IDrawing>& drawing);
+	void remove3D(const Borrow<IDraw3D>& drawing);
+	void remove2D(const Borrow<IDraw2D>& drawing);
 	MSRenderTexture getRenderTexture()const;
-	Camera* getCamera()const;
+	Borrow<Camera> getCamera()const;
 	util::Convert2DTransform getConverter();
 	virtual void update();
 	virtual void draw(bool draw3D=true)const;

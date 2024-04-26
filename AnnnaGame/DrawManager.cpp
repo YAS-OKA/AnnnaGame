@@ -13,7 +13,7 @@ DrawManager::DrawManager(const ColorF& backGround)
 	cb->fogCoefficient = 0.004;
 }
 
-DrawManager::DrawManager(Camera* camera, const ColorF& backGround)
+DrawManager::DrawManager(const Borrow<Camera>& camera, const ColorF& backGround)
 	:m_camera(camera), renderTexture{ Scene::Size(), TextureFormat::R8G8B8A8_Unorm_SRGB, HasDepth::Yes }, backGroundColor(backGround)
 {
 	ps = HLSL{ U"example/shader/hlsl/forward_fog.hlsl", U"PS" }
@@ -22,7 +22,7 @@ DrawManager::DrawManager(Camera* camera, const ColorF& backGround)
 	cb->fogCoefficient = 0.004;
 }
 
-DrawManager::DrawManager(Camera* camera, const MSRenderTexture& renderTexture, const ColorF& backGround)
+DrawManager::DrawManager(const Borrow<Camera>& camera, const MSRenderTexture& renderTexture, const ColorF& backGround)
 	:m_camera(camera),renderTexture{renderTexture},backGroundColor(backGround)
 {
 	ps = HLSL{ U"example/shader/hlsl/forward_fog.hlsl", U"PS" }
@@ -36,46 +36,46 @@ util::Convert2DTransform DrawManager::getConverter()
 	return util::Convert2DTransform(this);
 }
 
-void DrawManager::setting(Camera* camera, std::function<bool(IDrawing*)> f)
+void DrawManager::setting(const Borrow<Camera>& camera, std::function<bool(const Borrow<IDrawing>&)> f)
 {
 	m_camera = camera;
 	canDraw = f;
 }
 
-void DrawManager::set3D(IDraw3D* drawing)
+void DrawManager::set3D(const Borrow<IDraw3D>& drawing)
 {
 	m_drawings3D << drawing;
 }
 
-void DrawManager::set2D(IDraw2D* drawing)
+void DrawManager::set2D(const Borrow<IDraw2D>& drawing)
 {
 	m_drawings2D << drawing;
 }
 
-void DrawManager::remove3D(IDraw3D* drawing)
+void DrawManager::remove3D(const Borrow<IDraw3D>& drawing)
 {
 	m_drawings3D.remove(drawing);
 }
 
-void DrawManager::remove2D(IDraw2D* drawing)
+void DrawManager::remove2D(const Borrow<IDraw2D>& drawing)
 {
 	m_drawings2D.remove(drawing);
 }
 
-IDraw2D* DrawManager::get2D(std::function<bool(IDraw2D*)> filter)
+Borrow<IDraw2D> DrawManager::get2D(std::function<bool(const Borrow<IDraw2D>&)> filter)
 {
 	for (int32 i = m_drawings2D.size(); i >= 0; --i)if (filter(m_drawings2D[i]))return m_drawings2D[i];
 	return nullptr;
 }
 
-Array<IDraw2D*> DrawManager::get2Ds(std::function<bool(IDraw2D*)> filter)
+Array<Borrow<IDraw2D>> DrawManager::get2Ds(std::function<bool(const Borrow<IDraw2D>&)> filter)
 {
-	Array<IDraw2D*> ret{};
+	Array<Borrow<IDraw2D>> ret{};
 	for (int32 i = m_drawings2D.size(); i >= 0; --i)if (filter(m_drawings2D[i]))ret << m_drawings2D[i];
 	return ret;
 }
 
-void DrawManager::drop(IDrawing* drawing)
+void DrawManager::drop(const Borrow<IDrawing>& drawing)
 {
 	for (auto it = m_drawings3D.begin(); it != m_drawings3D.end();)
 	{
@@ -95,7 +95,7 @@ MSRenderTexture DrawManager::getRenderTexture()const
 	return renderTexture;
 }
 
-Camera* DrawManager::getCamera()const
+Borrow<Camera> DrawManager::getCamera()const
 {
 	return m_camera;
 }
@@ -113,7 +113,7 @@ void DrawManager::update()
 	std::stable_sort(
 		m_drawings3D.begin(),
 		m_drawings3D.end(),
-		[=](const IDraw3D* d1, const IDraw3D* d2) {return d1->distanceFromCamera() < d2->distanceFromCamera(); }
+		[=](const auto& d1, const auto& d2) {return d1->distanceFromCamera() < d2->distanceFromCamera(); }
 	);
 	//深さ 座標　計算
 	for (auto it = m_drawings2D.begin(), en = m_drawings2D.end(); it != en; ++it)
@@ -125,7 +125,7 @@ void DrawManager::update()
 	std::stable_sort(
 		m_drawings2D.begin(),
 		m_drawings2D.end(),
-		[=](const IDraw2D* d1, const IDraw2D* d2) {	return d1->shallow->shouldReplace(d2->shallow); }
+		[=](const auto& d1, const auto& d2) {	return d1->shallow->shouldReplace(d2->shallow); }
 	);
 }
 

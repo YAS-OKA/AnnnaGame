@@ -1,12 +1,12 @@
 ﻿#include "../../stdafx.h"
 #include "Convert2DTransformComponent.h"
 
-Convert2DTransformComponent::Convert2DTransformComponent(Transform* t, const Convert2DTransform& converter)
+Convert2DTransformComponent::Convert2DTransformComponent(const Borrow<Transform>& t, const Convert2DTransform& converter)
 	:target(t), converter(converter)
 {
 }
 
-Convert2DTransformComponent::Convert2DTransformComponent(Transform* t, DrawManager* dm, const ProjectionType& type)
+Convert2DTransformComponent::Convert2DTransformComponent(const Borrow<Transform>& t, DrawManager* dm, const ProjectionType& type)
 	:target(t), converter(Convert2DTransform(dm, type))
 {
 }

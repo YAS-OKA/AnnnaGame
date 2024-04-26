@@ -18,22 +18,22 @@ namespace tool
 	public:
 		CmdDecoder deco;
 
-		my::Scene* scene;
+		Borrow<my::Scene> scene;
 
-		ObjScript(my::Scene* scene) :scene(scene)
+		ObjScript(const Borrow<my::Scene>& scene) :scene(scene)
 		{
 		}
 
-		Object* Load(const String& path, const String& name)
+		Borrow<Object> Load(const String& path, const String& name)
 		{
 			TextReader reader{ path };
 			return _loadImpl(reader.readAll(), name);
 		};
 
-		Object* create(const DataSaver& data,Optional<String> objName);
+		Borrow<Object> create(const DataSaver& data,Optional<String> objName);
 
 	private:
-		Object* _loadImpl(const String& text, const String& nest);
+		Borrow<Object> _loadImpl(const String& text, const String& nest);
 	};
 }
 
@@ -54,7 +54,7 @@ namespace objScriptCmdAction
 	{
 	public:
 		double r, g, b, a, scaleX, scaleY;
-		Object* obj=nullptr;
+		Borrow<Object> obj;
 
 		AttachDrawing(double x, double y, double z, double angle, double r, double g, double b, double a, double scaleX, double scaleY)
 			:SetObject(x, y, z, angle), r(r), g(g), b(b), a(a), scaleX(scaleX), scaleY(scaleY)
@@ -69,7 +69,7 @@ namespace objScriptCmdAction
 		AttachTexture(String path, double x, double y, double r = 255, double g = 255, double b = 255, double a = 1, double angle = 0, double z = 0, double scaleX = 1, double scaleY = 1)
 			:path(path), AttachDrawing(x, y, z, angle, r, g, b, a,scaleX, scaleY) {};
 
-		AttachTexture* build(Object* obj)
+		AttachTexture* build(const Borrow<Object>& obj)
 		{
 			this->obj = obj;
 			return this;
@@ -88,7 +88,7 @@ namespace objScriptCmdAction
 		{
 		};
 
-		AttachRectF* build(Object* obj)
+		AttachRectF* build(const Borrow<Object>& obj)
 		{
 			this->obj = obj;
 			return this;
@@ -109,7 +109,7 @@ namespace objScriptCmdAction
 			fig = Triangle{ {0,0},util::polar(-deg / 2,len1),util::polar(deg / 2,len2) };
 		}
 
-		AttachTriangle* build(Object* obj)
+		AttachTriangle* build(const Borrow<Object>& obj)
 		{
 			this->obj = obj;
 			return this;
@@ -128,7 +128,7 @@ namespace objScriptCmdAction
 		{
 		}
 
-		AttachCircle* build(Object* obj)
+		AttachCircle* build(const Borrow<Object>& obj)
 		{
 			this->obj = obj;
 			return this;

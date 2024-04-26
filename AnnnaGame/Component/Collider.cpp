@@ -199,12 +199,12 @@ bool CollideBox::intersects(const CollideFigure& fig)const
 
 namespace {
 	//当たり判定を分類。決まったカテゴリーのcolliderとしか当たり判定をしない
-	HashTable<ColliderCategory, Array<Collider*>> clasificaly;
+	HashTable<ColliderCategory, Array<Borrow<Collider>>> clasificaly;
 }
 
 Collider::~Collider()
 {
-	clasificaly[category].remove(this);
+	clasificaly[category].remove(*this);
 }
 
 void Collider::start()
@@ -213,7 +213,7 @@ void Collider::start()
 	hitbox.t = transform;
 	if (transform == nullptr)throw Error{ U"Transformが取得できませんでした。" };
 
-	clasificaly[category] << this;
+	clasificaly[category] << *this;
 }
 
 void Collider::update(double dt)
@@ -221,34 +221,34 @@ void Collider::update(double dt)
 	hitbox.update();
 }
 
-Array<Entity*> Collider::intersects(const HashSet<ColliderCategory> targets)const
+Array<Borrow<Entity>> Collider::intersects(const HashSet<ColliderCategory> targets)const
 {
-	Array<Entity*> ret;
+	Array<Borrow<Entity>> ret;
 	for (const auto& category : targets)ret.append(intersects(category));
 	return ret;
 }
 
-Array<Entity*> Collider::intersects(const ColliderCategory& targetCategory)const
+Array<Borrow<Entity>> Collider::intersects(const ColliderCategory& targetCategory)const
 {
-	Array<Entity*> ret;
+	Array<Borrow<Entity>> ret;
 	for (const auto& target : clasificaly[targetCategory])
 	{
-		if (intersects(target))	ret << target->owner;
+		if (intersects(target))	ret << *target->owner;
 	}
 	return ret;
 }
 
-Array<Entity*> Collider::intersectsAll()const
+Array<Borrow<Entity>> Collider::intersectsAll()const
 {
-	Array<Entity*>ret;
+	Array<Borrow<Entity>>ret;
 	for (const auto& [_,targets]: clasificaly)
 	{
-		for(const auto& target:targets)if (intersects(target)) ret << target->owner;
+		for(const auto& target:targets)if (intersects(target)) ret << *target->owner;
 	}
 	return ret;
 }
 
-bool Collider::intersects(const Collider* target)const
+bool Collider::intersects(const Borrow<Collider>& target)const
 {
 	if (target == this)return false;
 
@@ -257,9 +257,9 @@ bool Collider::intersects(const Collider* target)const
 
 void Collider::setCategory(const ColliderCategory& _category)
 {
-	clasificaly[category].remove(this);
+	clasificaly[category].remove(*this);
 	category = _category;
-	clasificaly[category] << this;
+	clasificaly[category] << *this;
 }
 
 const ColliderCategory Collider::getCategory()const

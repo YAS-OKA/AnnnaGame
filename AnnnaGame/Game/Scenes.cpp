@@ -5,7 +5,7 @@
 
 namespace my
 {
-	void createCollider(Entity* ent, const Box& shape, const Vec3& relative)
+	void createCollider(const Borrow<Entity>& ent, const Box& shape, const Vec3& relative)
 	{
 		auto col = ent->addComponentNamed<Collider>(U"hitbox", shape, relative);
 		auto box = col->hitbox.boudingBox();
@@ -16,7 +16,7 @@ namespace my
 		ent->addComponentNamed<Collider>(U"bottom", s, box.bottomCenter());
 		ent->addComponentNamed<Collider>(U"top", s, box.topCenter());
 	}
-	void createCollider(Entity* ent, const Cylinder& shape, const Vec3& relative)
+	void createCollider(const Borrow<Entity>& ent, const Cylinder& shape, const Vec3& relative)
 	{
 		auto col = ent->addComponentNamed<Collider>(U"hitbox", shape, relative);
 		auto box = col->hitbox.boudingBox();
@@ -33,7 +33,7 @@ namespace my
 	Scene::Scene()
 		:drawManager(ColorF{ 0.4, 0.6, 0.8 }.removeSRGBCurve())
 	{
-		partsLoader = new mot::LoadParts(this);
+		partsLoader = new mot::LoadParts(*this);
 	}
 
 	Scene::~Scene()
@@ -62,7 +62,7 @@ namespace my
 
 	void Scene::updateTransform(double dt)
 	{
-		for (auto& t : entitysTransform)t.second->calUpdate(dt);
-		//for (auto& ent : entityManager.allEntitys())ent->getComponent<Transform>(U"original")->calUpdate(dt);
+		entitysTransform.remove_if([](const auto& p) {return not p; });
+		for (auto& t : entitysTransform)t->calUpdate(dt);
 	}
 }

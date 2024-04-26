@@ -27,7 +27,7 @@ GameScene::~GameScene()
 void GameScene::start()
 {
 	Scene::start();
-	skill::SkillProvider::Init(this);
+	skill::SkillProvider::Init(*this);
 	EnemyAIProvider::Init();
 	
 	auto s = Size{ 700,700 };
@@ -94,7 +94,7 @@ void GameScene::start()
 	camera->setFollowTarget(player);
 	camera->type = Camera::DistanceType::Z;
 
-	auto parts = std::shared_ptr<PartsManager>(partsLoader->create(U"asset/motion/sara/model1.json"));
+	auto parts = partsLoader->create(U"asset/motion/sara/model1.json");
 
 	parts->master->transform->scale.setAspect({ 0.4,0.4,1 });
 
@@ -104,13 +104,13 @@ void GameScene::start()
 	
 	player->addComponent<Convert2DScaleComponent>(parts->transform, camera->distance(player->transform->getPos()), getDrawManager());
 
-	player->addComponent<PartsMirrored>(parts.get());
+	player->addComponent<PartsMirrored>(parts);
 
 	auto info = state::Inform();
 
 	auto decoder = std::make_shared<CmdDecoder>();
 
-	DecoderSet(decoder.get()).motionScriptCmd(parts.get());
+	DecoderSet(decoder.get()).motionScriptCmd(parts);
 
 	decoder->input(U"load asset/motion/sara/motion.txt Stand")->decode()->execute();//モーションをセット
 	decoder->input(U"load asset/motion/sara/motion.txt Jump")->decode()->execute();
@@ -161,7 +161,7 @@ void GameScene::start()
 
 		enemy->param.LoadFile(U"enemys.txt", U"KirikabuBake");
 
-		auto eparts = std::shared_ptr<PartsManager>(partsLoader->create(U"asset/motion/sara/model1.json"));
+		auto eparts = partsLoader->create(U"asset/motion/sara/model1.json");
 
 		eparts->master->transform->scale.setAspect({ 0.4,0.4,1 });
 
@@ -169,13 +169,13 @@ void GameScene::start()
 
 		enemy->addComponent<Convert2DScaleComponent>(eparts->transform, camera->distance(enemy->transform->getPos()), getDrawManager());
 
-		enemy->addComponent<PartsMirrored>(eparts.get());
+		enemy->addComponent<PartsMirrored>(eparts);
 
 		enemy->transform->setPos({ 8 * (k%10) - 10,3,4*(k/10)+10 });
 
 		decoder = std::make_shared<CmdDecoder>();
 
-		DecoderSet(decoder.get()).motionScriptCmd(eparts.get());
+		DecoderSet(decoder.get()).motionScriptCmd(eparts);
 
 		decoder->input(U"load asset/motion/sara/motion.txt Stand")->decode()->execute();//モーションをセット
 		decoder->input(U"load asset/motion/sara/motion.txt Jump")->decode()->execute();
@@ -200,7 +200,7 @@ void GameScene::start()
 		auto s = skill::SkillProvider::Get(U"Tmp");
 		s->addInfo<skill::Chara>(U"chara", enemy);
 		s->addInfo<skill::InfoV<Vec3>>(U"dir", enemy->transform->getDirection());
-		enemy->setSkill(s, U"Attack");
+		enemy->setSkill(*s, U"Attack");
 
 		EnemyAIProvider::Set(U"Sample", enemy, std::move(info));
 		enemy->name = U"Enemy";

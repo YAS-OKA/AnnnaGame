@@ -2,6 +2,7 @@
 #include<Siv3D.hpp>
 #include"Util/PCTree.hpp"
 #include"Util/TypeContainer.hpp"
+#include"Util/Borrow.h"
 
 class Entity;
 
@@ -15,11 +16,11 @@ public:
 };
 
 //コンポーネントの基底クラス
-class Component
+class Component :public Borrowable
 {
 public:
-	Component() {}
-	virtual ~Component() {}
+	Component() = default;
+	virtual ~Component() = default;
 	virtual void start() {}
 	virtual void update(double dt) {}
 
@@ -42,14 +43,14 @@ class EntityManager;
 //HashTableを使っているので計算量は基本O(1)？
 //同一の型のコンポーネントを追加することは可能　その場合idを指定しないとGetComponentはできない（バグ防止）
 //型が重複してるならGetComponentArrを使うことを推奨
-class Entity
+class Entity :public Borrowable
 {
 public:
 	EntityManager* owner;
 
 	util::PCRelationship<Entity> relation;
 
-	HashSet<Entity*> sameDestiny;
+	Array<Borrow<Entity>> sameDestiny;
 
 	Entity()
 		:relation(this), owner(nullptr)
@@ -62,15 +63,15 @@ public:
 	virtual void update(double dt) {};
 
 	//相手が死ぬと自分も死ぬ。自分が死ぬと相手も死ぬ
-	void setSameDestiny(Entity* other)
+	void setSameDestiny(const Borrow<Entity>& other)
 	{
-		sameDestiny.emplace(other);
-		other->sameDestiny.emplace(this);
+		sameDestiny << other;
+		other->sameDestiny << *this;
 	}
 	//相手が死ぬと自分も死ぬ
-	void followDestiny(Entity* owner)
+	void followDestiny(const Borrow<Entity>& owner)
 	{
-		relation.setParent(owner);
+		relation.setParent(owner.get());
 	}
 
 	//コンポーネントをアップデート
@@ -78,13 +79,15 @@ public:
 	{
 		if (components.garbages.size() > 0)components.deleteGarbages();
 
-		std::stable_sort(allComponentForUpdate.begin(), allComponentForUpdate.end(), [=](const Component* com1, const Component* com2) {return _replace_flag(com1, com2); });
+		allComponentForUpdate.remove_if([](const auto& p) {return not p; });//消されたコンポーネントを除外
+
+		std::stable_sort(allComponentForUpdate.begin(), allComponentForUpdate.end(), [=](const auto& com1, const auto& com2) {return _replace_flag(com1, com2); });
 
 		for (auto& com : allComponentForUpdate)com->update(dt);
 	};
 
 	//一致するコンポーネントを削除 下のオーバーロードの関数を呼び出す
-	void remove(Component* com)
+	void remove(const Borrow<Component>& com)
 	{
 		remove(com->compType, com->id);
 	}
@@ -92,45 +95,18 @@ public:
 	template<class T>
 	void remove(const String& id = U"")
 	{
-		if (id == U"")
-		{
-			const auto& remSet = components.remove<T>();
-
-			for (auto itr = allComponentForUpdate.begin(); itr != allComponentForUpdate.end();)
-			{
-				if (remSet.contains(*itr))
-				{
-					itr = allComponentForUpdate.erase(itr);
-					--componentsNum;
-				}
-				else
-					++itr;
-			}
-		}
-
-		remove(typeid(T), id);
+		if(id==U"") components.remove<T>();
+		else remove(typeid(T), id);
 	}
 
 	void remove(const std::type_index& compType, const String& id)
 	{
-		auto rem = components.remove(compType, id);
-		//nullptr だったら終了
-		if (not rem)return;
-		
-		for (auto itr = allComponentForUpdate.begin(),en = allComponentForUpdate.end();itr!=en;++itr)
-		{
-			if (rem==*itr)
-			{
-				allComponentForUpdate.erase(itr);
-				--componentsNum;
-				return;
-			}
-		}
+		components.remove(compType, id);
 	}
 
 	//コンポーネントの追加　idがかぶったら上書き
 	template<class T, class... Args>
-	T* addComponentNamed(const String& id, Args&&... args)
+	Borrow<T> addComponentNamed(const String& id, Args&&... args)
 	{
 		auto component = components.addIn<T>(id, args...);
 		component->owner = this;
@@ -138,13 +114,13 @@ public:
 		component->index = componentsNum;
 		component->compType = typeid(T);
 		component->id = id;
-		allComponentForUpdate << component;
+		allComponentForUpdate << *component;
 		componentsNum++;
-		return component;
+		return *component;
 	}
 	//コンポーネントの追加
 	template<class T,class... Args>
-	T* addComponent(Args&&... args)
+	Borrow<T> addComponent(Args&&... args)
 	{
 		auto component = components.add<T>(args...);
 		component->owner = this;
@@ -153,28 +129,46 @@ public:
 		component->compType = typeid(T);
 		component->id = Format(int32(components.ids[typeid(T)]) - 1);
 		componentsNum++;
-		allComponentForUpdate << component;
-		return component;
+		allComponentForUpdate << *component;
+		return *component;
 	}
 	
 	//コンポーネントの取得　型の重複はなし
 	template<class T>
-	T* getComponent()
+	Borrow<T> getComponent()
 	{
-		return components.get<T>();
+		if (auto res = components.get<T>())
+		{
+			return res->lend();
+		}
+		else {
+			return Borrow<T>();
+		}
 	}
 
 	template<class T>
-	const T* getComponent() const
+	const Borrow<T> getComponent() const
 	{
-		return components.get<T>();
+		if (auto res = components.get<T>())
+		{
+			return res->lend();
+		}
+		else {
+			return Borrow<T>();
+		}
 	}
 
 	//コンポーネントの取得 id指定。使いどころは複数のコンポーネントが同一の型で重複しているときとか。
 	template<class T>
-	T* getComponent(const String& id)
+	Borrow<T> getComponent(const String& id)
 	{
-		return components.get<T>(id);
+		if (auto res = components.get<T>(id))
+		{
+			return res->lend();
+		}
+		else {
+			return Borrow<T>();
+		}
 	}
 
 	String name = U"";
@@ -184,17 +178,17 @@ private:
 	TypeContainer<Component> components;
 	int32 componentsNum = 0;
 	//すべてのコンポーネントをここにぶち込む priorityでソートするため 所有権は持たない
-	Array<Component*> allComponentForUpdate;
+	Array<Borrow<Component>> allComponentForUpdate;
 	
 	//優先度で入れ替えを行うかどうか
-	bool _replace_flag(const Component* s, const Component* other)
+	bool _replace_flag(const Borrow<Component>& s, const Borrow<Component>& other)
 	{
 		if (s->priority.getPriority() != other->priority.getPriority())return s->priority.getPriority() > other->priority.getPriority();
 		return s->index < other->index;
 	};
 	
 	template<class T>
-	Optional<String> _get_id(Component* com)
+	Optional<String> _get_id(const Borrow<Component>& com)
 	{
 		if (not components.arr.contains(typeid(T)))return none;
 		for (const auto& component : components.arr[typeid(T)])
@@ -246,7 +240,7 @@ public:
 		std::stable_sort(
 			entitys.begin(),
 			entitys.end(),
-			[=](const auto ent1, const auto ent2) { return ent1.second->priority.getPriority() > ent2.second->priority.getPriority(); }
+			[=](const auto& ent1, const auto& ent2) { return ent1.second->priority.getPriority() > ent2.second->priority.getPriority(); }
 		);
 
 		//更新
@@ -277,54 +271,54 @@ public:
 		trashList.clear();
 	}
 
-	Array<Entity*> allEntitys() {
-		Array<Entity*> result;
-		for (auto& ent : MargedEntitys())result << ent.second;
+	Array<Borrow<Entity>> allEntitys() {
+		Array<Borrow<Entity>> result;
+		for (auto& ent : MargedEntitys())result << *ent.second;
 		return result;
 	};
 
 	template<class T>
-	Array<T*> find(Optional<String> name=none)
+	Array<Borrow<T>> find(Optional<String> name=none)
 	{
-		Array<T*> result;
+		Array<Borrow<T>> result;
 		std::type_index info = typeid(T);
 		for (auto& ent : MargedEntitys())
 		{
 			if (ent.first == info)
 			{
 				//名前が指定されていない場合
-				if (!name)result << static_cast<T*>(ent.second);
+				if (!name)result << static_cast<Borrow<T>>(*ent.second);
 				//名前が指定されている場合
-				else if (*name == ent.second->name)result << static_cast<T*>(ent.second);
+				else if (*name == ent.second->name)result << static_cast<Borrow<T>>(*ent.second);
 			}
 		}
 		return result;
 	}
 
 	template<class T>
-	T* findOne(Optional<String> name=none)
+	Borrow<T> findOne(Optional<String> name=none)
 	{
 		auto ent = find<T>(name);
-		if (ent.isEmpty())return nullptr;
-		else return ent[0];
+		if (ent.isEmpty())return Borrow<T>();
+		else return *ent[0];
 	}
 
 	//Entityを作る
 	template<class T = Entity, class... Args>
-	T* birth(Args&&... args) {
+	Borrow<T> birth(Args&&... args) {
 		auto entity = new T(args...);
 		pre << std::pair<std::type_index, Entity*>(typeid(T), entity);
 		entity->owner = this;
 		entity->start();
-		return entity;
+		return *entity;
 	}
 
 	template<class T = Entity, class... Args>
-	T* birthNonStart(Args&&... args) {
+	Borrow<T> birthNonStart(Args&&... args) {
 		auto entity = new T(args...);
 		pre << std::pair<std::type_index, Entity*>(typeid(T), entity);
 		entity->owner = this;
-		return entity;
+		return *entity;
 	}
 
 	//すべてガーベージに
@@ -335,26 +329,27 @@ public:
 		entitys.clear();
 	}
 
-	bool isKilled(Entity* entity)const
+	bool isKilled(const Borrow<Entity>& entity)const
 	{
-		return trashList.contains(entity) or garbages.contains(entity);
+		const auto& ptr = entity.get();
+		return trashList.contains(ptr) or garbages.contains(ptr);
 	}
 
 	//一致するEntityをgarbagesへ
-	void kill(Entity* ent) {
+	void kill(const Borrow<Entity>& ent) {
 		//子をkillする
 		for (auto& child: ent->relation.getChildren())
 		{
-			kill(child);
+			kill(*child);
 		}
 		//一蓮托生もkillする
 		for (auto& other : ent->sameDestiny)
 		{
-			other->sameDestiny.erase(ent);
+			other->sameDestiny.remove(*ent);
 			kill(other);
 		}
 		//trashListへ
-		if (not trashList.contains(ent)) {
+		if (not trashList.contains(ent.get())) {
 			ent->onTrashing();
 			trashList.emplace(ent);
 		}
@@ -364,20 +359,20 @@ public:
 	{
 		for (auto it = entitys.begin(), en = entitys.end(); it != en;++it)
 		{
-			if ((*it).second->name==name) {
-				kill((*it).second);
+			if (it->second->name==name) {
+				kill(*it->second);
 			}
 		}
 		for (auto it = pre.begin(), en = pre.end(); it != en;++it)
 		{
-			if ((*it).second->name == name) {
-				kill((*it).second);
+			if (it->second->name == name) {
+				kill(*it->second);
 			}
 		}
 	}
 };
 
-static bool IsKilled(Entity* entity)
+static bool IsKilled(const Borrow<Entity>& entity)
 {
 	return entity->owner->isKilled(entity);
 }

@@ -2,7 +2,7 @@
 #include "PartsMirrored.h"
 #include"../../Motions/Parts.h"
 
-PartsMirrored::PartsMirrored(mot::PartsManager* pman, bool m)
+PartsMirrored::PartsMirrored(const Borrow<mot::PartsManager>& pman, bool m)
 	:pman(pman), active(false), mirrored(false)
 {
 	if (m)

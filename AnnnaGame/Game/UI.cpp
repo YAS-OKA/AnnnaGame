@@ -115,7 +115,7 @@ namespace ui
 		box->drawing = rect;
 	}
 
-	TextBox* TextBox::setting(const String& text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> TextBox::setting(const String& text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		font->drawing = Font{ fontSize };
 		font->text = text;
@@ -123,28 +123,28 @@ namespace ui
 		box->drawing = RectF{ 0,0,w,h };
 		font->color = fontColor;
 		box->color = boxColor;
-		return this;
+		return *this;
 	}
 
-	TextBox* TextBox::setting(const String& text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> TextBox::setting(const String& text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		TextBox::setting(text, fontSize, pos, 0, 0, fontColor, boxColor);
 		fitSize();
-		return this;
+		return *this;
 	}
 
-	TextBox* TextBox::setting(const String& text, const String& assetName, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> TextBox::setting(const String& text, const String& assetName, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		TextBox::setting(text, 0, pos, w, h, fontColor, boxColor);
 		font->drawing = FontAsset(assetName);
-		return this;
+		return *this;
 	}
 
-	TextBox* TextBox::setting(const String& text, const String& assetName, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> TextBox::setting(const String& text, const String& assetName, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		TextBox::setting(text, assetName, pos, 0, 0, fontColor, boxColor);
 		fitSize();
-		return this;
+		return *this;
 	}
 
 	void TextBox::setText(const String& text)
@@ -158,7 +158,7 @@ namespace ui
 
 		textObject = scene->birthObjectNonHitbox<Object>();
 		textObject->transform->setParent(transform);
-		setSameDestiny(textObject);
+		setSameDestiny(*textObject);
 		auto draw_manager = scene->getDrawManager();
 		box = makeUiLike(addComponent<DrawRectF>(draw_manager, RectF{}));
 
@@ -221,28 +221,28 @@ namespace ui
 		font->transform->moveBy({ x_margin,y_margin,-1 });
 	}
 
-	TextBox* createTextBox(my::Scene* scene, const String& text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, const String& text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		auto textbox = scene->birthObjectNonHitbox<TextBox>();
 		textbox->setting(text, fontSize, pos, w, h, fontColor, boxColor);
 		return textbox;
 	}
 
-	TextBox* createTextBox(my::Scene* scene, const String& text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, const String& text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		auto textbox = scene->birthObjectNonHitbox<TextBox>();
 		textbox->setting(text, fontSize, pos, fontColor, boxColor);
 		return textbox;
 	}
 
-	TextBox* createTextBox(my::Scene* scene, const String& text, const String& assetName, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, const String& text, const String& assetName, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		auto textbox = scene->birthObjectNonHitbox<TextBox>();
 		textbox->setting(text, assetName, pos, w, h, fontColor, boxColor);
 		return textbox;
 	}
 
-	TextBox* createTextBox(my::Scene* scene, const String& text, const String& assetName, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, const String& text, const String& assetName, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		auto textbox = scene->birthObjectNonHitbox<TextBox>();
 		textbox->setting(text, assetName, pos, fontColor, boxColor);
@@ -485,14 +485,14 @@ namespace ui
 		}
 	}
 
-	InputBox* createInputBox(my::Scene* scene, const int32& fontSize, const Vec2& pos, double w, double h, const String& text, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<InputBox> createInputBox(const Borrow<my::Scene>& scene, const int32& fontSize, const Vec2& pos, double w, double h, const String& text, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		auto inputbox = scene->birthObjectNonHitbox<InputBox>();
 		inputbox->box->setting(text, fontSize, pos, w, h, fontColor, boxColor);
 		return inputbox;
 	}
 
-	InputBox* createInputBox(my::Scene* scene, const String& assetName, const Vec2& pos, double w, double h, const String& text, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<InputBox> createInputBox(const Borrow<my::Scene>& scene, const String& assetName, const Vec2& pos, double w, double h, const String& text, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		auto inputbox = scene->birthObjectNonHitbox<InputBox>();
 		inputbox->box->setting(text, assetName, pos, w, h, fontColor, boxColor);
@@ -522,7 +522,7 @@ namespace ui
 		SimpleGUI::TextArea(tex, {0,0}, {w,h}, 50000, canInput);
 	}
 
-	SimpleInputArea* createSimpleInputArea(my::Scene* scene, const Vec2& pos, double w, double h, const String& text)
+	Borrow<SimpleInputArea> createSimpleInputArea(const Borrow<my::Scene>& scene, const Vec2& pos, double w, double h, const String& text)
 	{
 		auto area = scene->birthObject(RectF{ 0,0,w,h }, { 0,0,0 });
 
@@ -554,7 +554,7 @@ namespace ui
 		SimpleGUI::TextBox(tex, { 0,0 }, w, none, canInput);
 	}
 
-	SimpleInputBox* createSimpleInputBox(my::Scene* scene, const Vec2& pos, double w, const String& text)
+	Borrow<SimpleInputBox> createSimpleInputBox(const Borrow<my::Scene>& scene, const Vec2& pos, double w, const String& text)
 	{
 		auto area = scene->birthObject(RectF{ 0,0,w,40 }, { 0,0,0 });
 
@@ -608,7 +608,7 @@ namespace ui
 		return flag;
 	}
 
-	Button* createButton(my::Scene* scene, const String& text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<Button> createButton(const Borrow<my::Scene>& scene, const String& text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		auto button = scene->birthObjectNonHitbox<Button>();
 		button->transform->setPos({ pos, 0 });
@@ -616,7 +616,7 @@ namespace ui
 		return button;
 	}
 
-	Button* createButton(my::Scene* scene, const String& text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<Button> createButton(const Borrow<my::Scene>& scene, const String& text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		auto button = scene->birthObjectNonHitbox<Button>();
 		button->transform->setPos({ pos, 0 });
@@ -624,7 +624,7 @@ namespace ui
 		return button;
 	}
 
-	Button* createButton(my::Scene* scene, const String& text, const String& assetName, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<Button> createButton(const Borrow<my::Scene>& scene, const String& text, const String& assetName, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		auto button = scene->birthObjectNonHitbox<Button>();
 		button->transform->setPos({ pos, 0 });
@@ -632,7 +632,7 @@ namespace ui
 		return button;
 	}
 
-	Button* createButton(my::Scene* scene, const String& text, const String& assetName, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<Button> createButton(const Borrow<my::Scene>& scene, const String& text, const String& assetName, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		auto button = scene->birthObjectNonHitbox<Button>();
 		button->transform->setPos({ pos, 0 });
