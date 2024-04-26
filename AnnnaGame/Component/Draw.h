@@ -257,7 +257,7 @@ class Draw3D :public IDraw3D
 {
 public:
 	Mesh mesh{};
-	String assetName{};
+	Texture tex;
 
 	Draw3D(DrawManager* manager, const MeshData& data);
 
@@ -266,13 +266,13 @@ public:
 	virtual void draw()const override;
 };
 
-class Billboard final :public Draw3D
-{
-public:
-	Billboard(DrawManager* manager);
-
-	void draw()const override;
-};
+//class Billboard final :public Draw3D
+//{
+//public:
+//	Billboard(DrawManager* manager);
+//
+//	void draw()const override;
+//};
 
 template<class Drawing2D>
 class Draw2D :public IDraw2D

@@ -21,5 +21,6 @@ public:
 
 namespace player
 {
+
 	void SetPlayerAnimator(Object* obj, state::Inform&& info);
 }

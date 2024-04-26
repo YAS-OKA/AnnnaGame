@@ -17,8 +17,6 @@
 #include"../Computer/EnemyAI.h"
 #include"../Chara/Enemy.h"
 
-int32 size;
-
 GameScene::~GameScene()
 {
 	skill::SkillProvider::Destroy();
@@ -31,13 +29,49 @@ void GameScene::start()
 	Scene::start();
 	skill::SkillProvider::Init(this);
 	EnemyAIProvider::Init();
-	TextureAsset::Register(U"uv", U"example/texture/uv.png");
-
+	
+	auto s = Size{ 700,700 };
+	const MSRenderTexture uvChecker{ s,ColorF{0.12,0.27,0.12}.removeSRGBCurve() };
 	auto ground = birthObject<Object>(Box{ 500,0.5,500 }, { 0,0,0 });
 	ground->getComponent<Collider>(U"hitbox")->setCategory(ColliderCategory::object);
-	auto ground_texture = ground->addComponent<Draw3D>(&drawManager, MeshData::OneSidedPlane({ 500,500 }));
+	auto ground_texture = ground->addComponent<Draw3D>(&drawManager, MeshData::OneSidedPlane({ 500,500 },{8,8}));
+	//地面の模様作成
+	{
+		// レンダーターゲットを renderTexture に変更する
+		const ScopedRenderTarget2D target{ uvChecker };
+		const ScopedRenderStates2D blend{ BlendState::AdditiveRGB };
 
-	ground_texture->setAssetName(U"uv");
+		for (int32 i = 0; i < 200; ++i)
+		{
+			auto r = Random<int32>(1, 3);
+			Vec2 pos = RandomVec2(Rect{ r, r, s.x - r, s.y - r });
+			Circle{ pos,r }.draw(ColorF{ Random(0.2) + 0.1,Random(0.2) + 0.1,Random(0.1) + 0.05 }.removeSRGBCurve());
+		}
+
+		for (int32 i = 0; i < 300; ++i)
+		{
+			auto wh = Random<int32>(4, 8);
+			Vec2 pos = RandomVec2(Rect{ 6, 6, s.x - 6, s.y - 6 });
+			double theta = Random<double>(0, 90);
+			RectF{ pos,wh }.rotated(2 * theta * Math::Pi).draw(ColorF{ Random(0.2) + 0.1,Random(0.2) + 0.1,Random(0.1) + 0.05 }.removeSRGBCurve());
+		}
+
+		for (int32 i = 0; i < 400; ++i)
+		{
+			auto r = Random<double>(4, 10);
+			Vec2 pos = RandomVec2(Rect{ 6, 6, s.x - 6, s.y - 6 });
+			double theta = Random<double>(0, 120);
+			Triangle{ pos,r }.rotated(2 * theta * Math::Pi).draw(ColorF{ Random(0.2) + 0.1,Random(0.2) + 0.1,Random(0.1) + 0.05 }.removeSRGBCurve());
+		}
+
+		// 2D 描画をフラッシュ
+		Graphics2D::Flush();
+
+		// マルチサンプル・テクスチャをリゾルブ
+		uvChecker.resolve();
+
+	}
+	ground_texture->tex = uvChecker;
 	//プレイヤー生成
 	auto player = birthObject<Player>(Box(3, 5, 3),{0,0,0});
 	//*2はデバッグ用　
@@ -180,13 +214,10 @@ void GameScene::start()
 	card->transform->setPos({ 1000,30,0 });
 
 	player->name = U"Player";
-	size=entityManager.allEntitys().size();
 }
 
 void GameScene::update(double dt)
 {
 	Scene::update(dt);
 	Scene::updateTransform(dt);
-
-	Print << size;
 }

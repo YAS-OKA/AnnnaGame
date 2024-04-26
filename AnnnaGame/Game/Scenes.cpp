@@ -31,6 +31,7 @@ namespace my
 	{
 	}
 	Scene::Scene()
+		:drawManager(ColorF{ 0.4, 0.6, 0.8 }.removeSRGBCurve())
 	{
 		partsLoader = new mot::LoadParts(this);
 	}

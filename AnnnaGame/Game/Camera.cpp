@@ -19,9 +19,9 @@ void Camera::start()
 
 	transform->setPos(getEyePos());
 
-	//transform->setDirection(getForcusPos() - transform->getPos());
 	transform->direction.vector = { 0,0,1 };
 	transform->direction.vertical = { 0,1,0 };
+
 }
 
 void Camera::update(double dt)

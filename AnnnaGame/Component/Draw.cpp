@@ -72,7 +72,7 @@ Draw3D::Draw3D(DrawManager* manager, const MeshData& data)
 
 void Draw3D::setAssetName(const String& name)
 {
-	assetName = name;
+	tex = TextureAsset(name);
 }
 
 void Draw3D::draw()const
@@ -80,29 +80,29 @@ void Draw3D::draw()const
 	mesh.draw(
 		getDrawPos()
 		, transform->get2Direction().accum
-		, TextureAsset(assetName)
-		,color.removeSRGBCurve()
+		, tex
+		, color.removeSRGBCurve()
 		);
 }
 
-Billboard::Billboard(DrawManager* manager)
-	:Draw3D(manager, MeshData::Billboard({ 1,1 }))
-{}
-
-void Billboard::draw()const
-{
-	auto size = TextureAsset(assetName).size();
-	double x = size.x;
-	double y = size.y;
-	auto max = Math::Max(x, y);
-	Vec2 aspect_ = size / max;
-
-	mesh.draw(
-			manager->getCamera()->getCamera().billboard(getDrawPos(), aspect_ * transform->getAspect().xy())
-		, TextureAsset(assetName)
-		, color
-	);
-}
+//Billboard::Billboard(DrawManager* manager)
+//	:Draw3D(manager, MeshData::Billboard({ 1,1 }))
+//{}
+//
+//void Billboard::draw()const
+//{
+//	auto size = TextureAsset(assetName).size();
+//	double x = size.x;
+//	double y = size.y;
+//	auto max = Math::Max(x, y);
+//	Vec2 aspect_ = size / max;
+//
+//	mesh.draw(
+//			manager->getCamera()->getCamera().billboard(getDrawPos(), aspect_ * transform->getAspect().xy())
+//		, TextureAsset(assetName)
+//		, color
+//	);
+//}
 
 IDraw2D::IDraw2D(DrawManager* manager)
 	:IDrawing(manager)

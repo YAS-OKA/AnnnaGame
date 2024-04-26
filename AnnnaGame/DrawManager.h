@@ -4,6 +4,12 @@ namespace util {
 	class Convert2DTransform;
 }
 
+struct PSFog
+{
+	Float3 fogColor;
+	float fogCoefficient;
+};
+
 class DrawManager
 {
 private:
@@ -12,7 +18,9 @@ private:
 	std::function<bool(class IDrawing*)> canDraw;
 	class Camera* m_camera;
 	const MSRenderTexture renderTexture;
-	//const MSRenderTexture renderTexture2D;
+	PixelShader ps;
+	double fogParam = 0.6;
+	ConstantBuffer<PSFog> cb;
 public:
 	ColorF backGroundColor;
 	Vec2 scale{ 1,1 };

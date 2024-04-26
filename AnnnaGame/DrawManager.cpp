@@ -7,16 +7,28 @@
 DrawManager::DrawManager(const ColorF& backGround)
 	:renderTexture{ Scene::Size(), TextureFormat::R8G8B8A8_Unorm_SRGB, HasDepth::Yes },m_camera(nullptr),backGroundColor(backGround)
 {
+	ps = HLSL{ U"example/shader/hlsl/forward_fog.hlsl", U"PS" }
+	| GLSL{ U"example/shader/glsl/forward_fog.frag", {{ U"PSPerFrame", 0 }, { U"PSPerView", 1 }, { U"PSPerMaterial", 3 }, { U"PSFog", 4 }} };
+	cb={ { backGroundColor.removeSRGBCurve().rgb(), 0.0f } };
+	cb->fogCoefficient = 0.004;
 }
 
 DrawManager::DrawManager(Camera* camera, const ColorF& backGround)
 	:m_camera(camera), renderTexture{ Scene::Size(), TextureFormat::R8G8B8A8_Unorm_SRGB, HasDepth::Yes }, backGroundColor(backGround)
 {
+	ps = HLSL{ U"example/shader/hlsl/forward_fog.hlsl", U"PS" }
+	| GLSL{ U"example/shader/glsl/forward_fog.frag", {{ U"PSPerFrame", 0 }, { U"PSPerView", 1 }, { U"PSPerMaterial", 3 }, { U"PSFog", 4 }} };
+	cb={ { backGroundColor.removeSRGBCurve().rgb(), 0.0f } };
+	cb->fogCoefficient = 0.004;
 }
 
 DrawManager::DrawManager(Camera* camera, const MSRenderTexture& renderTexture, const ColorF& backGround)
 	:m_camera(camera),renderTexture{renderTexture},backGroundColor(backGround)
 {
+	ps = HLSL{ U"example/shader/hlsl/forward_fog.hlsl", U"PS" }
+	| GLSL{ U"example/shader/glsl/forward_fog.frag", {{ U"PSPerFrame", 0 }, { U"PSPerView", 1 }, { U"PSPerMaterial", 3 }, { U"PSFog", 4 }} };
+	cb = { { backGroundColor.removeSRGBCurve().rgb(), 0.0f } };
+	cb->fogCoefficient = 0.004;
 }
 
 util::Convert2DTransform DrawManager::getConverter()
@@ -90,6 +102,7 @@ Camera* DrawManager::getCamera()const
 
 void DrawManager::update()
 {
+
 	//深さ 座標　計算
 	for (auto it = m_drawings3D.begin(), en = m_drawings3D.end(); it != en; ++it)
 	{
@@ -121,10 +134,12 @@ void DrawManager::draw(bool draw3D)const
 	if(draw3D)
 	{
 		//// 3D シーンにカメラを設定
-		Graphics3D::SetCameraTransform(m_camera->getCamera());
 		{
-			const ScopedRenderTarget3D target{ renderTexture.clear(backGroundColor) };
+			Graphics3D::SetCameraTransform(m_camera->getCamera());
+			Graphics3D::SetPSConstantBuffer(4, cb);
 
+			const ScopedCustomShader3D shader{ ps };
+			const ScopedRenderTarget3D target{ renderTexture.clear(backGroundColor) };
 			const ScopedRenderStates3D blend{ BlendState::OpaqueAlphaToCoverage };
 
 			for (const auto& drawing : m_drawings3D)if (drawing->visible)drawing->draw();
