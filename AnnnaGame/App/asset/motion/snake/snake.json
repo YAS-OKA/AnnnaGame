@@ -1,0 +1,132 @@
+﻿{
+  "body1": {
+    "angle": -7.838299999999997,
+    "color": "(1, 1, 1, 1)",
+    "parent": "head",
+    "pos": "(97.21677, -103.81709)",
+    "rotatePos": "(-1.74912, -79.21309)",
+    "scale": "(1, 1)",
+    "texture": "snake/body.png",
+    "z": 100.0
+  },
+  "body2": {
+    "angle": 130.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "joint1",
+    "pos": "(65.25949, -64.7522)",
+    "rotatePos": "(55.85574, -8.84282)",
+    "scale": "(1, 1)",
+    "texture": "snake/sbody.png",
+    "z": 110.0
+  },
+  "body3": {
+    "angle": 40.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "joint2",
+    "pos": "(-15.16534, -66.88719)",
+    "rotatePos": "(-45.70315, -41.84379)",
+    "scale": "(1, 1)",
+    "texture": "snake/sbody.png",
+    "z": 99.99999
+  },
+  "body4": {
+    "angle": 130.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "joint3",
+    "pos": "(-106.30144, -65.56056)",
+    "rotatePos": "(-60.71466, -0.76827)",
+    "scale": "(1, 1)",
+    "texture": "snake/sbody.png",
+    "z": 100.00001
+  },
+  "body5": {
+    "angle": 40.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "joint4",
+    "pos": "(-189.86176, -67.74891)",
+    "rotatePos": "(37.56172, 45.45809)",
+    "scale": "(1, 1)",
+    "texture": "snake/sbody.png",
+    "z": 100.0
+  },
+  "head": {
+    "angle": -0.4741500000000003,
+    "color": "(1, 1, 1, 1)",
+    "parent": "master",
+    "pos": "(99.87831, -196.74341)",
+    "rotatePos": "(-9.33331, 14.66666)",
+    "scale": "(1, 1)",
+    "texture": "snake/head.png",
+    "z": 90.0
+  },
+  "joint1": {
+    "angle": -70.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "body1",
+    "pos": "(106.94639, -24.21806)",
+    "rotatePos": "(0, 0)",
+    "scale": "(1, 1)",
+    "texture": "snake/joint1.png",
+    "z": 150.00005
+  },
+  "joint2": {
+    "angle": 0.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "body2",
+    "pos": "(24.32899, -104.89561)",
+    "rotatePos": "(0, 0)",
+    "scale": "(1, 1)",
+    "texture": "snake/joint2.png",
+    "z": 200.0
+  },
+  "joint3": {
+    "angle": 0.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "body3",
+    "pos": "(-61.71068, -24.81614)",
+    "rotatePos": "(0, 0)",
+    "scale": "(1, 1)",
+    "texture": "snake/joint1.png",
+    "z": 110.0
+  },
+  "joint4": {
+    "angle": 0.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "body4",
+    "pos": "(-149.93497, -109.56679)",
+    "rotatePos": "(0, 0)",
+    "scale": "(1, 1)",
+    "texture": "snake/joint2.png",
+    "z": 150.0
+  },
+  "joint5": {
+    "angle": 0.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "body5",
+    "pos": "(-232.16553, -27.14346)",
+    "rotatePos": "(0, 0)",
+    "scale": "(1, 1)",
+    "texture": "snake/joint1.png",
+    "z": 150.0
+  },
+  "master": {
+    "angle": 0.0,
+    "color": "(0, 0, 0, 0)",
+    "parent": "",
+    "pos": "(0, 0)",
+    "rotatePos": "(0, 0)",
+    "scale": "(1, 1)",
+    "texture": "rect 0 0",
+    "z": 100.0
+  },
+  "tail": {
+    "angle": 130.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "joint5",
+    "pos": "(-278.74927, -68.06374)",
+    "rotatePos": "(59.92264, 12.5307)",
+    "scale": "(1, 1)",
+    "texture": "snake/tail.png",
+    "z": 100.00001
+  }
+}

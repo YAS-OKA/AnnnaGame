@@ -140,8 +140,6 @@ namespace prg
 		//ループカウントの上限　別にカンストしてもループは続く
 		const int32 maxLoopCount = 10000;
 
-
-
 	protected:
 		void _insert(int32 septIndex, IAction* act);
 
@@ -192,8 +190,13 @@ namespace prg
 
 		Array<String> getAllState()const;
 
+		HashSet<String> getState()const;
+
 	protected:
 		void _startCheck()override;
+
+		HashSet<String> m_states;
+
 
 		HashTable<String,HashSet<String>> canDuplicate;
 	};

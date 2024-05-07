@@ -18,13 +18,13 @@ void TestScene::start()
 {
 	Scene::start();
 
-	camera = birthObjectNonHitbox<Camera>(BasicCamera3D(drawManager.getRenderTexture().size(), 50_deg, Vec3{ 0,0,-10 }));
+	camera = birth<Camera>(BasicCamera3D(drawManager.getRenderTexture().size(), 50_deg, Vec3{ 0,0,-10 }));
 
 	camera->type = Camera::Z;
 
 	drawManager.setting(camera);
 
-	//obj = birthObjectNonHitbox();
+	//obj = birth();
 
 	//Actions attack;
 
@@ -48,7 +48,7 @@ void TestScene::start()
 		
 	}
 
-	auto card= birthObjectNonHitbox();
+	auto card= birth();
 	card->addComponent<CardComponent>(U"カード裏.png", player, [] {return 0.4; });
 	card->transform->setPos({ 100,100,0 });
 

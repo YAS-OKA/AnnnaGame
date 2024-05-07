@@ -89,7 +89,7 @@ Borrow<Skill> SkillProvider::Get(StringView name)
 	if (instance)
 	{
 		if (not instance->skillDict.contains(name))throw Error{ U"存在しないスキルが指定されました。\nスキル名:" + name };
-		return instance->scene->birthObjectNonHitbox<Skill>(name, instance->skillDict[name]);
+		return instance->scene->birth<Skill>(name, instance->skillDict[name]);
 	}
 
 	throw Error{ U"SkillProviderのインスタンスが生成されていないため、スキルを提供できませんでした。" };

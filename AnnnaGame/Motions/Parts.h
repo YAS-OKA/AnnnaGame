@@ -92,6 +92,8 @@ namespace mot
 
 	class Parts :public Object
 	{
+		Vec3 m_localPos;
+		double m_z;
 	public:
 		PartsParams base;
 		
@@ -148,7 +150,7 @@ namespace mot
 		{
 			double ang = Math::Fmod(angle - getAngle(), 360);
 
-			auto rp = transform->pos.vec.xy() + (getRotatePos()).rotated(getAbsAngle() * 1_deg);
+			auto rp = transform->pos.vec.xy() + getRotatePos().rotated(getAbsAngle() * 1_deg);
 
 			transform->rotateAt({ rp, 0}, {0,0,1}, ang * 1_deg);
 
@@ -292,9 +294,9 @@ namespace mot
 
 		void setScene(const Borrow<my::Scene>& scene) { m_scene = scene; };
 
-		Borrow<PartsManager> create(const String& jsonPath);
+		Borrow<PartsManager> create(const String& jsonPath, bool createCollider);
 
-		Borrow<PartsManager> create(const String& jsonPath, const Borrow<PartsManager>& pmanager);
+		Borrow<PartsManager> create(const String& jsonPath, const Borrow<PartsManager>& pmanager,bool createCollider);
 	};
 }
 

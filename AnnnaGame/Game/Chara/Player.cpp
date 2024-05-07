@@ -80,8 +80,8 @@ void Player::behaviorSetting(state::Inform&& info)
 			act |= dict[U"Air"](info);
 			act |= dict[U"Avoid"](info);
 			for (auto k : step(3)) {
-				act |= dict[U"SetUp{}"_fmt(k)](info);
 				act |= dict[U"Attack{}"_fmt(k)](info);
+				act |= dict[U"SetUp{}"_fmt(k)](info);
 			}
 
 			auto allState = act.getAllState();
@@ -101,7 +101,7 @@ void Player::behaviorSetting(state::Inform&& info)
 
 			//Runの条件
 			auto select = getComponent<Field<size_t>>(U"Select");
-			excep.emplace(U"Jump");//Avoid,Air,Jump,Attacks1~2の時はのぞく
+			excep.emplace(U"Jump");//Avoid,Air,Jump,Attacks0~2の時はのぞく
 			act.relate(allState.removed(U"Run").remove_if([&](String id) { return excep.contains(id); }), U"Run")
 				.andIf([=] {return select->value == 3; });
 
@@ -116,7 +116,7 @@ void Player::behaviorSetting(state::Inform&& info)
 			Array<Input> keys{ SubLeft,SubUp,SubRight };
 			for (auto k : step(3))
 			{
-				act.relate(U"SetUp{}"_fmt(k), U"Attack{}"_fmt(k))
+				act.relate(allState.remove_if([&](String id) { return excep.contains(id); }), U"Attack{}"_fmt(k))
 					.andIf([gage = getComponent<Field<util::StopMax>>(U"A{}Gage"_fmt(k)),k]
 						{
 						return not gage->value.additionable();
@@ -198,7 +198,7 @@ void Player::behaviorSetting(state::Inform&& info)
 					FuncCondition(setting::Left, KeyState::p),
 					FuncCondition(setting::Right, KeyState::p))
 				+ FuncAction(
-					[k,gage = addComponentNamed<Field<util::StopMax>>(U"A{}Gage"_fmt(k), util::StopMax(100))](double dt) {
+					[k,gage = getComponent<Field<util::StopMax>>(U"A{}Gage"_fmt(k))](double dt) {
 						gage->value.add(40 * dt);
 					});
 			constant.setEndCondition();
@@ -208,7 +208,7 @@ void Player::behaviorSetting(state::Inform&& info)
 	for (auto k : step(3)) dict[U"Attack{}"_fmt(k)] = [=](In info, A act)
 		{
 			act |= FuncAction(
-				[=, skills = getSkills() , gage = getComponent<Field<util::StopMax>>(U"A{}Gage"_fmt(k))]
+				[=, skills = getSkills() , gage = addComponentNamed<Field<util::StopMax>>(U"A{}Gage"_fmt(k), util::StopMax(100))]
 				{
 					gage->value.value = 0;
 

@@ -261,7 +261,17 @@ void Transform::setXY(const Vec2& p)
 
 void Transform::setLocalXY(const Vec2& p,bool gridScaling)
 {
-	setLocalPos({ p,getLocalPos().z },gridScaling);
+	if (gridScaling)
+	{
+		auto asp = getAspect();
+		_setLocalX(p.x, asp.x);
+		_setLocalY(p.y, asp.y);
+	}
+	else {
+		_setLocalX(p.x);
+		_setLocalY(p.y);
+	}
+	affectChildren();
 }
 
 void Transform::setLocalPos(const Vec3& p, bool gridScaling)
@@ -305,20 +315,42 @@ void Transform::setX(double x)
 	affectChildren();
 }
 
-void Transform::setLocalX(double x)
+void Transform::setLocalX(double x,bool gridScaling)
 {
-	setLocalPos({ x, getLocalPos().yz()});
+	if (gridScaling)
+	{
+		auto asp = getAspect();
+		_setLocalX(x, asp.x);
+	}
+	else {
+		_setLocalX(x);
+	}
+	affectChildren();
+}
+void Transform::setLocalY(double y, bool gridScaling)
+{
+	if (gridScaling)
+	{
+		auto asp = getAspect();
+		_setLocalY(y, asp.y);
+	}
+	else {
+		_setLocalY(y);
+	}
+	affectChildren();
 }
 
-void Transform::setLocalY(double y)
+void Transform::setLocalZ(double z, bool gridScaling)
 {
-	const auto& lp = getLocalPos();
-	setLocalPos({lp.x,y,lp.z });
-}
-
-void Transform::setLocalZ(double z)
-{
-	setLocalPos({ getLocalPos().xy(),z });
+	if (gridScaling)
+	{
+		auto asp = getAspect();
+		_setLocalZ(z, asp.z);
+	}
+	else {
+		_setLocalZ(z);
+	}
+	affectChildren();
 }
 
 void Transform::setY(double y)
@@ -546,8 +578,58 @@ Vec3 Transform::operator+(const Vec3& vec)
 Vec3 Transform::operator+=(const Vec3& vec)
 {
 	moveBy(vec);
-	//setPos(*this + vec);
 	return pos.vec;
+}
+
+void Transform::_setLocalX(double x, Optional<double> asp)
+{
+	if (auto parent = getParent()) {
+		if (asp)
+		{
+			if (*asp == 0)return;//0の成分あったら計算しない(本当は0の成分以外は計算すべき？)
+			pos.vec.x = x / *asp + parent->pos.vec.x;
+		}
+		else {
+			pos.vec.x = x + parent->pos.vec.x;
+		}
+	}
+	else {
+		setX(x);
+	}
+}
+
+void Transform::_setLocalY(double y, Optional<double> asp)
+{
+	if (auto parent = getParent()) {
+		if (asp)
+		{
+			if (*asp == 0)return;//0の成分あったら計算しない(本当は0の成分以外は計算すべき？)
+			pos.vec.y = y / *asp + parent->pos.vec.y;
+		}
+		else {
+			pos.vec.y = y + parent->pos.vec.y;
+		}
+	}
+	else {
+		setY(y);
+	}
+}
+
+void Transform::_setLocalZ(double z, Optional<double> asp)
+{
+	if (auto parent = getParent()) {
+		if (asp)
+		{
+			if (*asp == 0)return;//0の成分あったら計算しない(本当は0の成分以外は計算すべき？)
+			pos.vec.z = z / *asp + parent->pos.vec.z;
+		}
+		else {
+			pos.vec.z = z + parent->pos.vec.z;
+		}
+	}
+	else {
+		setZ(z);
+	}
 }
 
 void Transform::scaleXYAt(const Vec2& _pos, double scale, double rad)

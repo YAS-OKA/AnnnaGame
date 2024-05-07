@@ -1,6 +1,7 @@
 ﻿#include "../../stdafx.h"
 #include "PartsMirrored.h"
 #include"../../Motions/Parts.h"
+#include"../../Component/Draw.h"
 
 PartsMirrored::PartsMirrored(const Borrow<mot::PartsManager>& pman, bool m)
 	:pman(pman), active(false), mirrored(false)
@@ -9,6 +10,11 @@ PartsMirrored::PartsMirrored(const Borrow<mot::PartsManager>& pman, bool m)
 	{
 		pman->dm->drawing.scale.x *= -1;
 	}
+}
+
+bool PartsMirrored::getMirrored() const
+{
+	return mirrored;
 }
 
 void PartsMirrored::start()
@@ -40,6 +46,9 @@ void PartsMirrored::update(double dt)
 			mirrored = !mirrored;
 			active = false;
 		}
-		pman->dm->drawing.scale.x = firstScale * (1 - 2 * timer / mirroredTime);
+		auto& s = pman->dm->drawing.scale.x;
+		s = firstScale * (1 - 2 * timer / mirroredTime);
+		if (0 < s and s < zero)s = zero;
+		if (-zero < s and s <= 0)s = -zero;
 	}
 }

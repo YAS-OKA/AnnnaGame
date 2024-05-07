@@ -21,6 +21,7 @@ class Component :public Borrowable
 public:
 	Component() = default;
 	virtual ~Component() = default;
+
 	virtual void start() {}
 	virtual void update(double dt) {}
 
@@ -62,7 +63,7 @@ public:
 
 	virtual void update(double dt) {};
 
-	//相手が死ぬと自分も死ぬ。自分が死ぬと相手も死ぬ
+	//運命共同体。相手が死ぬと自分も死ぬし、自分が死ぬと相手も死ぬ
 	void setSameDestiny(const Borrow<Entity>& other)
 	{
 		sameDestiny << other;

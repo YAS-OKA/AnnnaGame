@@ -71,6 +71,18 @@ namespace ui
 		br,
 	};
 
+	class Text :public Object
+	{
+	public:
+		Borrow<DrawFont> font;
+
+		Borrow<Text> setting(StringView text, StringView assetName, const Vec2& pos, const ColorF& fontColor = Palette::Black);
+		Borrow<Text> setting(StringView text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor = Palette::Black);
+
+		void setText(StringView text);
+
+		void start() override;
+	};
 
 	class TextBox :public Object
 	{
@@ -84,19 +96,17 @@ namespace ui
 		double x_margin = 2;
 		double y_margin = 2;
 
-		//virtual ~TextBox();
+		Borrow<TextBox> setting( StringView text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
 
-		Borrow<TextBox> setting( const String& text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
+		Borrow<TextBox> setting( StringView text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
 
-		Borrow<TextBox> setting( const String& text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
+		Borrow<TextBox> setting( StringView text, StringView assetName, const Vec2& pos, double w, double h, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
 
-		Borrow<TextBox> setting( const String& text, const String& assetName, const Vec2& pos, double w, double h, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
-
-		Borrow<TextBox> setting( const String& text, const String& assetName, const Vec2& pos, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
+		Borrow<TextBox> setting( StringView text, StringView assetName, const Vec2& pos, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
 
 		Arrangement arrange=Arrangement::center;
 
-		void setText(const String& text);
+		void setText(StringView text);
 
 		void fitSize();
 
@@ -105,13 +115,13 @@ namespace ui
 		void update(double dt)override;
 	};
 
-	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene,const String& text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
+	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene,StringView text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
 
-	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, const String& text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
+	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, StringView text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
 
-	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, const String& text, const String& assetName, const Vec2& pos, double w, double h, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
+	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, StringView text, StringView assetName, const Vec2& pos, double w, double h, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
 
-	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, const String& text, const String& assetName , const Vec2& pos, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
+	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, StringView text, StringView assetName , const Vec2& pos, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
 
 	class InputBox :public Object
 	{
@@ -127,13 +137,13 @@ namespace ui
 		int32 editS;
 		int32 editE;
 		//begin~endまでの文字をtextに置き換える
-		void input(const int32& b, const int32& e, const String& text);
+		void input(const int32& b, const int32& e, StringView text);
 		//begin~endまでの文字を取得
 		String getText(int32 b, int32 e)const;
 
 		int32 getCharaNum(Point pos)const;
 
-		void keyInput(const String& text);
+		void keyInput(StringView text);
 
 		void setBarPosition();
 	public:
@@ -148,9 +158,9 @@ namespace ui
 		void update(double dt)override;
 	};
 
-	Borrow<InputBox> createInputBox(const Borrow<my::Scene>& scene, const int32& fontSize, const Vec2& pos, double w, double h, const String& text = U"", const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
+	Borrow<InputBox> createInputBox(const Borrow<my::Scene>& scene, const int32& fontSize, const Vec2& pos, double w, double h, StringView text = U"", const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
 
-	Borrow<InputBox> createInputBox(const Borrow<my::Scene>& scene, const String& assetName, const Vec2& pos, double w, double h, const String& text = U"", const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
+	Borrow<InputBox> createInputBox(const Borrow<my::Scene>& scene, StringView assetName, const Vec2& pos, double w, double h, StringView text = U"", const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
 
 	class SimpleInputArea:public IDraw2D
 	{
@@ -160,7 +170,7 @@ namespace ui
 
 		mutable TextAreaEditState tex;
 
-		SimpleInputArea(DrawManager* manager, double w, double h, const String& text = U"");
+		SimpleInputArea(DrawManager* manager, double w, double h, StringView text = U"");
 
 		bool isActive();
 
@@ -169,7 +179,7 @@ namespace ui
 		void draw()const override;
 	};
 
-	Borrow<SimpleInputArea> createSimpleInputArea(const Borrow<my::Scene>& scene, const Vec2& pos, double w, double h, const String& text = U"");
+	Borrow<SimpleInputArea> createSimpleInputArea(const Borrow<my::Scene>& scene, const Vec2& pos, double w, double h, StringView text = U"");
 
 	class SimpleInputBox :public IDraw2D
 	{
@@ -182,7 +192,7 @@ namespace ui
 
 		Borrow<util::MouseObject> mouse;
 
-		SimpleInputBox(DrawManager* manager,double w, const String& text = U"");
+		SimpleInputBox(DrawManager* manager,double w, StringView text = U"");
 
 		bool isEditing()const;
 
@@ -191,7 +201,7 @@ namespace ui
 		void draw()const override;
 	};
 
-	Borrow<SimpleInputBox> createSimpleInputBox(const Borrow<my::Scene>& scene, const Vec2& pos, double w, const String& text = U"");
+	Borrow<SimpleInputBox> createSimpleInputBox(const Borrow<my::Scene>& scene, const Vec2& pos, double w, StringView text = U"");
 
 	class Button :public Object
 	{
@@ -204,7 +214,7 @@ namespace ui
 
 		Borrow<TextBox> box;
 
-		void setText(const String& text);
+		void setText(StringView text);
 
 		void start()override;
 
@@ -213,12 +223,52 @@ namespace ui
 		bool pushed();
 	};
 
-	Borrow<Button> createButton(const Borrow<my::Scene>& scene, const String& text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
+	Borrow<Button> createButton(const Borrow<my::Scene>& scene, StringView text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
 
-	Borrow<Button> createButton(const Borrow<my::Scene>& scene, const String& text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
+	Borrow<Button> createButton(const Borrow<my::Scene>& scene, StringView text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
 
-	Borrow<Button> createButton(const Borrow<my::Scene>& scene, const String& text, const String& assetName, const Vec2& pos, double w, double h, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
+	Borrow<Button> createButton(const Borrow<my::Scene>& scene, StringView text, StringView assetName, const Vec2& pos, double w, double h, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
 
-	Borrow<Button> createButton(const Borrow<my::Scene>& scene, const String& text, const String& assetName, const Vec2& pos, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
+	Borrow<Button> createButton(const Borrow<my::Scene>& scene, StringView text, StringView assetName, const Vec2& pos, const ColorF& fontColor = Palette::Black, const ColorF& boxColor = Palette::White);
 
+#include"../Prg/Init.h"
+#include"StateMachine/StateProvider.h"
+
+	using Event = std::function<void()>;
+
+	template<class... Args>	Borrow<ui::Button> ButtonEvent(Array<Event> events, const Borrow<my::Scene>& scene, StringView text, Args&& ...args)
+	{
+		auto button = createButton(scene, text, args...);
+		auto& act = button->box->ACreate(U"onClicked");
+		for (const auto& e : events)
+		{
+			act.add(e).startIf<ButtonChecker>(button);
+		}
+		return button;
+	}
+
+	template<class... Args>	Borrow<ui::Button> ButtonEvent(const Event& e, const Borrow<my::Scene>& scene, StringView text, Args&& ...args)
+	{
+		return ButtonEvent(Array<Event>{ e }, scene, text, args...);
+	}
+
+	class Selection :public Object
+	{
+		size_t num = 0;
+	public:
+		//決定ならこれをtrueに
+		bool determined = false;
+		//選択中の選択肢
+		Optional<size_t> selecting = none;
+
+		void start()override;
+
+		Actions& startDirection();
+
+		Actions& endDirection();
+
+		void addSelection(prg::IAction*&& eventHandler, prg::IAction*&& forcus, prg::IAction*&& release, prg::IAction*&& normal = nullptr);
+
+		void select(size_t i);
+	};
 }

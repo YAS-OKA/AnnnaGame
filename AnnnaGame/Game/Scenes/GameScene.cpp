@@ -75,7 +75,7 @@ void GameScene::start()
 	//プレイヤー生成
 	auto player = birthObject<Player>(Box(3, 5, 3),{0,0,0});
 	//*2はデバッグ用　
-	player->transform->setY(2.5 * 2);
+	player->transform->setY(2.5);
 
 	player->getComponent<Collider>()->setCategory(ColliderCategory::hero);
 
@@ -88,13 +88,13 @@ void GameScene::start()
 	player->param.LoadFile(U"Player.txt", U"Annna");
 
 	//カメラ
-	camera = birthObjectNonHitbox<Camera>(BasicCamera3D(drawManager.getRenderTexture().size(), 50_deg, Vec3{ 0,12,-25 }));
+	camera = birth<Camera>(BasicCamera3D(drawManager.getRenderTexture().size(), 50_deg, Vec3{ 0,12,-25 }));
 	drawManager.setting(camera);
 	//プレイヤーをターゲット
 	camera->setFollowTarget(player);
 	camera->type = Camera::DistanceType::Z;
 
-	auto parts = partsLoader->create(U"asset/motion/sara/model1.json");
+	auto parts = partsLoader->create(U"asset/motion/sara/model1.json", false);
 
 	parts->master->transform->scale.setAspect({ 0.4,0.4,1 });
 
@@ -141,17 +141,24 @@ void GameScene::start()
 		if (p->name == U"kami")hair = p;
 	}
 
-	double g = 5;
+	double g = 90;
+	double haba = 50;
+	
+	player->ACreate(U"HairSwing", true)
+		+= FuncAction(
+		[=, v = 0.0, mirror = player->getComponent<PartsMirrored>()](double dt)mutable {
+			const auto& ang = hair->getAngle();
+			const auto& sokudo = player->transform->getVel().xy();
+			double kansei = 100 * sokudo.x * (haba - Min(haba, Abs(ang))) / haba;
 
-	player->ACreate(U"HairSwing", true) += FuncAction(
-		[=, preV = 0.0](double dt)mutable {
-			auto v = hair->transform->getVel().x + hair->transform->getAngulerVel().x;
-			double a = (v - preV) / dt;
-			preV = v;
-			Print << hair->getAngle();
-			auto aaa = (Math::Sign(a) * (Abs(a) - g) - v / 4) * dt;
-			if(Abs(aaa)<1000)hair->setAngle(hair->getAngle() + aaa);
-		});*/
+			if (mirror->getMirrored())kansei *= -1;
+			
+			v += (-ang * g + kansei) * dt;
+
+			hair->setAngle(ang + Math::Sign(v) * Log(Abs(v)+1) * dt);
+		}
+	);*/
+
 	for (auto k : step(1)) {
 		auto enemy = birthObject<Enemy>(Box(3, 5, 3), { 0,0,0 });
 
@@ -161,7 +168,7 @@ void GameScene::start()
 
 		enemy->param.LoadFile(U"enemys.txt", U"KirikabuBake");
 
-		auto eparts = partsLoader->create(U"asset/motion/sara/model1.json");
+		auto eparts = partsLoader->create(U"asset/motion/sara/model.json", false);
 
 		eparts->master->transform->scale.setAspect({ 0.4,0.4,1 });
 
@@ -206,7 +213,7 @@ void GameScene::start()
 		enemy->name = U"Enemy";
 	}
 	//カード
-	auto card = birthObjectNonHitbox();
+	auto card = birth();
 	card->addComponent<CardComponent>(U"カード裏.png", player,
 		[gage = player->getComponent<Field<util::StopMax>>(U"A0Gage")] {
 			return gage->value.value / gage->value.max;

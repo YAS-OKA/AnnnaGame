@@ -209,10 +209,10 @@ namespace prg
 	class ButtonChecker :public ICondition
 	{
 	public:
-		ui::Button* button;
+		Borrow<ui::Button> button;
 
-		ButtonChecker(ui::Button* button, size_t waitFrame = 0);
-		void setButton(ui::Button* button);
+		ButtonChecker(const Borrow<ui::Button>& button, size_t waitFrame = 0);
+		void setButton(const Borrow<ui::Button>& button);
 
 	protected:
 		bool check()const override;

@@ -132,7 +132,7 @@ namespace mot
 
 	Borrow<Parts> PartsManager::birthParts()
 	{
-		return scene->birthObjectNonHitbox<Parts>(*this);
+		return scene->birth<Parts>(*this);
 	}
 
 	Borrow<Parts> PartsManager::addParts(const PartsParams& params)
@@ -298,14 +298,14 @@ namespace mot
 		return json.save(path);
 	}
 
-	Borrow<PartsManager> LoadParts::create(const String& jsonPath)
+	Borrow<PartsManager> LoadParts::create(const String& jsonPath,bool createCollider)
 	{
-		auto pm = m_scene->birthObjectNonHitbox<PartsManager>();
+		auto pm = m_scene->birth<PartsManager>();
 
-		return create(jsonPath, pm);
+		return create(jsonPath, pm, createCollider);
 	}
 
-	Borrow<PartsManager> LoadParts::create(const String& jsonPath,const Borrow<PartsManager>& pmanager)
+	Borrow<PartsManager> LoadParts::create(const String& jsonPath,const Borrow<PartsManager>& pmanager, bool createCollider)
 	{
 		auto& pm = pmanager;
 
@@ -316,7 +316,7 @@ namespace mot
 
 		CmdDecoder deco;
 
-		DecoderSet(&deco).registerMakePartsCmd(pm,true);
+		DecoderSet(&deco).registerMakePartsCmd(pm, createCollider);
 
 		for (const auto& elms : json)
 		{
@@ -357,7 +357,7 @@ namespace mot
 
 		for (auto& [p, v] : partsAngle)
 		{
-			p->pureRotate(v, true);		//その場で回転させる
+			p->pureRotate(v, false);		//その場で回転させる
 			p->params.angle = v;
 		}
 

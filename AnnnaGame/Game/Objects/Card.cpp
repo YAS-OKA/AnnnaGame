@@ -17,7 +17,7 @@ void CardComponent::start()
 
 	Object* innnerOwner = dynamic_cast<Object*>(owner);
 
-	m_bar = innnerOwner->scene->birthObjectNonHitbox<ui::ProgressBar>();
+	m_bar = innnerOwner->scene->birth<ui::ProgressBar>();
 
 	m_bar->setting(Vec3{ 0,0,0 }, 70, 5);
 

@@ -172,9 +172,9 @@ public:
 	void addY(double y);
 	void addZ(double z);
 
-	void setLocalX(double x);
-	void setLocalY(double y);
-	void setLocalZ(double z);
+	void setLocalX(double x, bool gridScaling = false);
+	void setLocalY(double y, bool gridScaling = false);
+	void setLocalZ(double z, bool gridScaling = false);
 
 	void moveBy(const Vec3& delta);
 
@@ -203,4 +203,8 @@ public:
 	Vec3 operator+(const Vec3& vec);
 
 	Vec3 operator+=(const Vec3& vec);
+private:
+	void _setLocalX(double x, Optional<double> asp = none);
+	void _setLocalY(double y, Optional<double> asp = none);
+	void _setLocalZ(double z, Optional<double> asp = none);
 };

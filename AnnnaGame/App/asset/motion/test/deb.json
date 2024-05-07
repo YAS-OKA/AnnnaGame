@@ -1,13 +1,23 @@
 ﻿{
   "a": {
-    "angle": 45.0,
+    "angle": 30.0,
     "color": "(1, 1, 1, 1)",
     "parent": "master",
-    "pos": "(-100, 0)",
+    "pos": "(-86.60254, -50)",
     "rotatePos": "(100, 0)",
     "scale": "(1, 1)",
     "texture": "rect 100 100",
-    "z": 99.99998
+    "z": 100.0
+  },
+  "b": {
+    "angle": 0.0,
+    "color": "(1, 1, 1, 1)",
+    "parent": "a",
+    "pos": "(-200, 0)",
+    "rotatePos": "(0, 0)",
+    "scale": "(1, 1)",
+    "texture": "rect 50 50",
+    "z": 100.0
   },
   "master": {
     "angle": 0.0,

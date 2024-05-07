@@ -33,6 +33,12 @@ namespace state
 		{
 			return F(method(info, std::move(create(name))));
 		}
+
+		StateActions operator()() const
+		{
+			auto info = Inform();
+			return F(method(info, std::move(create(name))));
+		}
 	};
 
 	class SCreatorContainer

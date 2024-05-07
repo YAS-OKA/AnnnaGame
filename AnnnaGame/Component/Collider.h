@@ -90,7 +90,6 @@ private:
 	//自分の
 	ColliderCategory category = ColliderCategory::non;
 public:
-
 	CollideBox hitbox;
 
 	static HashSet<ColliderCategory> AllCategory;

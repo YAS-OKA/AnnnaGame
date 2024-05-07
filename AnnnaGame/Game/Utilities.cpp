@@ -22,9 +22,27 @@ namespace util
 
 	void MouseObject::update(double dt)
 	{
+		Object::update(dt);
+
 		transform->setLocalPos({ Cursor::PosF(), 0});
 	}
-	
+
+	Array<Borrow<Collider>>& MouseObject::getColliderArray(StringView kind)
+	{
+		if (not collideDict.contains(kind)) {
+			collideDict[kind] = Array<Borrow<Collider>>();
+		}
+		return collideDict[kind];
+	}
+
+	Array<Borrow<Collider>> MouseObject::getColliderArray(StringView kind)const
+	{
+		if (not collideDict.contains(kind)) {
+			return Array<Borrow<Collider>>();
+		}
+		return collideDict.at(kind);
+	}
+
 	Vec3 MouseObject::getCursorPos(Influence* influence)const
 	{
 		Vec2 pos = transform->getPos().xy();
@@ -34,7 +52,7 @@ namespace util
 		return { pos,transform->getPos().z };
 	}
 
-	Array<Borrow<Entity>> MouseObject::getClickedObjects(Array<Borrow<Collider>> colliders)const
+	Array<Borrow<Entity>> MouseObject::getClickedObjects(const Array<Borrow<Collider>>& colliders)const
 	{
 		Array<Borrow<Entity>> ret{};
 		const auto& camera = manager->getCamera();
@@ -80,6 +98,11 @@ namespace util
 			}
 		}
 		return ret;
+	}
+
+	Array<Borrow<Entity>> MouseObject::getClickedObjects(StringView collideKind) const
+	{
+		return getClickedObjects(getColliderArray(collideKind));
 	}
 
 	Borrow<Entity> MouseObject::getClickedSurfaceObject(Array<Borrow<Collider>> colliders,const SurfaceType& type)
@@ -137,6 +160,16 @@ namespace util
 		ret = getClickedSurfaceObject(col2D, type2d);
 
 		return (bool)ret ? ret : getClickedSurfaceObject(col3D, type3d);
+	}
+
+	Borrow<Entity> MouseObject::getClickedSurfaceObject(StringView collideKind, const SurfaceType& type)
+	{
+		return getClickedSurfaceObject(getColliderArray(collideKind), type);
+	}
+
+	Borrow<Entity> MouseObject::getClickedSurfaceObject2DPrior(StringView collideKind, const SurfaceType& type2d, const SurfaceType& type3d)
+	{
+		return getClickedSurfaceObject2DPrior(getColliderArray(collideKind), type2d, type3d);
 	}
 
 	Convert2DTransform::Convert2DTransform(DrawManager* dmanager,const ProjectionType& type)

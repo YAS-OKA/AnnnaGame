@@ -242,7 +242,7 @@ namespace mot
 
 		void createPartsFrame()
 		{
-			frame = scene->birthObjectNonHitbox();
+			frame = scene->birth();
 			auto tmp = frame->addComponent<DrawPartsFrame>(scene->getDrawManager(), selecting);
 			tmp->transform->setPos(selecting->transform->getPos());
 			tmp->transform->setParent(selecting->transform);
@@ -251,7 +251,7 @@ namespace mot
 
 		void createRotatePoint()
 		{
-			rotatePoint = scene->birthObjectNonHitbox();
+			rotatePoint = scene->birth();
 			const double r = 6;
 			auto tmp = rotatePoint->addComponent<DrawCircle>(scene->getDrawManager(), r);
 			tmp->color = Palette::Orange;
@@ -817,7 +817,7 @@ namespace mot
 		void birthPartsManager()
 		{
 			if (pmanager)pmanager->die();
-			pmanager = scene->birthObjectNonHitbox<PartsManager>();
+			pmanager = scene->birth<PartsManager>();
 			pmanager->scaleHelperParamsSetting(Abs(CameraZvalue), Camera::Z);
 		}
 
@@ -825,11 +825,11 @@ namespace mot
 		{
 			Object::start();
 			birthPartsManager();
-			mouse = scene->birthObjectNonHitbox<util::MouseObject>();
-			dw = scene->birthObjectNonHitbox<PartsDetailWindow>();
+			mouse = scene->birth<util::MouseObject>();
+			dw = scene->birth<PartsDetailWindow>();
 			dw->priority.setPriority(priority.getPriority() + 1);
-			scene->birthObjectNonHitbox<CameraController>();
-			c = scene->birthObjectNonHitbox<CmdArea>();
+			scene->birth<CameraController>();
+			c = scene->birth<CmdArea>();
 
 			//画像読み込み
 			ButtonEvent(*this, U"readImg", [=] {
@@ -850,7 +850,7 @@ namespace mot
 				if (not path)return;
 				//masterパーツを殺して新しく構築
 				c->decoder.input(U"kill master")->decode()->execute();
-				scene->partsLoader->create(*path, pmanager);
+				scene->partsLoader->create(*path, pmanager, true);
 				//当たり判定を取得
 				for (auto& p : pmanager->partsArray)
 				{
@@ -918,7 +918,7 @@ namespace mot
 				}
 			);
 
-			auto plusMark = scene->birthObjectNonHitbox();
+			auto plusMark = scene->birth();
 
 			ui::makeUiLike(plusMark->addComponent<Draw2D<Polygon>>(scene->getDrawManager(), Shape2D::Plus(6, 1).asPolygon()));
 
@@ -928,14 +928,6 @@ namespace mot
 		void update(double dt)override
 		{
 			Object::update(dt);
-
-			if ((KeyControl + KeyR).down())
-			{
-				c->decoder.input(U"load asset/motion/sara/motion.txt Stand")->decode()->execute();
-				c->decoder.input(U"load asset/motion/sara/motion.txt Attack")->decode()->execute();
-			
-				//c->decoder.input(U"load asset/motion/test/debug.txt tmp")->decode()->execute();
-			}
 		}
 
 		Array<PartsParams> createAllPartsParams()const
@@ -951,13 +943,13 @@ namespace mot
 		
 	void PartsEditor::start()
 	{
-		camera = birthObjectNonHitbox<Camera>(BasicCamera3D(drawManager.getRenderTexture().size(), 50_deg, Vec3{ 0,0,-10 }));
+		camera = birth<Camera>(BasicCamera3D(drawManager.getRenderTexture().size(), 50_deg, Vec3{ 0,0,-10 }));
 
 		camera->type = Camera::Z;
 
 		drawManager.setting(camera);
 
-		impl = birthObjectNonHitbox<PartsEditor::Impl>();
+		impl = birth<PartsEditor::Impl>();
 		camera->transform->setZ(CameraZvalue);
 
 		drawManager.translate = -Vec2{ util::sw(),util::sh() }/2;
@@ -965,7 +957,7 @@ namespace mot
 
 	void MotionCreator::start()
 	{
-		camera = birthObjectNonHitbox<Camera>(SimpleFollowCamera3D(drawManager.getRenderTexture().size(), 50_deg, Vec3{ 0,0,10 }, 0_deg, 40, 12));
+		camera = birth<Camera>(SimpleFollowCamera3D(drawManager.getRenderTexture().size(), 50_deg, Vec3{ 0,0,10 }, 0_deg, 40, 12));
 		drawManager.setting(camera);
 	}
 }

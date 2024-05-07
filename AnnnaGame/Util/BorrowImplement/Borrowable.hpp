@@ -41,6 +41,15 @@ public:
 	Borrow(const Borrow<C>& other) = default;
 	Borrow<C>& operator = (const Borrow<C>&) = default;
 
+	template<class T>
+	Borrow<T> cast()
+	{
+		if (auto p = ptr.get())
+			if (auto pp = p->get())return dynamic_cast<T*>(pp)->lend();
+
+		return Borrow<T>();
+	}
+
 	//借用先が削除されてたらfalse
 	operator bool()const
 	{

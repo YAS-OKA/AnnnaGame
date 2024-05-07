@@ -135,28 +135,7 @@ void mot::RotateTo::start()
 
 	if (not clockwizeRotation)//回転が短い方向を求める
 	{
-		if (delta < 0)
-		{
-			if (abs(delta) < 180)
-			{
-				clockwizeRotation = false;//反時計回り
-			}
-			else
-			{
-				clockwizeRotation = true;//時計回り
-			}
-		}
-		else
-		{
-			if (abs(delta) < 180)
-			{
-				clockwizeRotation = true;//時計回り
-			}
-			else
-			{
-				clockwizeRotation = false;//反時計回り
-			}
-		}
+		clockwizeRotation = (delta < 0) ^ (abs(delta) < 180);
 	}
 
 	if (*clockwizeRotation)

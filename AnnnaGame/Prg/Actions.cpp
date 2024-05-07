@@ -245,6 +245,7 @@ void prg::Actions::_startCheck()
 			if (act->startCondition.commonCheck())
 			{
 				act->start();
+				act->startCondition.reset();
 				activeNum++;
 			}
 			else {
@@ -271,6 +272,7 @@ void prg::Actions::_endCheck()
 			if (act->endCondition.commonCheck())
 			{
 				act->end();
+				act->endCondition.reset();
 				activeNum--;
 				notFinishedActNum--;
 			}
@@ -319,11 +321,16 @@ void prg::StateActions::update(double dt)
 	_sort();
 
 	_startCheck();
-
+	//まぁこれが一番楽
+	m_states.clear();
+	for (auto it = update_list.begin(), en = update_list.end(); it != en; ++it)
+	{
+		if ((*it)->isActive())m_states.emplace((*it)->id);
+	}
 	_update(dt);
 
 	_endCheck();
-
+	//なんでこんなことしてる？　2024/05/03	4:05
 	for (auto it = update_list.begin(), en = update_list.end(); it != en; ++it)
 	{
 		auto& act = (*it);
@@ -335,7 +342,10 @@ IAction& prg::StateActions::relate(StringView from, StringView to)
 {
 	auto fa = getAction<IAction>(from);
 	auto ta = getAction<IAction>(to);
-	ta->startIf(fa->lend(), ActState::active);//fromアクションがアクティブか、という条件
+	//ta->startIf(fa->lend(), ActState::active);//fromアクションがアクティブか、という条件
+	ta->startIf([from, ow = this->lend()] {
+		return ow->getState().contains(from);
+		});
 	return *ta;
 }
 
@@ -346,7 +356,8 @@ IAction& prg::StateActions::relate(Array<String> froms, StringView to)
 	for (auto& from : froms)
 	{
 		auto fa = getAction<IAction>(from);
-		c.add(fa->lend(), ActState::active);
+		//c.add(fa->lend(), ActState::active);
+		c.add([from, ow = this->lend()] {return ow->getState().contains(from); });
 	}
 	ta->startIf<ConditionArray>(std::move(c));
 	return *ta;
@@ -377,6 +388,11 @@ Array<String> prg::StateActions::getAllState() const
 	return res;
 }
 
+HashSet<String> prg::StateActions::getState() const
+{
+	return m_states;
+}
+
 void prg::StateActions::_startCheck()
 {
 	Array<IAction*> preStartAct;
@@ -392,7 +408,6 @@ void prg::StateActions::_startCheck()
 			{
 				preStartAct << act;
 			}
-
 			act->startCondition.countFrame();//カウント
 		}
 		else if (act->isActive())
@@ -426,7 +441,8 @@ void prg::StateActions::_startCheck()
 	{
 		if (not update_list.isEmpty())
 		{
-			update_list.front()->start();
+			auto& act = update_list.front();
+			act->start();
 			activeNum++;
 		}
 	}

@@ -235,6 +235,7 @@ namespace prg
 						rightCondition).startIf([] {return true; });
 		}
 	}
+
 }
 
 //アクトクラスターを作る

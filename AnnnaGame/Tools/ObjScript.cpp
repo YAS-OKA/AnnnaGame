@@ -6,7 +6,7 @@
 
 Borrow<Object> tool::ObjScript::create(const DataSaver& data,Optional<String> objName)
 {
-	auto obj = scene->birthObjectNonHitbox();
+	auto obj = scene->birth();
 
 	if (objName)obj->name = *objName;
 

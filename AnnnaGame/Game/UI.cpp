@@ -5,40 +5,6 @@
 
 namespace ui
 {
-	//Card::~Card()
-	//{
-	//	for (auto& card : cards)card->die();
-	//}
-
-	//void Card::start()
-	//{
-	//	Object::start();
-
-	//	for (auto& card : cards)card = scene->birthObjectNonHitbox();
-
-	//	Rect rect{ 0,0,90,130 };
-	//	//ドローマネージャー
-	//	auto dm = scene->getDrawManager();
-
-	//	int32 h, w;
-	//	h = 145;
-	//	w = 100;
-	//	Vec2 pos4[4] = { {0,h},{0,-h},{w,0},{-w,0} };
-
-	//	for (int32 i = 0; i < sizeof(cards) / sizeof(Object*); ++i)
-	//	{
-	//		auto& card = cards[i];
-	//		card->transform->setParent(transform);
-	//		card->transform->setLocalPos({ pos4[i], 0 });
-	//		auto tex = card->addComponent<DrawTexture>(dm, assets[i]);
-	//		tex->aspect.setScale(0.4);
-	//	}
-
-	//	transform->scale.setScale(0.6);
-
-	//	transform->setPos({ Scene::Width() - 200, 500 ,0 });
-	//}
-
 	void ProgressBar::setting(const Vec3& pos, double w, double h, double round)
 	{
 		setting(pos, w, h, ColorF(0.25), { { 1.0, ColorF(0.1, 0.8, 0.2) } }, round);
@@ -101,10 +67,37 @@ namespace ui
 		return back->visible and std::visit([](auto& x)->bool {return x->visible; }, rect);
 	}
 
-	/*TextBox::~TextBox()
+	Borrow<Text> Text::setting(StringView text, StringView assetName, const Vec2& pos, const ColorF& fontColor)
 	{
-		textObject->die();
-	}*/
+		Text::setting(text, 0, pos, fontColor);
+		font->drawing = FontAsset(assetName);
+		return *this;
+	}
+
+	Borrow<Text> Text::setting(StringView text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor)
+	{
+		font->drawing = Font{ fontSize };
+		font->text = text;
+		transform->setPos({ pos ,0 });
+		font->color = fontColor;
+		return *this;
+	}
+
+	void Text::setText(StringView text)
+	{
+		font->text = text;
+	}
+
+	void Text::start()
+	{
+		Object::start();
+
+		auto draw_manager = scene->getDrawManager();
+
+		font = makeUiLike(addComponent<DrawFont>(draw_manager, Font(20)));
+
+		font->color = Palette::White;
+	}
 
 	void TextBox::fitSize()
 	{
@@ -115,7 +108,7 @@ namespace ui
 		box->drawing = rect;
 	}
 
-	Borrow<TextBox> TextBox::setting(const String& text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> TextBox::setting(StringView text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		font->drawing = Font{ fontSize };
 		font->text = text;
@@ -126,28 +119,28 @@ namespace ui
 		return *this;
 	}
 
-	Borrow<TextBox> TextBox::setting(const String& text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> TextBox::setting(StringView text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		TextBox::setting(text, fontSize, pos, 0, 0, fontColor, boxColor);
 		fitSize();
 		return *this;
 	}
 
-	Borrow<TextBox> TextBox::setting(const String& text, const String& assetName, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> TextBox::setting(StringView text, StringView assetName, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		TextBox::setting(text, 0, pos, w, h, fontColor, boxColor);
 		font->drawing = FontAsset(assetName);
 		return *this;
 	}
 
-	Borrow<TextBox> TextBox::setting(const String& text, const String& assetName, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> TextBox::setting(StringView text, StringView assetName, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
 	{
 		TextBox::setting(text, assetName, pos, 0, 0, fontColor, boxColor);
 		fitSize();
 		return *this;
 	}
 
-	void TextBox::setText(const String& text)
+	void TextBox::setText(StringView text)
 	{
 		font->text = text;
 	}
@@ -156,7 +149,7 @@ namespace ui
 	{
 		Object::start();
 
-		textObject = scene->birthObjectNonHitbox<Object>();
+		textObject = scene->birth<Object>();
 		textObject->transform->setParent(transform);
 		setSameDestiny(*textObject);
 		auto draw_manager = scene->getDrawManager();
@@ -221,35 +214,35 @@ namespace ui
 		font->transform->moveBy({ x_margin,y_margin,-1 });
 	}
 
-	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, const String& text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, StringView text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
 	{
-		auto textbox = scene->birthObjectNonHitbox<TextBox>();
+		auto textbox = scene->birth<TextBox>();
 		textbox->setting(text, fontSize, pos, w, h, fontColor, boxColor);
 		return textbox;
 	}
 
-	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, const String& text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, StringView text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
 	{
-		auto textbox = scene->birthObjectNonHitbox<TextBox>();
+		auto textbox = scene->birth<TextBox>();
 		textbox->setting(text, fontSize, pos, fontColor, boxColor);
 		return textbox;
 	}
 
-	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, const String& text, const String& assetName, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, StringView text, StringView assetName, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
 	{
-		auto textbox = scene->birthObjectNonHitbox<TextBox>();
+		auto textbox = scene->birth<TextBox>();
 		textbox->setting(text, assetName, pos, w, h, fontColor, boxColor);
 		return textbox;
 	}
 
-	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, const String& text, const String& assetName, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<TextBox> createTextBox(const Borrow<my::Scene>& scene, StringView text, StringView assetName, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
 	{
-		auto textbox = scene->birthObjectNonHitbox<TextBox>();
+		auto textbox = scene->birth<TextBox>();
 		textbox->setting(text, assetName, pos, fontColor, boxColor);
 		return textbox;
 	}
 
-	void InputBox::input(const int32& start, const int32& end, const String& t)
+	void InputBox::input(const int32& start, const int32& end, StringView t)
 	{
 		auto& text = box->font->text;
 		auto b = start;
@@ -285,7 +278,7 @@ namespace ui
 		return result;
 	}
 
-	void InputBox::keyInput(const String& text)
+	void InputBox::keyInput(StringView text)
 	{
 		double base_height = box->font->drawing.height();
 
@@ -404,7 +397,7 @@ namespace ui
 	{
 		Object::start();
 
-		box = scene->birthObjectNonHitbox<TextBox>();
+		box = scene->birth<TextBox>();
 
 		setSameDestiny(box);
 		//左揃え
@@ -425,7 +418,7 @@ namespace ui
 		actman[U"input"].add(
 			[=]{
 				Print << cursorPos;
-				const String& pre = getText(cursorPos - 1, cursorPos + 1);
+				const auto& pre = getText(cursorPos - 1, cursorPos + 1);
 				String t = pre;
 				TextInput::UpdateText(t, t.size() > 0 ? 1 : 0);
 				if (t == pre)return;
@@ -485,21 +478,21 @@ namespace ui
 		}
 	}
 
-	Borrow<InputBox> createInputBox(const Borrow<my::Scene>& scene, const int32& fontSize, const Vec2& pos, double w, double h, const String& text, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<InputBox> createInputBox(const Borrow<my::Scene>& scene, const int32& fontSize, const Vec2& pos, double w, double h, StringView text, const ColorF& fontColor, const ColorF& boxColor)
 	{
-		auto inputbox = scene->birthObjectNonHitbox<InputBox>();
+		auto inputbox = scene->birth<InputBox>();
 		inputbox->box->setting(text, fontSize, pos, w, h, fontColor, boxColor);
 		return inputbox;
 	}
 
-	Borrow<InputBox> createInputBox(const Borrow<my::Scene>& scene, const String& assetName, const Vec2& pos, double w, double h, const String& text, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<InputBox> createInputBox(const Borrow<my::Scene>& scene, StringView assetName, const Vec2& pos, double w, double h, StringView text, const ColorF& fontColor, const ColorF& boxColor)
 	{
-		auto inputbox = scene->birthObjectNonHitbox<InputBox>();
+		auto inputbox = scene->birth<InputBox>();
 		inputbox->box->setting(text, assetName, pos, w, h, fontColor, boxColor);
 		return inputbox;
 	}
 
-	SimpleInputArea::SimpleInputArea(DrawManager* manager,double w, double h, const String& text)
+	SimpleInputArea::SimpleInputArea(DrawManager* manager,double w, double h, StringView text)
 		:w(w),h(h),IDraw2D(manager)
 	{
 		tex.text = text;
@@ -522,7 +515,7 @@ namespace ui
 		SimpleGUI::TextArea(tex, {0,0}, {w,h}, 50000, canInput);
 	}
 
-	Borrow<SimpleInputArea> createSimpleInputArea(const Borrow<my::Scene>& scene, const Vec2& pos, double w, double h, const String& text)
+	Borrow<SimpleInputArea> createSimpleInputArea(const Borrow<my::Scene>& scene, const Vec2& pos, double w, double h, StringView text)
 	{
 		auto area = scene->birthObject(RectF{ 0,0,w,h }, { 0,0,0 });
 
@@ -531,7 +524,7 @@ namespace ui
 		return makeUiLike(area->addComponent<SimpleInputArea>(scene->getDrawManager(), w, h, text));
 	}
 
-	SimpleInputBox::SimpleInputBox(DrawManager* manager, double w, const String& text)
+	SimpleInputBox::SimpleInputBox(DrawManager* manager, double w, StringView text)
 		:w(w),IDraw2D(manager)
 	{
 		tex.text = text;
@@ -554,7 +547,7 @@ namespace ui
 		SimpleGUI::TextBox(tex, { 0,0 }, w, none, canInput);
 	}
 
-	Borrow<SimpleInputBox> createSimpleInputBox(const Borrow<my::Scene>& scene, const Vec2& pos, double w, const String& text)
+	Borrow<SimpleInputBox> createSimpleInputBox(const Borrow<my::Scene>& scene, const Vec2& pos, double w, StringView text)
 	{
 		auto area = scene->birthObject(RectF{ 0,0,w,40 }, { 0,0,0 });
 
@@ -563,7 +556,7 @@ namespace ui
 		return makeUiLike(area->addComponent<SimpleInputBox>(scene->getDrawManager(), w, text));
 	}
 
-	void Button::setText(const String& text)
+	void Button::setText(StringView text)
 	{
 		box->setText(text);
 	}
@@ -608,36 +601,126 @@ namespace ui
 		return flag;
 	}
 
-	Borrow<Button> createButton(const Borrow<my::Scene>& scene, const String& text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<Button> createButton(const Borrow<my::Scene>& scene, StringView text, const int32& fontSize, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
 	{
-		auto button = scene->birthObjectNonHitbox<Button>();
+		auto button = scene->birth<Button>();
 		button->transform->setPos({ pos, 0 });
 		button->box->setting(text, fontSize, pos, w, h, fontColor, boxColor);
 		return button;
 	}
 
-	Borrow<Button> createButton(const Borrow<my::Scene>& scene, const String& text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<Button> createButton(const Borrow<my::Scene>& scene, StringView text, const int32& fontSize, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
 	{
-		auto button = scene->birthObjectNonHitbox<Button>();
+		auto button = scene->birth<Button>();
 		button->transform->setPos({ pos, 0 });
 		button->box->setting(text, fontSize, pos, fontColor, boxColor);
 		return button;
 	}
 
-	Borrow<Button> createButton(const Borrow<my::Scene>& scene, const String& text, const String& assetName, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<Button> createButton(const Borrow<my::Scene>& scene, StringView text, StringView assetName, const Vec2& pos, double w, double h, const ColorF& fontColor, const ColorF& boxColor)
 	{
-		auto button = scene->birthObjectNonHitbox<Button>();
+		auto button = scene->birth<Button>();
 		button->transform->setPos({ pos, 0 });
 		button->box->setting(text, assetName, pos, w, h, fontColor, boxColor);
 		return button;
 	}
 
-	Borrow<Button> createButton(const Borrow<my::Scene>& scene, const String& text, const String& assetName, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
+	Borrow<Button> createButton(const Borrow<my::Scene>& scene, StringView text, StringView assetName, const Vec2& pos, const ColorF& fontColor, const ColorF& boxColor)
 	{
-		auto button = scene->birthObjectNonHitbox<Button>();
+		auto button = scene->birth<Button>();
 		button->transform->setPos({ pos, 0 });
 		button->box->setting(text, assetName, pos, fontColor, boxColor);
 		return button;
 	}
-	
+
+	void Selection::start()
+	{
+		Object::start();
+		//初期化など
+		ACreate(U"startDirection")
+			.add([self = this->lend()] {
+				self->determined = false;
+				auto tmp = self->selecting;
+				if (not self->selecting)self->selecting = 0;
+			});
+
+		ACreate(U"endDirection");
+	}
+
+	Actions& Selection::startDirection()
+	{
+		return actman.get(U"startDirection");
+	}
+
+	Actions& Selection::endDirection()
+	{
+		return actman.get(U"endDirection");
+	}
+
+	void Selection::addSelection(prg::IAction*&& eventHandler, prg::IAction*&& forcus, prg::IAction*&& release, prg::IAction*&& normal)
+	{
+		using namespace state;
+
+		auto self = this->lend();
+
+		SCreatorContainer dict;
+
+		dict[U"State"] = [&](In info, A act)
+			{
+				act |= dict[U"Normal"](info);//選択していない
+				act |= dict[U"Release"](info);//選択を外す
+				act |= dict[U"Forcus"](info);//選択中
+				act |= dict[U"Event"](info);//決定
+
+				act.relate(U"Forcus", U"Event")
+					.andIf([self] {return self->determined; });
+				act.relate(U"Normal", U"Forcus")
+					.andIf([self, n = num] {return self->selecting and (*self->selecting == n); });
+				act.relate(U"Forcus", U"Release")
+					.andIf([self, n = num] { return self->selecting and (*self->selecting != n); });
+
+				return F(act);
+			};
+
+		dict[U"Normal"] = [=](In info, A act)
+			{
+				if (normal)act.addAct(normal);
+				else act.add([](double) {});
+
+				act.endIf([ac = act.lend()] {return ac->isAllFinished(); });
+
+				return F(act);
+			};
+
+		dict[U"Forcus"] = [=](In info, A act)
+			{
+				act.addAct(forcus);
+
+				act.endIf([ac = act.lend()] {return ac->isAllFinished(); });
+
+				return F(act);
+			};
+
+		dict[U"Event"] = [=](In info, A act)
+			{
+				act.addAct(eventHandler);
+
+				act.endIf([ac = act.lend()] {return ac->isAllFinished(); });
+
+				return F(act);
+			};
+
+		dict[U"Release"] = [=](In info, A act)
+			{
+				act.addAct(release);
+
+				act.endIf([ac = act.lend()] {return ac->isAllFinished(); });
+
+				return F(act);
+			};
+
+		ACreate(U"Selection{}"_fmt(num), true) += dict[U"State"]();
+
+		num++;
+	}
 }

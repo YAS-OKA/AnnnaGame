@@ -23,6 +23,8 @@ public:
 	//パーツマネージャー　最初から反転するか
 	PartsMirrored(const Borrow<mot::PartsManager>& pman,bool mirrorStart = false);
 
+	bool getMirrored()const;
+
 	void start()override;
 
 	void update(double dt)override;

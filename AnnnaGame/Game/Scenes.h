@@ -49,13 +49,13 @@ namespace my
 
 		//entityManager.birth<T>(...)->scene=thisを省略
 		template<class T = Object, class ...Args>
-		Borrow<T> birthObjectNonHitbox(Args&& ...args)
+		Borrow<T> birth(Args&& ...args)
 		{
 			auto obj = entityManager.birthNonStart<T>(args...);
 			obj->scene = *this;
 			obj->start();
 			return obj;
-		}
+		}	
 		
 		//Hitboxがついてくる Box
 		template<class T=Object,class ...Args>

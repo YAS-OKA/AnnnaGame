@@ -131,11 +131,11 @@ bool Hit::check()const
 	return false;
 }
 
-ButtonChecker::ButtonChecker(ui::Button* button, size_t waitFrame)
+ButtonChecker::ButtonChecker(const Borrow<ui::Button>& button, size_t waitFrame)
 	:button(button), ICondition(waitFrame)
 {}
 
-void ButtonChecker::setButton(ui::Button* button)
+void ButtonChecker::setButton(const Borrow<ui::Button>& button)
 {
 	ButtonChecker::button = button;
 }
