@@ -157,6 +157,8 @@ void Transform::Direction::rotate(const Quaternion& qua)
 
 void Transform::setParent(Transform* parent, bool maintainAbsPosition)
 {
+	relation.clearParents();
+
 	relation.setParent(parent);
 
 	m_parent = parent;

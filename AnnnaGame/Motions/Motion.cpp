@@ -255,10 +255,9 @@ Vec2 mot::PauseTo::calDestination()const
 	{
 		const auto& parentAspect = target->parent->transform->getAspect().xy();
 		const auto& d = dest * parentAspect;
-		return (d
-			.rotatedAt(d + (target->getRotatePos() * parentAspect).rotate(ang * 1_deg), (target->getAngle() - ang) * 1_deg)//目標座標を初期角度まで回転させる
-			.rotated(target->parent->transform->getDirection().xy().getAngle() - Vec2{ 1,0 }.getAngle())//親の回転を考慮
-			- target->getPos());//親や自分の回転をなくした場合のずれを返す
+		return d.rotatedAt(d + (target->getRotatePos() * parentAspect).rotate(ang * 1_deg), (target->getAngle() - ang) * 1_deg)//目標座標を初期角度まで回転させる
+			.rotated(target->parent->getAngle()*1_deg)//親の回転を考慮
+			- target->getPos();//親や自分の回転をなくした場合のずれを返す
 	}
 	//たぶん親がいないなんてことはない(masterpartsに命令を出さない限り)
 	return dest;

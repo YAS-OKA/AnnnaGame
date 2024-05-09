@@ -221,7 +221,8 @@ namespace mot
 		double getZ()const { return transform->getPos().z; }
 
 		double getAngle()const {
-			return params.angle;
+			//return params.angle;
+			return (transform->getLocalDirection().xy().getAngle() - Vec2{ 1,0 }.getAngle())/1_deg;
 		};
 
 		double getAbsAngle()const {

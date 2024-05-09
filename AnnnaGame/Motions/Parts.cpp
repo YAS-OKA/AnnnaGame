@@ -36,6 +36,8 @@ namespace mot
 		auto nextParent = parts_manager->find(name);
 		if (not nextParent)return;
 
+		partsRelation.clearParents();
+
 		partsRelation.setParent(nextParent);
 
 		parent = nextParent;
@@ -53,6 +55,8 @@ namespace mot
 		else {
 			setPos(transform->getLocalPos().xy());
 		}
+
+		
 	}
 
 	void Parts::setPos(const Vec2& pos)
