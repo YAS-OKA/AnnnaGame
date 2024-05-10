@@ -159,7 +159,7 @@ void GameScene::start()
 		}
 	);*/
 
-	for (auto k : step(1)) {
+	for (auto k : step(0)) {
 		auto enemy = birthObject<Enemy>(Box(3, 5, 3), { 0,0,0 });
 
 		enemy->getComponent<Collider>()->setCategory(ColliderCategory::enemy);
