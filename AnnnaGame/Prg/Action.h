@@ -202,6 +202,14 @@ namespace prg
 	//IActionはWaitとしても使える
 	using Wait = IAction;
 
+	/*class Wait :public IAction
+	{
+	public:
+		using IAction::IAction;
+	private:
+		void update(double dt)override;
+	};*/
+
 	class TimeAction :public IAction
 	{
 	public:

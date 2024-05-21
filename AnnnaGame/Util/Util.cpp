@@ -1,6 +1,6 @@
 ﻿#include"../stdafx.h"
 #include"Util.h"
-#include<string>
+#include<Windows.h>
 
 namespace util
 {
@@ -18,12 +18,12 @@ namespace util
 		return value < max;
 	}
 
-	std::string str(StringView s)
+	std::string toStr(StringView s)
 	{
 		return std::string(s.begin(), s.end());
 	}
 
-	String uStr(const std::string& s)
+	String toUStr(const std::string& s)
 	{
 		return String(s.begin(), s.end());
 	}
@@ -60,7 +60,7 @@ namespace util
 			contents += line + "\n";
 		}
 
-		return uStr(contents);
+		return toUStr(contents);
 	}
 
 	EditFile createFile(FilePath path)

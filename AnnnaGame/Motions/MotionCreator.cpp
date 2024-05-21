@@ -221,8 +221,8 @@ namespace mot
 			{U"Deg"},
 			{U"Len1",U"Len2" },
 			{U"Radius"},
-			{U"X"},
-			{U"Y"},
+			{U"X",U"rdX"},
+			{U"Y",U"rdY"},
 			{U"Z"},
 			{U"Angle"},
 			{U"RP X",U"RP Y"},
@@ -476,6 +476,8 @@ namespace mot
 			setText(U"Angle", Format(selecting->getAngle()));
 			setText(U"X", Format(selecting->getPos().x));
 			setText(U"Y", Format(selecting->getPos().y));
+			setText(U"rdX", Format(selecting->getRelativePos().x));
+			setText(U"rdY", Format(selecting->getRelativePos().y));
 			setText(U"Z", Format(selecting->getZ()));
 			setText(U"S X", Format(selecting->transform->scale.aspect.vec.x));
 			setText(U"S Y", Format(selecting->transform->scale.aspect.vec.y));
@@ -570,11 +572,6 @@ namespace mot
 			selecting->setRotatePos({ Parse<double>(params[U"RP X"]->getText()), Parse<double>(params[U"RP Y"]->getText()) });
 			selecting->setPos({ Parse<double>(params[U"X"]->getText()),Parse<double>(params[U"Y"]->getText()) });
 
-			selecting->setParent(params[U"Parent"]->getText());
-			//parentをセットすると相対座標が変わるので更新
-			setText(U"X", Format(selecting->getPos().x));
-			setText(U"Y", Format(selecting->getPos().y));
-
 			selecting->setScale({ Parse<double>(params[U"S X"]->getText()),Parse<double>(params[U"S Y"]->getText()) });
 			setText(U"RP X", Format(selecting->getRotatePos().x));
 			setText(U"RP Y", Format(selecting->getRotatePos().y));
@@ -591,6 +588,12 @@ namespace mot
 			setText(U"X", Format(selecting->getPos().x));
 			setText(U"Y", Format(selecting->getPos().y));
 			setText(U"Z", Format(selecting->getZ()));
+
+			selecting->setParent(params[U"Parent"]->getText());
+			//parentをセットすると相対座標が変わるので更新
+			setText(U"X", Format(selecting->getPos().x));
+			setText(U"Y", Format(selecting->getPos().y));
+			setText(U"Angle", Format(selecting->getAngle()));
 		}
 	};
 
@@ -657,7 +660,7 @@ namespace mot
 				};
 			decoder.add_event_cmd<KillParts, String, bool>(U"kill", killPartsEvent, pmanager);
 			decoder.add_event_cmd<KillParts, String>(U"kill", killPartsEvent, pmanager);
-			sets.motionScriptCmd(pmanager);
+			sets.motionScriptCmd(pmanager,nullptr);
 			decoder.add<WriteMotionScript, FilePath, String>(U"write", pmanager);
 			decoder.add<WriteMotionScript, FilePath, String, Optional<String>>(U"write", pmanager);
 			decoder.add<WriteMotionScript, FilePath, String, Optional<String>, Optional<String>>(U"write", pmanager);
@@ -806,8 +809,10 @@ namespace mot
 	public:
 		PartsDetailWindow* dw;
 		CmdArea* c;
+		Optional<PartsParams> copiedParams = none;
+		Optional<String> srcPath = none;
 
-		Parts* addParts(const PartsParams& params,const String& p)
+		Borrow<Parts> addParts(const PartsParams& params,const String& p)
 		{
 			auto parts = pmanager->addParts(params);
 			partsCollider << parts->createHitbox(resource::texture(p).size()/2, Image{AssetManager::myAsset(localPath+p)}.alphaToPolygons());
@@ -864,19 +869,44 @@ namespace mot
 				if (path)savePartsJson(pmanager, *path);
 			}, U"保存", 20, Vec2{ 10,90 });
 
+			//スクリプトを登録
+			ButtonEvent(*this, U"getScriptPath", [&] {
+				srcPath= Dialog::OpenFile({ FileFilter::Text() });
+				if (srcPath)
+				{
+					system(util::toStr(*srcPath).c_str());
+					*srcPath = FileSystem::RelativePath(*srcPath, FileSystem::InitialDirectory());
+				}
+			}, U"スクリプト", 20, Vec2{ 10,180 });
+
+			auto motionInputBox = ui::createSimpleInputBox(scene, Vec2{ 60,230 }, 150);
+
+			//モーション読み込み
+			ButtonEvent(*this, U"playMotion", [&, box = motionInputBox->lend(), cmd = c->lend()] {
+				if (not srcPath)return;
+				//モーションを消去して読み込み
+				auto names = MotionScript::GetMotionNames(*srcPath);
+				for (const auto& name : names)
+				{
+					cmd->decoder.input(U"em {}"_fmt(name))->decode()->execute();
+					cmd->decoder.input(U"load {} {}"_fmt(*srcPath, name))->decode()->execute();
+				}
+				cmd->decoder.input(U"start {}"_fmt(box->getText()))->decode()->execute();
+			}, U"実行", 20, Vec2{ 10,230 });
+
 			//操作方法切り替え
 			ButtonEvent(*this, U"keyMoveModeChange", Array<Event>{
 				[=] {
 					auto button = scene->findOne<ui::Button>(U"keyMoveModeChangeButton");
 					button->setText(U"キー操作終了");
 					button->box->fitSize();
-					scene->findOne<CmdArea>()->area->canInput = false;
+					//scene->findOne<CmdArea>()->area->canInput = false;
 					startAction(U"keyMove");
 				}, [=] {
 					auto button = scene->findOne<ui::Button>(U"keyMoveModeChangeButton");
 					button->setText(U"キー操作");
 					button->box->fitSize();
-					scene->findOne<CmdArea>()->area->canInput = true;
+					//scene->findOne<CmdArea>()->area->canInput = true;
 					stopAction(U"keyMove");
 				}
 			}, U"キー操作", 20, Vec2{ util::sw() - 470,10 });
@@ -884,7 +914,7 @@ namespace mot
 			//パーツをキー入力で移動させる　回転　拡大させる
 			ACreate(U"keyMove").add(
 				[=](double dt) {
-					if (selecting == nullptr)return;
+					if (selecting == nullptr or c->area->isActive())return;
 					Vec2 moving{ 0,0 };
 					double dAngle = 0;
 					Vec2 dZoom{ 0,0 };
@@ -928,6 +958,23 @@ namespace mot
 		void update(double dt)override
 		{
 			Object::update(dt);
+
+			if (KeyC.down() and KeyControl.pressed())
+			{
+				if (selecting)
+				{
+					copiedParams = selecting->params;//選択中のパーツの現在の状態をクローン
+				}
+			}
+
+			if (KeyV.down() and KeyControl.pressed())
+			{
+				if (copiedParams)
+				{
+					auto p = CreateParts(*copiedParams, pmanager, true);
+					partsCollider << p->collider;
+				}
+			}
 		}
 
 		Array<PartsParams> createAllPartsParams()const

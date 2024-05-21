@@ -133,7 +133,6 @@ void Player::behaviorSetting(state::Inform&& info)
 	//f3
 	dict[U"Jump"] = [&](In info, A act)
 		{
-			
 			Actions jump;
 			jump |= FuncAction([=] {
 					ff->initVel = { 0,21,0 };
@@ -290,9 +289,9 @@ void player::SetPlayerAnimator(const Borrow<Object>& obj, state::Inform&& info)
 						},
 						[pman = info.get(U"parts").getValue<Borrow<mot::PartsManager>>()
 						, motionName = info.get(s + U"MotionCmd").getValue<String>().split(' ')[1]] {
-							for (const auto& p : pman->partsArray)
+							if (pman->actman(motionName) and pman->actman[motionName].isActive())
 							{
-								if (p->actman[motionName].isActive())p->actman[motionName].end();
+								pman->actman[motionName].end();
 							}
 						}, none);
 				}

@@ -5,26 +5,22 @@
 
 namespace mot
 {
-	static Array<String> MotionKind
-	{
-		U"rotate",
-		U"rotateTo",
-		U"move",
-		U"moveTo",
-		U"addZ",
-		U"setZ",
-		U"addScale",
-		U"setScale",
-	};
-
 	class MotionScript
 	{
+		//LoadのときINS命令でファイルの全文を要求するときこいつを参照する
+		Optional<String> AllText;
 	public:
 		CmdDecoder deco;
 
-		void Load(const Borrow<PartsManager>& pMan,const String& motionName,const String& text);
+		prg::Actions* CreateMotions(const Borrow<PartsManager>& pMan, const String& text);
+
+		void Load(const Borrow<PartsManager>& pMan, const String& motionName, const String& text);
 
 		bool LoadFile(const Borrow<PartsManager>& pMan, const String& path,const String& motionName);
+
+		static Optional<String> GetMotionScrOf(const String& text, StringView motionName, bool removeBackBlank = false);
+
+		static Array<String> GetMotionNames(FilePathView scriptPath);
 	};
 
 	class PartsMotion :public prg::TimeAction
@@ -134,10 +130,21 @@ namespace mot
 		void update(double dt)override;
 	};
 
+	class SetRotateCenter :public PartsMotion
+	{
+	public:
+		Vec2 pos;
+
+		SetRotateCenter(const Borrow<Parts> target, double x, double y);
+
+		void start()override;
+	};
+
 	class PauseTo :public PartsMotion
 	{
 	private:
 		Optional<Vec2> parentDirectionInit;
+		Optional<double>parentAngleInit;
 		Vec2 directionInit;
 		Vec2 moveInit;
 		Borrow<Move> move;

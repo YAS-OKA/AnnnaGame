@@ -8,6 +8,59 @@ Actions::Actions(StringView id)
 	endCondition.addIn(U"isAllFinished", [borrowed = lend()] {return borrowed->isAllFinished(); });
 }
 
+//Actions::Actions(Actions&& other) 
+//	: IAction(std::move(other)), // Call base class move constructor if needed
+//	loop(other.loop),
+//	stopped(other.stopped),
+//	maxLoopCount(other.maxLoopCount),
+//	activeIndex(other.activeIndex),
+//	activeNum(other.activeNum),
+//	notFinishedActNum(other.notFinishedActNum),
+//	update_list(std::move(other.update_list)),
+//	separate(std::move(other.separate)),
+//	loopCount(other.loopCount) {
+//	other.id = 0;
+//	other.loop = false;
+//	other.stopped = false;
+//	other.activeIndex = 0;
+//	other.activeNum = 0;
+//	other.notFinishedActNum = 0;
+//	other.loopCount = 0;
+//}
+//
+//// Move assignment operator
+//Actions& Actions::operator=(Actions&& other)
+//{
+//	if (this != &other) {
+//		// Free existing resources
+//		clear();
+//
+//		// Move base class part if needed
+//		static_cast<IAction&>(*this) = std::move(static_cast<IAction&>(other));
+//
+//		// Move resources from other
+//		id = other.id;
+//		loop = other.loop;
+//		stopped = other.stopped;
+//		activeIndex = other.activeIndex;
+//		activeNum = other.activeNum;
+//		notFinishedActNum = other.notFinishedActNum;
+//		update_list = std::move(other.update_list);
+//		separate = std::move(other.separate);
+//		loopCount = other.loopCount;
+//
+//		// Reset moved-from object to a valid state
+//		other.id = 0;
+//		other.loop = false;
+//		other.stopped = false;
+//		other.activeIndex = 0;
+//		other.activeNum = 0;
+//		other.notFinishedActNum = 0;
+//		other.loopCount = 0;
+//	}
+//	return *this;
+//}
+
 Actions::~Actions()
 {
 	clear();

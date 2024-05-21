@@ -24,7 +24,8 @@ namespace mot
 			{
 				it = arr.erase(it);
 			}
-			else {
+			else
+			{
 				++it;
 			}
 		}
@@ -45,6 +46,7 @@ namespace mot
 		params.parent = parent->name;
 
 		transform->setParent(parent->transform);
+
 		if (setLocalPos) {
 			//絶対を相対に！
 			const auto& p = transform->getPos();
@@ -52,16 +54,33 @@ namespace mot
 			transform->setLocalY(p.y);
 			transform->setLocalDirection(transform->getDirection());
 		}
-		else {
+		else
+		{
 			setPos(transform->getLocalPos().xy());
 		}
 
-		
+		params.angle = getAngle();
 	}
 
 	void Parts::setPos(const Vec2& pos)
 	{
 		transform->setLocalXY(pos, true);
+	}
+
+	Borrow<Parts> Parts::clone()
+	{
+		return parts_manager->addParts(params);
+	}
+
+	void Parts::transfer(const Borrow<PartsManager>& to)
+	{
+		if (parts_manager)
+		{
+			if (parts_manager == to)return;//移籍する必要がない
+
+			parts_manager->partsArray.remove(*this);
+		}
+		parts_manager = to;
 	}
 
 	void Parts::setTexture(const PartsDrawing& drawing)
@@ -103,10 +122,6 @@ namespace mot
 		setRotatePos(params.rotatePos);
 		//カラー
 		tex->color = params.color;
-
-		//base = params;
-
-		//tex->in3D = true;
 	}
 
 	void Parts::update(double dt)
@@ -125,7 +140,53 @@ namespace mot
 
 		collider->hitbox.relative = { fig[0].centroid()-pos,0 };
 
+		std::get<2>(collider->hitbox.shape).rotateAt({ 0,0 }, getAngle() * 1_deg);
+
 		return collider;
+	}
+
+	String PartsManager::_resolveNameDuplication(const String& name)
+	{
+		HashSet<int32> dNums;
+		const auto& len = name.length();
+		//かぶってる名前があったらdNumsに0を追加
+		//「かぶってる名前＋(n)」ですでに使われてるnをdNumsに追加。
+		for (const auto& p : partsArray)
+		{
+			const auto& str = p->getName();
+			const auto& slen = str.length();
+			//strが「name+U"..."」の形になっているか
+			if (slen >= len and util::strEqual(str, 0, len, name))
+			{
+				//strとnameの長さが一致してたらstr=「name」のはず
+				if (slen == len)
+				{
+					dNums.emplace(0);
+				}
+				//strが「name+U"(..."」の形になっているか
+				else if (str[len] == U'(' and slen >= len + 3)
+				{
+					auto closePos = str.indexOf(U")", len + 2);
+					//strが「name+U"(...)"」の形になっているか
+					if (not (closePos == String::npos))
+					{
+						//strが「name+U"(数字)"」の形になっているか
+						if (auto num = ParseOpt<size_t>(util::slice(str, len + 1, closePos)))
+						{
+							//数字を追加
+							dNums.emplace(*num);
+						}
+					}
+				}
+			}
+		}
+		size_t num=0;
+		//かぶらない数字を探す
+		while (dNums.contains(num))num++;
+		//オリジナルのままでもかぶらない
+		if (num == 0)return name;
+		//オリジナルに数字を添える
+		else return name + U"({})"_fmt(num);
 	}
 
 	void PartsManager::scaleHelperParamsSetting(double baseLength, const Camera::DistanceType& distanceType)
@@ -139,7 +200,7 @@ namespace mot
 		return scene->birth<Parts>(*this);
 	}
 
-	Borrow<Parts> PartsManager::addParts(const PartsParams& params)
+	Borrow<Parts> PartsManager::addParts(const PartsParams& params, bool resolveNameDuplication)
 	{
 		if (master == nullptr and params.name != U"master")return nullptr;
 
@@ -151,10 +212,26 @@ namespace mot
 
 		parts->params = params;
 
-		if (params.name == U"master") {
+		return addParts(parts, resolveNameDuplication);
+	}
+
+	Borrow<Parts> PartsManager::addParts(const Borrow<Parts>& parts, bool resolveNameDuplication)
+	{
+		if (master == nullptr and parts->name != U"master")return nullptr;
+
+		if (resolveNameDuplication)
+		{
+			parts->setName(_resolveNameDuplication(parts->getName()));
+		}
+
+		parts->transfer(*this);
+
+		if (parts->name == U"master")
+		{
 			setMaster(parts);
 		}
-		else {
+		else
+		{
 			partsArray << parts;
 			parts->followDestiny(master);//masterが死んだらパーツが死ぬようにする
 		}
@@ -265,7 +342,7 @@ namespace mot
 		for (const auto& parts : many_parts)
 		{
 			json[parts.name][U"parent"] = parts.parent;
-			String texture=U"";
+			String texture = U"";
 			if (parts.path)
 			{
 				texture = *parts.path;
@@ -302,21 +379,21 @@ namespace mot
 		return json.save(path);
 	}
 
-	Borrow<PartsManager> LoadParts::create(const String& jsonPath,bool createCollider)
+	Borrow<PartsManager> LoadParts::create(const String& jsonPath, bool createCollider)
 	{
 		auto pm = m_scene->birth<PartsManager>();
 
 		return create(jsonPath, pm, createCollider);
 	}
 
-	Borrow<PartsManager> LoadParts::create(const String& jsonPath,const Borrow<PartsManager>& pmanager, bool createCollider)
+	Borrow<PartsManager> LoadParts::create(const String& jsonPath, const Borrow<PartsManager>& pmanager, bool createCollider)
 	{
 		auto& pm = pmanager;
 
 		JSON json = JSON::Load(jsonPath);
 
 		HashTable<Parts*, String> parent_list;
-		HashTable<Parts*, double>partsAngle;
+		HashTable<Parts*, double> partsAngle;
 
 		CmdDecoder deco;
 
@@ -367,8 +444,47 @@ namespace mot
 
 		return pm;
 	}
-}
 
+	Borrow<Parts> CreateParts(const PartsParams& params, const Borrow<PartsManager>& pmanager, bool createCollider)
+	{
+		Borrow<Parts> parts;
+		if (createCollider)
+		{
+			if (params.path)
+			{
+				parts = CreateParts(params, pmanager, *params.path);
+			}
+			else
+			{
+				parts = CreateParts(params, pmanager, std::get<1>(params.drawing));
+			}
+		}
+		else
+		{
+			parts = pmanager->addParts(params);
+		}
+
+		return parts;
+	}
+
+	Borrow<Parts> CreateParts(const PartsParams& params, const Borrow<PartsManager>& pmanager, const Figure& collider)
+	{
+		auto parts = pmanager->addParts(params);
+
+		parts->createHitbox({ 0,0 }, { collider.asPolygon() });
+
+		return parts;
+	}
+
+	Borrow<Parts> CreateParts(const PartsParams& params, const Borrow<PartsManager>& pmanager, const String& path)
+	{
+		auto parts = pmanager->addParts(params);
+
+		parts->createHitbox(TextureAsset(path).size() / 2.0, Image{ localPath + path }.alphaToPolygons());
+
+		return parts;
+	}
+}
 
 double draw_helper::CameraScaleOfParts::operator () () const
 {

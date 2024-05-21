@@ -86,24 +86,38 @@ namespace mot
 			killedParts.emplace(parts);
 		}
 	}
-	StartMotion::StartMotion(String motionName,bool loop)
-		:motionName(motionName),loop(loop)
+	StartMotion::StartMotion(String motionName, bool loop)
+		:PartsMotion(nullptr), motionName(motionName), loopedMotion(loop)
 	{
 	}
+
 	void StartMotion::start()
 	{
-		bool flag = false;
+		PartsMotion::start();
+		pMan->actman[motionName].loop = loopedMotion;
+		pMan->startAction(motionName);
+	}
+
+	EraseMotion::EraseMotion(StringView motionName)
+		:IAction(0),motionName(motionName)
+	{
+	}
+
+	EraseMotion* EraseMotion::build(const Borrow<PartsManager>& pMan)
+	{
+		this->pMan = pMan;
+		return this;
+	}
+
+	void EraseMotion::start()
+	{
+		prg::IAction::start();
 		for (auto& parts : pMan->partsArray)
 		{
-			if (parts->actman(motionName))
-			{
-				flag = true;
-				parts->actman[motionName].loop = loop;
-				parts->actman.act(motionName);
-			}
+			parts->actman.erase(motionName);
 		}
-		if (not flag)Console << U"モーションがセットされてません:{}"_fmt(motionName);
 	}
+
 	LoadMotionScript::LoadMotionScript(FilePath path,String motionName)
 		:path(path),motionName(motionName)
 	{
@@ -123,7 +137,7 @@ namespace mot
 		}
 	}
 
-	WriteMotionScript::WriteMotionScript(FilePath path, String motionName, Optional<String> time, Optional<String> len)
+	WriteMotionScript::WriteMotionScript(FilePath path, String motionName, Optional<String> len, Optional<String> time)
 		:path(path), motionName(motionName),time(time),len(len)
 	{
 	}
@@ -148,8 +162,10 @@ namespace mot
 			Vec2 pos = parts->getPos();
 			if (parts->parent)
 			{
-				pos.rotate(-(parts->parent->transform->getDirection().xy().getAngle() - Vec2{ 1,0 }.getAngle()));
+				//親の回転を消した相対距離にする
+				pos.rotate(-parts->parent->getAbsAngle() * 1_deg);
 			}
+			res << U"SetRC {} {}"_fmt(parts->getRotatePos().x, parts->getRotatePos().y);
 			res << U"Pause {} {} {} {} {}"_fmt(pos.x, pos.y, parts->getScale().x, parts->getScale().y, parts->getAngle());
 		}
 

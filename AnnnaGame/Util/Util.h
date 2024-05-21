@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include<fstream>
+#include<string>
 
 namespace util
 {
@@ -44,11 +45,29 @@ namespace util
 		return ret;
 	}
 
-	static String slice(const String& arr, int32 a, int32 b)
+
+	static String slice(StringView arr, size_t a, size_t b)
 	{
 		String ret = U"";
 		for (auto itr = arr.begin() + a, en = arr.begin() + b; itr != en; ++itr)ret << *itr;
 		return ret;
+	}
+	//配列に配列を挿入する(i番目に挿入する)
+	template<class A>
+	static void append(Array<A>& arr, Array<A> _ins, size_t i)
+	{
+		for (auto itr = _ins.rbegin(), en = _ins.rend(); itr != en; ++itr)
+		{
+			arr.insert(arr.begin() + i, *itr);
+		}
+	}
+
+	static bool strEqual(StringView str, size_t from, size_t to, StringView cstr)
+	{
+		auto s = util::slice(str, from, to);
+
+		if (not s.isEmpty() and s == cstr)return true;
+		return false;
 	}
 
 	//上限で止まる
@@ -66,9 +85,9 @@ namespace util
 		bool additionable()const;
 	};
 
-	static std::string str(StringView s);
+	std::string toStr(StringView s);
 
-	static String uStr(const std::string& s);
+	String toUStr(const std::string& s);
 
 	class EditFile
 	{

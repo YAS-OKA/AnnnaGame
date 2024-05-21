@@ -35,23 +35,28 @@ Err:
 #include"../Motions/Motion.h"
 #include"../Tools/ObjScript.h"
 
-void DecoderSet::motionScriptCmd(const Borrow<mot::PartsManager>& pmanager)
+void DecoderSet::motionScriptCmd(const Borrow<mot::PartsManager>& pmanager,const Borrow<prg::Actions>& actions)
 {
 	using namespace mot;
 
-	decoder->add<SetMotion<RotateTo>, String, String, double, double, double, Optional<bool>, int32>(U"SetAngle", pmanager);
-	decoder->add<SetMotion<RotateTo>, String, String, double, double, double, Optional<bool>>(U"SetAngle", pmanager);
-	decoder->add<SetMotion<RotateTo>, String, String, double, double, double>(U"SetAngle", pmanager);
-	decoder->add<SetMotion<RotateTo>, String, String, double, double>(U"SetAngle", pmanager);
-	decoder->add<SetMotion<MoveTo>, String, String, double, double, double, double>(U"SetPos", pmanager);
-	decoder->add<SetMotion<MoveTo>, String, String, double, double, double>(U"SetPos", pmanager);
-	decoder->add<SetMotion<PauseTo>, String, String, double, double, double, double, double, double, double, Optional<bool>, int32>(U"Pause", pmanager);
-	decoder->add<SetMotion<PauseTo>, String, String, double, double, double, double, double, double, double, Optional<bool>>(U"Pause", pmanager);
-	decoder->add<SetMotion<PauseTo>, String, String, double, double, double, double, double, double, double>(U"Pause", pmanager);
+	decoder->add<SetMotion<RotateTo>, String, bool, double, double, Optional<bool>, int32>(U"SetAngle", pmanager, actions);
+	decoder->add<SetMotion<RotateTo>, String, bool, double, double, Optional<bool>>(U"SetAngle", pmanager, actions);
+	decoder->add<SetMotion<RotateTo>, String, bool, double, double>(U"SetAngle", pmanager, actions);
+	decoder->add<SetMotion<RotateTo>, String, bool, double>(U"SetAngle", pmanager, actions);
+	decoder->add<SetMotion<MoveTo>, String, bool, double, double, double>(U"SetPos", pmanager, actions);
+	decoder->add<SetMotion<MoveTo>, String, bool, double, double>(U"SetPos", pmanager, actions);
+	decoder->add<SetMotion<PauseTo>, String, bool, double, double, double, double, double, double, Optional<bool>, int32>(U"Pause", pmanager, actions);
+	decoder->add<SetMotion<PauseTo>, String, bool, double, double, double, double, double, double, Optional<bool>>(U"Pause", pmanager, actions);
+	decoder->add<SetMotion<PauseTo>, String, bool, double, double, double, double, double, double>(U"Pause", pmanager, actions);
+	decoder->add<SetMotion<StartMotion>, String, bool, String>(U"Start",pmanager, actions);
+	decoder->add<SetMotion<StartMotion>, String, bool, String, bool>(U"Start",pmanager, actions);
+	decoder->add<SetMotion<Wait>, String, bool, double>(U"Wait", pmanager, actions);
+	decoder->add<SetMotion<MyPrint>, String, bool, String,double>(U"MyPrint", pmanager, actions);
+	decoder->add<SetMotion<SetRotateCenter>, String, bool, double, double>(U"SetRC", pmanager, actions);
+	decoder->add<EraseMotion, StringView>(U"em", pmanager);
 	decoder->add<LoadMotionScript, FilePath, String>(U"load", pmanager);
 	decoder->add<StartMotion, String>(U"start", pmanager);
-	decoder->add<StartMotion, String,bool>(U"start", pmanager);
-	
+	decoder->add<StartMotion, String,bool>(U"start", pmanager);	
 }
 
 void DecoderSet::objScriptCmd(const Borrow<Object>& obj)

@@ -28,6 +28,9 @@ namespace {
 	}
 
 	template<>
+	inline StringView convert<StringView>(const String& value) { return value; }
+
+	template<>
 	inline String convert<String>(const String& value) { return value; }
 
 	template<>
@@ -122,7 +125,7 @@ public:
 		decoder = target;
 	}
 
-	void motionScriptCmd(const Borrow<mot::PartsManager>& pmanager);
+	void motionScriptCmd(const Borrow<mot::PartsManager>& pmanager,const Borrow<prg::Actions>& actions);
 
 	void objScriptCmd(const Borrow<Object>& obj);
 

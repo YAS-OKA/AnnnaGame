@@ -5,36 +5,36 @@
 namespace
 {
 	HashSet<String> simpleMotion{U"SetAngle", U"SetZ"};
+	constexpr int32 SetRotateCenterMotionsUpdatePriority = 100;
 }
 
-void mot::MotionScript::Load(const Borrow<PartsManager>& pMan,const String& motionName, const String& text)
+prg::Actions* mot::MotionScript::CreateMotions(const Borrow<PartsManager>& pMan, const String& text)
 {
-	DecoderSet(&deco).motionScriptCmd(pMan);
+	prg::Actions* actions = new prg::Actions();
+	DecoderSet(&deco).motionScriptCmd(pMan, actions->lend());
 	String target = U"";
-	String time = U"0";
 	String len = U"0";
-	for (const auto& cLine : text.split_lines())
+	String addParallel = U"false";
+	auto lines = text.split_lines();
+	for (size_t i = 0; i < lines.size(); i++)
 	{
+		auto cLine = lines[i];
 		//前処理 
-		String line=U"";
+		String line = U"";
 		const auto& e = cLine.indexOf(U"//");
 		if (e == 0)continue;											//先頭からコメントが始まってたら次の行へ
 		for (int32 i = 0; i < e and i < cLine.size(); ++i)line << cLine[i];//文中のコメントの削除
 		auto token = line.replace(U" ", U",").split(U',');				//空白を,に変換　,で文字列を分割 トークン化
 		token.remove_if([](const String& str) {return str == U""; });	//なんも書いてないトークンを削除
-		if (token.isEmpty()) {											//トークンがなければtimeにlenを加算して次の行へ
-			time = Format(Eval(time + U"+" + len));
+		if (token.isEmpty()) {											//トークンがなければaddParallelをfalseにして
+			addParallel = U"false";
 			continue;
 		}
+		
 		//主処理
 		if (token[0] == U"JOINT")
 		{
 			target = token[1];
-			continue;
-		}
-		else if (token[0] == U"TIME")
-		{
-			time = token[1];
 			continue;
 		}
 		else if (token[0] == U"LEN")
@@ -42,8 +42,35 @@ void mot::MotionScript::Load(const Borrow<PartsManager>& pMan,const String& moti
 			len = token[1];
 			continue;
 		}
+		else if (token[0] == U"Add")//他のモーションをこのモーションに挿入する
+		{
+			if (auto _src = GetMotionScrOf(*AllText, token[1])) {
+				auto _motionSrc = MotionScript();
+				if (addParallel==U"true")
+				{
+					actions->addActParallel(_motionSrc.CreateMotions(pMan, *_src));
+				}
+				else {
+					actions->addAct(_motionSrc.CreateMotions(pMan, *_src));
+				}
+				addParallel = U"true";
+			}
+			continue;
+		}
 
-		if (simpleMotion.contains(token[0]))
+		if (token[0] == U"Start" or token[0]==U"SetRC")
+		{
+		}
+		else if (token[0] == U"Wait")
+		{
+			//lenは第2引数に入れる
+			token.insert(token.begin() + 1, len);
+		}
+		else if (token[0] == U"MyPrint")
+		{
+			token.insert(token.begin() + 2, len);
+		}
+		else if (simpleMotion.contains(token[0]))
 		{
 			//lenは第3引数に入れる
 			token.insert(token.begin() + 2, len);
@@ -59,25 +86,52 @@ void mot::MotionScript::Load(const Borrow<PartsManager>& pMan,const String& moti
 			token.insert(token.begin() + 3, len);
 		}
 		//3要素をセット
-		token.insert(token.begin() + 1, { target,motionName,time });
+		token.insert(token.begin() + 1, { target,addParallel });
 
 		deco.input(token)->decode()->execute();
+
+		addParallel = U"true";
 	}
+
+	return actions;
+}
+
+void mot::MotionScript::Load(const Borrow<PartsManager>& pMan, const String& motionName, const String& text)
+{
+	pMan->actman.create(motionName) += std::move(*CreateMotions(pMan, text));
 }
 
 bool mot::MotionScript::LoadFile(const Borrow<PartsManager>& pMan, const String& path, const String& motionName)
 {
-	auto reader = TextReader{ path };
-	if (not reader)return false;
-	String inputText = U"";
+	//モーションスクリプトを取得
+	if (auto reader = TextReader{ path })
+	{
+		//全文を保管
+		AllText = reader.readAll();
+		if (auto inputText = GetMotionScrOf(*AllText, motionName))
+		{
+			Load(pMan, motionName, *inputText);
+			AllText = none;
+			return true;
+		}
+	}
+	//取得できなかった場合
+	return false;
+}
+
+Optional<String> mot::MotionScript::GetMotionScrOf(const String& allText, StringView motionName, bool removeBackBlank)
+{
+	Optional<String> result = none;
+
+	result = U"";
 	bool find = false;
-	for (const auto& line : TextReader{ path }.readAll().split_lines())
+	for (const auto& line : allText.split_lines())
 	{
 		if (find)
 		{
 			if (line[0] == U'#')break;
-			inputText += line;
-			inputText += U"\n";
+			*result += line;
+			*result += U"\n";
 		}
 
 		if (line[0] == U'#')
@@ -93,8 +147,35 @@ bool mot::MotionScript::LoadFile(const Borrow<PartsManager>& pMan, const String&
 		}
 	}
 
-	if(not inputText.isEmpty()) Load(pMan, motionName, inputText);
-	return true;
+	if (removeBackBlank)
+	{
+		bool comple= false;
+		while(not comple)
+		{
+			if (result->back() != U'\n') {
+				comple = true;
+			} else {
+				result->pop_back();
+			}
+		}
+	}
+
+	return result;
+}
+
+Array<String> mot::MotionScript::GetMotionNames(FilePathView scriptPath)
+{
+	Array<String> res;
+
+	for (const auto& line : TextReader{ scriptPath }.readAll().split_lines())
+	{
+		if (line[0] == U'#')
+		{
+			res << util::slice(line, 1, line.size());//モーション名を取得
+		}
+	}
+
+	return res;
 }
 
 mot::PartsMotion::PartsMotion(const Borrow<Parts>& target, double time)
@@ -119,7 +200,7 @@ mot::RotateTo::RotateTo(const Borrow<Parts>& target, double angle, double time, 
 {
 	firstRotateDirectionIsDesignated = (bool)clockwizeRotation;//noneでなければtrue
 }
-//0~360
+//0~360ｓ
 double seikika(double theta) {
 	if (0 <= theta)return Fmod(theta, 360.0);//正規化
 	else return 360 + Fmod(theta, 360.0);
@@ -255,9 +336,13 @@ Vec2 mot::PauseTo::calDestination()const
 	{
 		const auto& parentAspect = target->parent->transform->getAspect().xy();
 		const auto& d = dest * parentAspect;
+		/*
+		const auto& nowRotatePos = target->getRotatePos().rotate(target->getAbsAngle() * 1_deg);
+
+		return d + nowRotatePos.rotated((ang - target->getAngle())*1_deg)- target->getPos().rotated(-target->parent->getAbsAngle() * 1_deg)-nowRotatePos;
+		*/
 		return d.rotatedAt(d + (target->getRotatePos() * parentAspect).rotate(ang * 1_deg), (target->getAngle() - ang) * 1_deg)//目標座標を初期角度まで回転させる
-			.rotated(target->parent->getAngle()*1_deg)//親の回転を考慮
-			- target->getPos();//親や自分の回転をなくした場合のずれを返す
+			- target->getRelativePos();//親の回転を消した相対座標
 	}
 	//たぶん親がいないなんてことはない(masterpartsに命令を出さない限り)
 	return dest;
@@ -278,22 +363,35 @@ void mot::PauseTo::start()
 		motions.addParallel<SetScale>(target, scale.x, scale.y, time);
 		move = motions.addParallel<Move>(target, 0, 0, time);
 	}
-	move->move = calDestination();
-
+	constexpr double _floor = 100;
+	move->move = (calDestination()*_floor).asPoint()/_floor;
+	
 	moveInit = move->move;
 
-	if (target->parent)parentDirectionInit = target->parent->transform->getDirection().xy();
+	if (target->parent)parentAngleInit = target->parent->getAbsAngle();//target->parent->transform->getDirection().xy();
 
 	motions.start(true);
 }
 
 void mot::PauseTo::update(double dt)
 {
-	if (parentDirectionInit)
+	if (parentAngleInit)
 	{
-		move->move = moveInit.rotated(target->parent->transform->getDirection().xy().getAngle() - parentDirectionInit->getAngle());
+		move->move = moveInit.rotated(target->parent->getAbsAngle() * 1_deg);
 	}
 
 	PartsMotion::update(dt);
 	motions.update(dt);
+}
+
+mot::SetRotateCenter::SetRotateCenter(const Borrow<Parts> target, double x, double y)
+	:PartsMotion(target),pos(x,y)
+{
+	this->updatePriority = SetRotateCenterMotionsUpdatePriority;
+}
+
+void mot::SetRotateCenter::start()
+{
+	PartsMotion::start();
+	target->setRotatePos(pos);
 }

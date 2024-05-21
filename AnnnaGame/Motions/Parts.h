@@ -105,13 +105,15 @@ namespace mot
 
 		Borrow<PartsManager> parts_manager;
 
-		Borrow<Parts> parent=nullptr;
+		Borrow<Parts> parent;
 
 		util::PCRelationship<Parts> partsRelation;
 
 		Parts(const Borrow<PartsManager>& manager)
 			:parts_manager(manager),partsRelation(this) {};
-		
+
+		Parts() :partsRelation(this) {};
+
 		void onTrashing()override;
 
 		Borrow<Collider> createHitbox(const Vec2& pos, const MultiPolygon& fig);
@@ -134,6 +136,10 @@ namespace mot
 		{
 			transform->setXY(pos);
 		}
+
+		Borrow<Parts> clone();
+		//移籍する
+		void transfer(const Borrow<PartsManager>& to);
 
 	private:
 		void rotateCollider(double ang)
@@ -215,6 +221,10 @@ namespace mot
 		}
 
 		Vec2 getPos()const { return transform->getLocalPos().xy(); }
+		//親の回転を消した相対座標
+		Vec2 getRelativePos()const {
+			return parent ? getPos().rotate(-parent->getAbsAngle() * 1_deg) : getPos();
+		}
 
 		String getName()const { return params.name; }
 
@@ -226,12 +236,11 @@ namespace mot
 		};
 
 		double getAbsAngle()const {
-			if (parent)return params.angle + parent->getAbsAngle();
+			if (parent)return getAngle() + parent->getAbsAngle();
 			else return getAngle();
 		}
 
 		Vec2 getRotatePos()const {
-
 			return params.rotatePos;
 		}
 
@@ -245,6 +254,8 @@ namespace mot
 	class PartsManager:public Object
 	{
 	public:
+		//名前被りの解決 name+(n)
+		String _resolveNameDuplication(const String& name);
 		//マスターパーツ
 		Borrow<Parts> master;
 		Array<Borrow<Parts>> partsArray;
@@ -259,7 +270,9 @@ namespace mot
 
 		Borrow<Parts> birthParts();
 
-		Borrow<Parts> addParts(const PartsParams& params);
+		Borrow<Parts> addParts(const PartsParams& params, bool resolveNameDuplication = true);
+
+		Borrow<Parts> addParts(const Borrow<Parts>& parts, bool resolveNameDuplication = true);
 
 		Borrow<Parts> setMaster(const Borrow<Parts>& masterParts);
 
@@ -299,6 +312,11 @@ namespace mot
 
 		Borrow<PartsManager> create(const String& jsonPath, const Borrow<PartsManager>& pmanager,bool createCollider);
 	};
+	Borrow<Parts> CreateParts(const PartsParams& params, const Borrow<PartsManager>& pmanager, bool createCollider);
+
+	Borrow<Parts> CreateParts(const PartsParams& params, const Borrow<PartsManager>& pmanager, const Figure& collider);
+
+	Borrow<Parts> CreateParts(const PartsParams& params, const Borrow<PartsManager>& pmanager, const String& path);
 }
 
 namespace draw_helper

@@ -8,10 +8,19 @@ Pause -100.00000762939453 0 1 1 0
 JOINT c
 Pause -150 0 1 1 0
 
+#W
+LEN 2
+Wait
+
 #tmp
 TIME 0
 LEN 0.3
 JOINT a
-Pause -99.99999237060547 -1.9073486328125e-06 1 1 0
-JOINT b
-Pause -73.20507049560547 100 1 1 0
+SetAngle -30
+
+DO W
+
+SetAngle 30
+
+#tmp2
+Start tmp true

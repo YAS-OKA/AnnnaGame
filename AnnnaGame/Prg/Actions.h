@@ -19,7 +19,8 @@ namespace prg
 		}
 
 		Actions(Actions&&) = default;
-		Actions& operator =(Actions&&) = default;
+
+		Actions& operator=(Actions&&) = default;
 
 		~Actions();
 

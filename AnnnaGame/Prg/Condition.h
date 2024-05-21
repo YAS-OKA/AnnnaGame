@@ -106,7 +106,7 @@ namespace prg
 		Borrow<class IAction> act;
 
 		double time;
-
+		//actが開始してからtime秒後という条件
 		TimeCondition(const Borrow<IAction>& act, double time, size_t waitFrame = 0);
 
 	protected:

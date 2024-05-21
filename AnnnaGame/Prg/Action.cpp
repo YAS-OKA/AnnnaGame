@@ -149,3 +149,9 @@ void FuncAction::end()
 
 	fin();
 }
+
+//void prg::Wait::update(double dt)
+//{
+//	IAction::update(dt);
+//	Print << U"Waiting";
+//}

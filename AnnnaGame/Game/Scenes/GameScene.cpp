@@ -69,7 +69,6 @@ void GameScene::start()
 
 		// マルチサンプル・テクスチャをリゾルブ
 		uvChecker.resolve();
-
 	}
 	ground_texture->tex = uvChecker;
 	//プレイヤー生成
@@ -94,7 +93,7 @@ void GameScene::start()
 	camera->setFollowTarget(player);
 	camera->type = Camera::DistanceType::Z;
 
-	auto parts = partsLoader->create(U"asset/motion/sara/model1.json", false);
+	auto parts = partsLoader->create(U"asset/motion/sara/model.json", false);
 
 	parts->master->transform->scale.setAspect({ 0.4,0.4,1 });
 
@@ -110,13 +109,13 @@ void GameScene::start()
 
 	auto decoder = std::make_shared<CmdDecoder>();
 
-	DecoderSet(decoder.get()).motionScriptCmd(parts);
+	DecoderSet(decoder.get()).motionScriptCmd(parts,nullptr);
 
-	decoder->input(U"load asset/motion/sara/motion.txt Stand")->decode()->execute();//モーションをセット
-	decoder->input(U"load asset/motion/sara/motion.txt Jump")->decode()->execute();
-	decoder->input(U"load asset/motion/sara/motion.txt Attack")->decode()->execute();
-	decoder->input(U"load asset/motion/sara/motion.txt Run")->decode()->execute();
-	decoder->input(U"load asset/motion/sara/motion.txt Knockback")->decode()->execute();
+	decoder->input(U"load asset/motion/sara/motion1.txt Stand")->decode()->execute();//モーションをセット
+	decoder->input(U"load asset/motion/sara/motion1.txt Jump")->decode()->execute();
+	decoder->input(U"load asset/motion/sara/motion1.txt Attack")->decode()->execute();
+	decoder->input(U"load asset/motion/sara/motion1.txt Run")->decode()->execute();
+	decoder->input(U"load asset/motion/sara/motion1.txt Knockback")->decode()->execute();
 
 	info.set(U"MotionCmdDecoder", state::Info(decoder));//デコーダーを渡す
 	info.set(U"StandMotionCmd", state::Info(U"start Stand"));
@@ -159,7 +158,7 @@ void GameScene::start()
 		}
 	);*/
 
-	for (auto k : step(0)) {
+	for (auto k : step(1)) {
 		auto enemy = birthObject<Enemy>(Box(3, 5, 3), { 0,0,0 });
 
 		enemy->getComponent<Collider>()->setCategory(ColliderCategory::enemy);
@@ -182,13 +181,13 @@ void GameScene::start()
 
 		decoder = std::make_shared<CmdDecoder>();
 
-		DecoderSet(decoder.get()).motionScriptCmd(eparts);
+		DecoderSet(decoder.get()).motionScriptCmd(eparts,nullptr);
 
-		decoder->input(U"load asset/motion/sara/motion.txt Stand")->decode()->execute();//モーションをセット
-		decoder->input(U"load asset/motion/sara/motion.txt Jump")->decode()->execute();
-		decoder->input(U"load asset/motion/sara/motion.txt Attack")->decode()->execute();
-		decoder->input(U"load asset/motion/sara/motion.txt Run")->decode()->execute();
-		decoder->input(U"load asset/motion/sara/motion.txt Knockback")->decode()->execute();
+		decoder->input(U"load asset/motion/sara/motion1.txt Stand")->decode()->execute();//モーションをセット
+		decoder->input(U"load asset/motion/sara/motion1.txt Jump")->decode()->execute();
+		decoder->input(U"load asset/motion/sara/motion1.txt Attack")->decode()->execute();
+		decoder->input(U"load asset/motion/sara/motion1.txt Run")->decode()->execute();
+		decoder->input(U"load asset/motion/sara/motion1.txt Knockback")->decode()->execute();
 
 		info = state::Inform();
 
