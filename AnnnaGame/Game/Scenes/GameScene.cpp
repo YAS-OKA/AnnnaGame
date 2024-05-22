@@ -32,7 +32,7 @@ void GameScene::start()
 	
 	auto s = Size{ 700,700 };
 	const MSRenderTexture uvChecker{ s,ColorF{0.12,0.27,0.12}.removeSRGBCurve() };
-	auto ground = birthObject<Object>(Box{ 500,0.5,500 }, { 0,0,0 });
+	auto ground = birthObject<Object>(Box{ 500,2,500 }, { 0,0,0 });
 	ground->getComponent<Collider>(U"hitbox")->setCategory(ColliderCategory::object);
 	auto ground_texture = ground->addComponent<Draw3D>(&drawManager, MeshData::OneSidedPlane({ 500,500 },{8,8}));
 	//地面の模様作成
@@ -158,7 +158,7 @@ void GameScene::start()
 		}
 	);*/
 
-	for (auto k : step(1)) {
+	for (auto k : step(2)) {
 		auto enemy = birthObject<Enemy>(Box(3, 5, 3), { 0,0,0 });
 
 		enemy->getComponent<Collider>()->setCategory(ColliderCategory::enemy);

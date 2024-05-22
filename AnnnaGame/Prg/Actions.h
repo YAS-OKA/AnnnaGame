@@ -198,7 +198,6 @@ namespace prg
 
 		HashSet<String> m_states;
 
-
 		HashTable<String,HashSet<String>> canDuplicate;
 	};
 }

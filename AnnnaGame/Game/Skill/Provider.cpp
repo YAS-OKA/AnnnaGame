@@ -43,9 +43,9 @@ SkillProvider::SkillProvider()
 	d[U"旅人/たたく"] = [](const Borrow<Skill>& s, Actions& act)
 		{
 			const double hitableTime = 1;//のちのちテキストファイルとかに書くべきパラメータ
-
+			//hitbox　出現
 			act += SHitbox(s, s->getInfo<Chara>()->v, Box(2, 2, 2), Vec3{ 7* s->getInfo<InfoV<Vec3>>(U"dir")->v.x,3,0 }, hitableTime, HashSet<C>{ C::enemy });
-
+			//スキル効果を付与
 			act |= FuncAction(
 				[=, hitbox = s->getHitbox()](double) {
 					for (auto& target : hitbox->getNewHittings({ C::enemy }))
