@@ -93,6 +93,8 @@ void GameScene::start()
 	camera->setFollowTarget(player);
 	camera->type = Camera::DistanceType::Z;
 
+	player->ACreate(U"cons", true).add([p = player](double) {Print << p->transform->getPos(); });
+
 	auto parts = partsLoader->create(U"asset/motion/sara/model.json", false);
 
 	parts->master->transform->scale.setAspect({ 0.4,0.4,1 });
@@ -158,59 +160,65 @@ void GameScene::start()
 		}
 	);*/
 
-	for (auto k : step(2)) {
-		auto enemy = birthObject<Enemy>(Box(3, 5, 3), { 0,0,0 });
+	EnemyFactory::LoadCreator();
 
-		enemy->getComponent<Collider>()->setCategory(ColliderCategory::enemy);
+	EnemyFactory fact(*this);
 
-		enemy->getComponent<Draw3D>(U"hitbox")->visible = true;
+	fact.create(U"Skulnake");
 
-		enemy->param.LoadFile(U"enemys.txt", U"KirikabuBake");
+	//for (auto k : step(0)) {
+	//	auto enemy = birthObject<Enemy>(Box(3, 5, 3), { 0,0,0 });
 
-		auto eparts = partsLoader->create(U"asset/motion/sara/model.json", false);
+	//	enemy->getComponent<Collider>()->setCategory(ColliderCategory::enemy);
 
-		eparts->master->transform->scale.setAspect({ 0.4,0.4,1 });
+	//	enemy->getComponent<Draw3D>(U"hitbox")->visible = true;
 
-		enemy->addComponent<Convert2DTransformComponent>(eparts->transform, getDrawManager(), ProjectionType::Parse);
+	//	enemy->param.LoadFile(U"enemys.txt", U"KirikabuBake");
 
-		enemy->addComponent<Convert2DScaleComponent>(eparts->transform, camera->distance(enemy->transform->getPos()), getDrawManager());
+	//	auto eparts = partsLoader->create(U"asset/motion/sara/model.json", false);
 
-		enemy->addComponent<PartsMirrored>(eparts);
+	//	eparts->master->transform->scale.setAspect({ 0.4,0.4,1 });
 
-		enemy->transform->setPos({ 8 * (k%10) - 10,3,4*(k/10)+10 });
+	//	enemy->addComponent<Convert2DTransformComponent>(eparts->transform, getDrawManager(), ProjectionType::Parse);
 
-		decoder = std::make_shared<CmdDecoder>();
+	//	enemy->addComponent<Convert2DScaleComponent>(eparts->transform, camera->distance(enemy->transform->getPos()), getDrawManager());
 
-		DecoderSet(decoder.get()).motionScriptCmd(eparts,nullptr);
+	//	enemy->addComponent<PartsMirrored>(eparts);
 
-		decoder->input(U"load asset/motion/sara/motion1.txt Stand")->decode()->execute();//モーションをセット
-		decoder->input(U"load asset/motion/sara/motion1.txt Jump")->decode()->execute();
-		decoder->input(U"load asset/motion/sara/motion1.txt Attack")->decode()->execute();
-		decoder->input(U"load asset/motion/sara/motion1.txt Run")->decode()->execute();
-		decoder->input(U"load asset/motion/sara/motion1.txt Knockback")->decode()->execute();
+	//	enemy->transform->setPos({ 8 * (k%10) - 10,3,4*(k/10)+10 });
 
-		info = state::Inform();
+	//	decoder = std::make_shared<CmdDecoder>();
 
-		info.set(U"MotionCmdDecoder", state::Info(decoder));//デコーダーを渡す
-		info.set(U"StandMotionCmd", state::Info(U"start Stand"));
-		info.set(U"JumpMotionCmd", state::Info(U"start Jump"));
-		info.set(U"AttackMotionCmd", state::Info(U"start Attack"));
-		info.set(U"RunMotionCmd", state::Info(U"start Run true"));
-		info.set(U"KnockbackMotionCmd", state::Info(U"start Knockback"));
-		info.set(U"parts", state::Info(eparts));
+	//	DecoderSet(decoder.get()).motionScriptCmd(eparts,nullptr);
 
-		player::SetPlayerAnimator(enemy, std::move(info));
+	//	decoder->input(U"load asset/motion/sara/motion1.txt Stand")->decode()->execute();//モーションをセット
+	//	decoder->input(U"load asset/motion/sara/motion1.txt Jump")->decode()->execute();
+	//	decoder->input(U"load asset/motion/sara/motion1.txt Attack")->decode()->execute();
+	//	decoder->input(U"load asset/motion/sara/motion1.txt Run")->decode()->execute();
+	//	decoder->input(U"load asset/motion/sara/motion1.txt Knockback")->decode()->execute();
 
-		info = state::Inform();
+	//	info = state::Inform();
 
-		auto s = skill::SkillProvider::Get(U"Tmp");
-		s->addInfo<skill::Chara>(U"chara", enemy);
-		s->addInfo<skill::InfoV<Vec3>>(U"dir", enemy->transform->getDirection());
-		enemy->setSkill(*s, U"Attack");
+	//	info.set(U"MotionCmdDecoder", state::Info(decoder));//デコーダーを渡す
+	//	info.set(U"StandMotionCmd", state::Info(U"start Stand"));
+	//	info.set(U"JumpMotionCmd", state::Info(U"start Jump"));
+	//	info.set(U"AttackMotionCmd", state::Info(U"start Attack"));
+	//	info.set(U"RunMotionCmd", state::Info(U"start Run true"));
+	//	info.set(U"KnockbackMotionCmd", state::Info(U"start Knockback"));
+	//	info.set(U"parts", state::Info(eparts));
 
-		EnemyAIProvider::Set(U"Sample", enemy, std::move(info));
-		enemy->name = U"Enemy";
-	}
+	//	player::SetPlayerAnimator(enemy, std::move(info));
+
+	//	info = state::Inform();
+
+	//	auto s = skill::SkillProvider::Get(U"Tmp");
+	//	s->addInfo<skill::Chara>(U"chara", enemy);
+	//	s->addInfo<skill::InfoV<Vec3>>(U"dir", enemy->transform->getDirection());
+	//	enemy->setSkill(*s, U"Attack");
+
+	//	EnemyAIProvider::Set(U"Sample", enemy, std::move(info));
+	//	enemy->name = U"Enemy";
+	//}
 	//カード
 	auto card = birth();
 	card->addComponent<CardComponent>(U"カード裏.png", player,

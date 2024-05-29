@@ -69,6 +69,13 @@ SkillProvider::SkillProvider()
 				}, hitableTime
 			);
 		};
+
+	d[U"SimpleAttack"] = [](const Borrow<Skill>& s, Actions& act)
+		{
+			auto chara = s->getInfo<Chara>()->v;
+			auto dir = s->getInfo<InfoV<Vec3>>(U"dir")->v;
+			auto targetCatego = s->getInfo<InfoV<C>>()->v;
+		};
 }
 
 void SkillProvider::Init(const Borrow<my::Scene>& scene)

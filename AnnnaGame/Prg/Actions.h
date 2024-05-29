@@ -112,6 +112,8 @@ namespace prg
 
 		Array<IAction*> operator [](const int32& index);
 
+		int32 getSepSize()const;
+
 		int32 getLoopCount()const;
 		/// @brief アクションをリセットしてから開始する
 		void restart();

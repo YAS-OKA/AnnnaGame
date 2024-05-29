@@ -29,6 +29,8 @@ namespace mot
 		double z;
 		Vec2 rotatePos;
 		ColorF color;
+		//パーツのパラメータ一覧
+		static Array<String> Names;
 
 		PartsParams() {};
 
@@ -85,6 +87,10 @@ namespace mot
 			drawing = _drawing;
 		};
 	};
+
+	String GetParamStr(const PartsParams& p, StringView name);
+
+	String GetParamDefault(StringView name);
 
 	class PartsManager;
 

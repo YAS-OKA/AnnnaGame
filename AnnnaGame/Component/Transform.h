@@ -82,6 +82,8 @@ private:
 	util::PCRelationship<Transform> relation;
 
 	Transform* m_parent;
+
+	Vec3 correctPos;
 public:
 	//位置
 	Vector pos;

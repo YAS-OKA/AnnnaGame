@@ -42,10 +42,12 @@ public:
 	Borrow<C>& operator = (const Borrow<C>&) = default;
 
 	template<class T>
-	Borrow<T> cast()
+	Borrow<T> cast() const
 	{
 		if (auto p = ptr.get())
-			if (auto pp = p->get())return dynamic_cast<T*>(pp)->lend();
+			if (auto pp = p->get())
+				if (auto castpp = dynamic_cast<T*>(pp))
+					return castpp->lend();
 
 		return Borrow<T>();
 	}

@@ -2,6 +2,7 @@
 #include"Parts.h"
 #include"../Prg/Action.h"
 #include"../Util/CmdDecoder.h"
+#include"../Component/Field.h"
 
 namespace mot
 {
@@ -12,7 +13,9 @@ namespace mot
 	public:
 		CmdDecoder deco;
 
-		prg::Actions* CreateMotions(const Borrow<PartsManager>& pMan, const String& text);
+		HashTable<String, String> constant;
+
+		prg::Actions* CreateMotions(const Borrow<PartsManager>& pMan, const String& motionName, const String& text);
 
 		void Load(const Borrow<PartsManager>& pMan, const String& motionName, const String& text);
 
@@ -47,7 +50,7 @@ namespace mot
 	public:
 		double angle;
 
-		const int32 rotation;
+		int32 rotation;
 
 		Optional<bool> clockwizeRotation;
 
@@ -71,6 +74,8 @@ namespace mot
 
 		Move(const Borrow<Parts>& target, double moveX, double moveY, double time = 0);
 
+		Move(const Borrow<Parts>& target, const Vec2& move, double time = 0);
+
 		void update(double dt)override;
 	};
 
@@ -83,7 +88,7 @@ namespace mot
 
 		Actions acts;
 
-		MoveTo(const Borrow<Parts>& target, double destX, double destY, double time = 0);
+		MoveTo(const Borrow<Parts>& target, const Vec2& pos, double time = 0);
 
 		void start()override;
 
@@ -127,6 +132,8 @@ namespace mot
 
 		SetScale(const Borrow<Parts>& target, double sX, double sY, double time = 0);
 
+		SetScale(const Borrow<Parts>& target, const Vec2& scale, double time = 0);
+
 		void update(double dt)override;
 	};
 
@@ -135,7 +142,19 @@ namespace mot
 	public:
 		Vec2 pos;
 
-		SetRotateCenter(const Borrow<Parts> target, double x, double y);
+		SetRotateCenter(const Borrow<Parts>& target, double x, double y);
+
+		SetRotateCenter(const Borrow<Parts>& target, const Vec2& pos);
+
+		void start()override;
+	};
+
+	class SetParent :public PartsMotion
+	{
+	public:
+		String parentName;
+
+		SetParent(const Borrow<Parts>& target, String parentName);
 
 		void start()override;
 	};
@@ -161,8 +180,100 @@ namespace mot
 
 		PauseTo(const Borrow<Parts>& target, double destX, double destY, double sX, double sY, double angle, double time = 0, Optional<bool> clockwizeRotation = none, int32 rotation = 0);
 
+		PauseTo(const Borrow<Parts>& target, const Vec2& pos, double sX, double sY, double angle, double time = 0, Optional<bool> clockwizeRotation = none, int32 rotation = 0);
+
+		PauseTo(const Borrow<Parts>& target, double destX, double destY, const Vec2& scale, double angle, double time = 0, Optional<bool> clockwizeRotation = none, int32 rotation = 0);
+
+		PauseTo(const Borrow<Parts>& target, const Vec2& pos, const Vec2& scale, double angle, double time = 0, Optional<bool> clockwizeRotation = none, int32 rotation = 0);
+
 		void start()override;
 
 		void update(double dt)override;
+	};
+	//パーツのパラメータ名をもとに変数の値を決定する
+	class PartsParamsVariable :public PartsMotion
+	{
+		String _value;
+	public:
+		String variableName;
+
+		String motionName;
+
+		Borrow<PartsManager> pMan;
+
+		PartsParamsVariable(const Borrow<Parts>& target, String motionName, String variableName, String value);
+
+		static String NameProc(StringView motionName, StringView variableName);
+
+		String decodeValue(String value);
+
+		void start()override;
+	};
+
+	class SetVariables :public prg::IAction
+	{
+	private:
+		Array<std::function<void()>> setVar;
+	public:
+		Borrow<PartsManager> pman;
+
+		String motionName;
+
+		SetVariables(String motionName);
+
+		void start()override;
+
+		//変数名から値を取得
+		template<class VarType = double>
+		Optional<VarType> var(const String& name)
+		{
+			return ParseOpt<VarType>(pman->getComponent<Field<String>>(name)->value);
+		}
+		//argsNumはパーツモーションのコンストラクタの何番目の変数をセットするかを指定する
+		void addVarSettingFunc(const Borrow<IAction>& action, StringView varName,const int32& argsNum)
+		{
+			setVar << _createVarSettingFunc(action, varName, argsNum);
+		}
+
+		std::function<void()> _createVarSettingFunc(const Borrow<IAction>& action, StringView varName,const int32& argsNum = 0)
+		{
+			String name{ PartsParamsVariable::NameProc(motionName,varName) };
+
+			if (auto ca = action.cast<Rotate>())
+			{
+				switch (argsNum)
+				{
+				case 0: return [=] { ca->ang = *var(name); };
+				case 1: return [=] { ca->time = *var(name); };
+				}
+			}
+			else if (auto ca = action.cast<RotateTo>())
+			{
+				switch (argsNum)
+				{
+				case 0: return [=] { ca->angle = *var(name); };
+				case 1: return [=] { ca->time = *var(name); };
+				case 2: return [=] { ca->clockwizeRotation = *var<bool>(name); };
+				case 3: return [=] { ca->rotation = *var<int32>(name); };
+				}
+			}
+			else if (auto ca = action.cast<MoveTo>())
+			{
+				switch (argsNum)
+				{
+				case 0: return [=] { ca->dest = *var<Vec2>(name); };
+				case 1: return [=] { ca->time = *var(name); };
+				}
+			}
+			else if (auto ca = action.cast<SetParent>())
+			{
+				switch (argsNum)
+				{
+				case 0: return [=] { ca->parentName = *var<String>(name); };
+				}
+			}
+
+			throw Error{ U"まだ変数の使用が対応していないアクションです。この関数内に追加してください" };
+		}
 	};
 }

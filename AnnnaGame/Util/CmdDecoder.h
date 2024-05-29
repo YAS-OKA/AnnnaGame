@@ -47,6 +47,13 @@ namespace {
 		// 例外処理
 	}
 
+	template<>
+	inline Vec2 convert<Vec2>(const String& value)
+	{
+		const auto& xy = value.replaced(U"(", U"").replaced(U")", U"").split(U',');
+		return { convert<double>(xy[0]),convert<double>(xy[1]) };
+	}
+
 	// 配列に対してパック展開を行う関数
 	template <typename T, class... Args, std::size_t... Indices>
 	T* arrayPackHelper(Array<String> arr, std::index_sequence<Indices...>) {

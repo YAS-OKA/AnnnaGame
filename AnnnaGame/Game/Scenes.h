@@ -35,10 +35,11 @@ namespace my
 	protected:
 		EntityManager entityManager;
 		DrawManager drawManager;
-		Borrow<Camera> camera;
 		Borrow<GameMaster> master;
 		void hitboxVisible(const MeshData& data);
 	public:
+		Borrow<Camera> camera;
+
 		RegisterAssets r;
 		mot::LoadParts* partsLoader;
 		Array<Borrow<Transform>> entitysTransform;

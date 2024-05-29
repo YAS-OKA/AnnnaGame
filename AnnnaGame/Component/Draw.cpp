@@ -39,19 +39,20 @@ void IDrawing::cal_drawPos()
 
 Vec3 IDrawing::getDrawPos() const
 {
-	Vec3 localPos = transformScaleAffectable?relative*transform->getAspect():relative;
-	//回転
-	auto q = direction.accum;
+	//Vec3 localPos = transformScaleAffectable ? relative*transform->getAspect():relative;
+	////回転
+	//auto q = direction.accum;
 
-	auto rq = q.inverse();
+	//auto rq = q.inverse();
 
-	if (transformDirectionAffectable) {
-		q = q * transform->get2Direction().accum;
-	}
-	localPos = rq * localPos;
-	localPos = q * localPos;
-	//基準に戻し、目的の方向を向かせたものをgetPosに足す
-	return transform->getPos() + localPos;
+	//if (transformDirectionAffectable) {
+	//	q = q * transform->get2Direction().accum;
+	//}
+	//localPos = rq * localPos;
+	//localPos = q * localPos;
+	////基準に戻し、目的の方向を向かせたものをgetPosに足す
+	//return transform->getPos() + localPos;
+	return m_drawPos;
 }
 
 void IDrawing::cal_distanceFromCamera()

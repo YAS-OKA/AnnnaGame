@@ -142,6 +142,11 @@ Array<IAction*> prg::Actions::operator[](const int32& index)
 	return getAction(index);
 }
 
+int32 prg::Actions::getSepSize() const
+{
+	return separate.size();
+}
+
 int32 Actions::getLoopCount()const
 {
 	return loopCount;
@@ -183,7 +188,11 @@ void prg::Actions::start(const int32& startIndex, bool startFirstActions)
 		update_list[n]->startCondition.addIn(U"isMyTurn", [=] {return sepInd - 1 == activeIndex; });
 	}
 
-	if (startFirstActions)_startCheck();
+	if (startFirstActions)
+	{
+		_sort();
+		_startCheck();
+	}
 }
 
 void prg::Actions::start(IAction* act)
@@ -283,7 +292,7 @@ void prg::Actions::_sort()
 		const auto& [st, en] = _getArea(i);
 		//優先度ソート 同区間内でソート
 		std::stable_sort(update_list.begin() + st, update_list.begin() + en, [](const IAction* ac1, const IAction* ac2) {
-			return ac1->updatePriority < ac2->updatePriority;
+			return ac1->updatePriority > ac2->updatePriority;
 		});
 	}
 }

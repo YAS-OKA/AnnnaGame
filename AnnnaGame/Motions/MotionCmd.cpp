@@ -87,13 +87,13 @@ namespace mot
 		}
 	}
 	StartMotion::StartMotion(String motionName, bool loop)
-		:PartsMotion(nullptr), motionName(motionName), loopedMotion(loop)
+		:IAction(0), motionName(motionName), loopedMotion(loop)
 	{
 	}
 
 	void StartMotion::start()
 	{
-		PartsMotion::start();
+		IAction::start();
 		pMan->actman[motionName].loop = loopedMotion;
 		pMan->startAction(motionName);
 	}

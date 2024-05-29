@@ -4,11 +4,12 @@
 
 namespace
 {
-	HashSet<String> simpleMotion{U"SetAngle", U"SetZ"};
+	HashSet<String> simpleMotion{U"SetAngle", U"SetZ",U"SetPos"};
 	constexpr int32 SetRotateCenterMotionsUpdatePriority = 100;
+	constexpr int32 SetVariablesMotionsUpdatePriority = 200;
 }
 
-prg::Actions* mot::MotionScript::CreateMotions(const Borrow<PartsManager>& pMan, const String& text)
+prg::Actions* mot::MotionScript::CreateMotions(const Borrow<PartsManager>& pMan, const String& motionName, const String& text)
 {
 	prg::Actions* actions = new prg::Actions();
 	DecoderSet(&deco).motionScriptCmd(pMan, actions->lend());
@@ -24,7 +25,7 @@ prg::Actions* mot::MotionScript::CreateMotions(const Borrow<PartsManager>& pMan,
 		const auto& e = cLine.indexOf(U"//");
 		if (e == 0)continue;											//先頭からコメントが始まってたら次の行へ
 		for (int32 i = 0; i < e and i < cLine.size(); ++i)line << cLine[i];//文中のコメントの削除
-		auto token = line.replace(U" ", U",").split(U',');				//空白を,に変換　,で文字列を分割 トークン化
+		auto token = line.split(U' ');									//空白で文字列を分割 トークン化
 		token.remove_if([](const String& str) {return str == U""; });	//なんも書いてないトークンを削除
 		if (token.isEmpty()) {											//トークンがなければaddParallelをfalseにして
 			addParallel = U"false";
@@ -46,20 +47,34 @@ prg::Actions* mot::MotionScript::CreateMotions(const Borrow<PartsManager>& pMan,
 		{
 			if (auto _src = GetMotionScrOf(*AllText, token[1])) {
 				auto _motionSrc = MotionScript();
-				if (addParallel==U"true")
+				if (addParallel == U"true")
 				{
-					actions->addActParallel(_motionSrc.CreateMotions(pMan, *_src));
+					actions->addActParallel(_motionSrc.CreateMotions(pMan, token[1], *_src));
 				}
 				else {
-					actions->addAct(_motionSrc.CreateMotions(pMan, *_src));
+					actions->addAct(_motionSrc.CreateMotions(pMan, token[1], *_src));
 				}
 				addParallel = U"true";
 			}
 			continue;
 		}
-
-		if (token[0] == U"Start" or token[0]==U"SetRC")
+		else if (token[0] == U"CONST")
 		{
+			//定数を登録
+			constant.emplace(token[1], token[2]);
+			continue;
+		}
+
+		if (token[0] == U"Start" or token[0] == U"SetRC" or token[0] == U"SetParent")
+		{
+			//LENは必要ない　ちょっと特殊な命令かも
+		}
+		else if (token[0] == U"Param")
+		{
+			//のちのち演算を行えるようにする(例えば2+angle)には2項めを変える
+			pMan->addComponentNamed<Field<String>>(PartsParamsVariable::NameProc(motionName, token[1]), GetParamDefault(token[2]));
+			//Lenは必要ない
+			token.insert(token.begin() + 1, motionName);
 		}
 		else if (token[0] == U"Wait")
 		{
@@ -80,15 +95,56 @@ prg::Actions* mot::MotionScript::CreateMotions(const Borrow<PartsManager>& pMan,
 			//lenは第7引数に入れる
 			token.insert(token.begin() + 6, len);
 		}
+		else if (token[0] == U"PauseVec")
+		{
+			token.insert(token.begin() + 4, len);
+		}
 		else
 		{
 			//lenは第４引数に入れる
 			token.insert(token.begin() + 3, len);
 		}
+
 		//3要素をセット
 		token.insert(token.begin() + 1, { target,addParallel });
+		//Paramを使用したら　それが何番目の引数で使用されたのかを保存
+		Array<std::pair<String,int32>> usedParams{};
+		int32 argNum=-3;
+		for (auto& t : token)//変数を置き換え
+		{
+			if (t[0] == U'@')
+			{
+				const auto& varName = util::slice(t, 1, t.size());
+				//定数が使われたら
+				if (constant.contains(varName))
+				{
+					//定数で置き換え
+					t = constant[varName];
+				}
+				//Paramが使われたら
+				else if (auto comp = pMan->getComponent<Field<String>>(PartsParamsVariable::NameProc(motionName, varName)))
+				{
+					t = comp->value;
+					usedParams << std::pair<String, size_t>(varName, argNum);
+				}
+			}
+			argNum++;
+		}
 
 		deco.input(token)->decode()->execute();
+		//変数セットアクション
+		Borrow<SetVariables> sv;
+		//Paramを使用した場合
+		for (const auto& [name,idx] : usedParams)
+		{
+			if (not sv)
+			{
+				sv = actions->addParallel<SetVariables>(motionName);
+				sv->pman = pMan;
+			}
+			auto backActions = actions->getAction(actions->getSepSize() - 2);
+			sv->addVarSettingFunc(*backActions[backActions.size() - 2], name, idx);//ここで-2にするのはsetVariableが一番後ろだから
+		}
 
 		addParallel = U"true";
 	}
@@ -98,7 +154,7 @@ prg::Actions* mot::MotionScript::CreateMotions(const Borrow<PartsManager>& pMan,
 
 void mot::MotionScript::Load(const Borrow<PartsManager>& pMan, const String& motionName, const String& text)
 {
-	pMan->actman.create(motionName) += std::move(*CreateMotions(pMan, text));
+	pMan->actman.create(motionName) += std::move(*CreateMotions(pMan, motionName, text));
 }
 
 bool mot::MotionScript::LoadFile(const Borrow<PartsManager>& pMan, const String& path, const String& motionName)
@@ -146,7 +202,7 @@ Optional<String> mot::MotionScript::GetMotionScrOf(const String& allText, String
 			}
 		}
 	}
-
+	//文末に改行があれば削除
 	if (removeBackBlank)
 	{
 		bool comple= false;
@@ -250,7 +306,12 @@ void mot::RotateTo::reset()
 }
 
 mot::Move::Move(const Borrow<Parts>& target, double moveX, double moveY, double time)
-	:PartsMotion(target, time), move({ moveX,moveY })
+	:Move(target, {moveX,moveY},time)
+{
+}
+
+mot::Move::Move(const Borrow<Parts>& target, const Vec2& move, double time)
+	:PartsMotion(target, time), move(move)
 {
 }
 
@@ -261,8 +322,8 @@ void mot::Move::update(double dt)
 	target->setPos(target->getPos() + move * dtPerTime(dt));
 }
 
-mot::MoveTo::MoveTo(const Borrow<Parts>& target, double destX, double destY, double time)
-	:PartsMotion(target, time),dest({ destX,destY })
+mot::MoveTo::MoveTo(const Borrow<Parts>& target, const Vec2& pos, double time)
+	:PartsMotion(target, time), dest(pos)
 {
 }
 
@@ -319,7 +380,12 @@ void mot::AddScale::update(double dt)
 }
 
 mot::SetScale::SetScale(const Borrow<Parts>& target, double sX, double sY, double time)
-	:PartsMotion(target,time),scale({sX,sY})
+	:SetScale(target, { sX,sY }, time)
+{
+}
+
+mot::SetScale::SetScale(const Borrow<Parts>& target, const Vec2& scale, double time)
+	:PartsMotion(target, time), scale(scale)
 {
 }
 
@@ -350,6 +416,21 @@ Vec2 mot::PauseTo::calDestination()const
 
 mot::PauseTo::PauseTo(const Borrow<Parts>& target, double destX, double destY, double sX, double sY, double angle, double time, Optional<bool> clockwizeRotation, int32 rotation)
 	:PartsMotion(target, time), ang(angle), clockwizeRotation(clockwizeRotation), rotation(rotation), dest({ destX,destY }), scale({ sX,sY }),parentDirectionInit(none)
+{
+}
+
+mot::PauseTo::PauseTo(const Borrow<Parts>& target, const Vec2& pos, double sX, double sY, double angle, double time, Optional<bool> clockwizeRotation, int32 rotation)
+	:PauseTo(target,pos,{sX,sY},angle,time,clockwizeRotation,rotation)
+{
+}
+
+mot::PauseTo::PauseTo(const Borrow<Parts>& target, double destX, double destY, const Vec2& scale, double angle, double time, Optional<bool> clockwizeRotation, int32 rotation)
+	:PauseTo(target, { destX,destY }, scale, angle, time, clockwizeRotation, rotation)
+{
+}
+
+mot::PauseTo::PauseTo(const Borrow<Parts>& target, const Vec2& pos, const Vec2& scale, double angle, double time, Optional<bool> clockwizeRotation, int32 rotation)
+	:PartsMotion(target, time), ang(angle), clockwizeRotation(clockwizeRotation), rotation(rotation), dest(pos), scale(scale), parentDirectionInit(none)
 {
 }
 
@@ -384,8 +465,13 @@ void mot::PauseTo::update(double dt)
 	motions.update(dt);
 }
 
-mot::SetRotateCenter::SetRotateCenter(const Borrow<Parts> target, double x, double y)
-	:PartsMotion(target),pos(x,y)
+mot::SetRotateCenter::SetRotateCenter(const Borrow<Parts>& target, double x, double y)
+	:SetRotateCenter(target, { x,y })
+{
+}
+
+mot::SetRotateCenter::SetRotateCenter(const Borrow<Parts>& target, const Vec2& pos)
+	:PartsMotion(target), pos(pos)
 {
 	this->updatePriority = SetRotateCenterMotionsUpdatePriority;
 }
@@ -394,4 +480,59 @@ void mot::SetRotateCenter::start()
 {
 	PartsMotion::start();
 	target->setRotatePos(pos);
+}
+
+mot::SetParent::SetParent(const Borrow<Parts>& target, String parentName)
+	:PartsMotion(target), parentName(parentName)
+{
+}
+
+void mot::SetParent::start()
+{
+	PartsMotion::start();
+	target->setParent(parentName);
+}
+
+mot::PartsParamsVariable::PartsParamsVariable(const Borrow<Parts>& target, String motionName, String variableName, String value)
+	:PartsMotion(target), motionName(motionName), variableName(variableName), _value(value)
+{
+}
+
+String mot::PartsParamsVariable::NameProc(StringView motionName, StringView variableName)
+{
+	return U"{}/{}"_fmt(motionName, variableName);
+}
+
+String mot::PartsParamsVariable::decodeValue(String value)
+{
+	for (const auto& name : PartsParams::Names)
+	{
+		//変数名を置き換える
+		value.replace(name, GetParamStr(target->params, name));
+	}
+	return value;
+}
+
+void mot::PartsParamsVariable::start()
+{
+	PartsMotion::start();
+	//ここで値を更新する。
+	pMan->getComponent<Field<String>>(PartsParamsVariable::NameProc(motionName, variableName))
+		->value = decodeValue(_value);
+}
+
+mot::SetVariables::SetVariables(String motionName)
+	:IAction(0), motionName(motionName)
+{
+	this->updatePriority = SetVariablesMotionsUpdatePriority;
+}
+
+void mot::SetVariables::start()
+{
+	IAction::start();
+	//実行
+	for (auto& pro : setVar)
+	{
+		pro();
+	}
 }

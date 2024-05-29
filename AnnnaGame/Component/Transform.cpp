@@ -200,6 +200,7 @@ Transform::Transform()
 	:relation(this)
 {
 	measureVel = measureDirVel = { 0,0,0 };
+	correctPos = { 0,0,0 };
 	m_parent = nullptr;
 }
 
@@ -437,6 +438,7 @@ std::pair<Vec3,Vec3> Transform::getScaleDir() const
 
 Vec3 Transform::getPos()const
 {
+	return correctPos;
 	if (auto parent = getParent())
 	{
 		return parent->getPos() +getLocalPos();
@@ -506,7 +508,13 @@ void Transform::affectChildren()
 	{
 		for (auto& child : getChildren())
 		{
-			if (child->followParent)child->moveBy(pos.delta);
+			if (child->followParent){
+				child->pos.vec += pos.delta;//child->moveBy(pos.delta);
+				//つじつま合わせ
+				child->pos.delta = child->pos.vec - child->pos.pre;
+				child->correctPos = getPos() + child->getLocalPos();
+			}
+			
 			if (child->parentRotationAffectable)child->rotateAt(pos.vec, direction.q);
 		}
 	}
@@ -516,6 +524,15 @@ void Transform::affectChildren()
 void Transform::calculate()
 {
 	pos.calculate();
+
+	if (auto parent = getParent())
+	{
+		correctPos = parent->getPos() + getLocalPos();
+	}
+	else
+	{
+		correctPos = pos.vec;
+	}
 }
 
 void Transform::rotateAt(const Vec3& center, Vec3 axis, double rad)

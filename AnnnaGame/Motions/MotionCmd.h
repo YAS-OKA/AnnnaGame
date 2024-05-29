@@ -116,8 +116,28 @@ namespace mot
 		virtual void start()override;
 	};
 
+	class StartMotion :public prg::IAction
+	{
+	public:
+		bool loopedMotion;
+		Borrow<PartsManager> pMan;
+		String motionName;
+
+		StartMotion(String motionName, bool loop = false);
+
+		StartMotion* build(const Borrow<PartsManager>& pMan)
+		{
+			this->pMan = pMan;
+			return this;
+		}
+	private:
+		void start();
+	};
+
+	template<class T,class Enable = void> class SetMotion{};
+
 	template<class T>
-	class SetMotion:public prg::IAction
+	class SetMotion<T, std::enable_if_t<std::is_base_of_v<PartsMotion, T>>>:public prg::IAction
 	{
 	public:
 		Borrow<PartsManager> pMan;
@@ -126,8 +146,9 @@ namespace mot
 		bool addParallel;
 		Borrow<prg::Actions> actions;
 		//actionsに指定したモーションを追加する
+
 		template<class... Args>
-		SetMotion(const String& target, bool addParallel, Args&& ...args)
+		SetMotion(String target, bool addParallel, Args&& ...args)
 			:addParallel(addParallel),targetName(target), action(new T(nullptr, args...))
 		{
 		}
@@ -160,6 +181,67 @@ namespace mot
 			}
 		}
 	};
+
+	template<class T>
+	class SetMotion<T, std::enable_if_t<!std::is_base_of_v<PartsMotion, T>>> :public prg::IAction
+	{
+	public:
+		Borrow<PartsManager> pMan;
+		T* action = nullptr;
+		bool addParallel;
+		Borrow<prg::Actions> actions;
+		//actionsに指定したモーションを追加する
+
+		template<class... Args>
+		SetMotion(String _, bool addParallel, Args&& ...args)
+			:addParallel(addParallel), action(new T(args...))
+		{
+		}
+
+		SetMotion<T>* build(const Borrow<PartsManager>& pMan, const Borrow<prg::Actions>& actions)
+		{
+			this->actions = actions;
+			this->pMan = pMan;
+			return this;
+		}
+
+		T* getCreatedMotion()const
+		{
+			return action;
+		};
+	private:
+		void start()override
+		{
+			prg::IAction::start();
+			if (addParallel)
+			{
+				actions->addActParallel(action);
+			}
+			else
+			{
+				actions->addAct(action);
+			}
+		}
+	};
+
+	template<>
+	inline SetMotion<StartMotion>* SetMotion<StartMotion>::build(const Borrow<PartsManager>& pMan, const Borrow<prg::Actions>& actions)
+	{
+		this->actions = actions;
+		this->pMan = pMan;
+		action->build(pMan);
+		return this;
+	}
+
+	template<>
+	inline SetMotion<PartsParamsVariable>* SetMotion<PartsParamsVariable>::build(const Borrow<PartsManager>& pMan, const Borrow<prg::Actions>& actions)
+	{
+		this->actions = actions;
+		this->pMan = pMan;
+		action->pMan = pMan;
+		return this;
+	}
+
 
 	class EraseMotion:public prg::IAction
 	{
@@ -207,149 +289,4 @@ namespace mot
 	protected:
 		void start();
 	};
-
-	class StartMotion :public PartsMotion
-	{
-	public:
-		bool loopedMotion;
-		Borrow<PartsManager> pMan;
-		String motionName;
-
-		StartMotion(String motionName, bool loop = false);
-
-		StartMotion* build(const Borrow<PartsManager>& pMan)
-		{
-			this->pMan = pMan;
-			return this;
-		}
-	private:
-		void start();
-	};
-
-	
-	template<>
-	class SetMotion<StartMotion> :public prg::IAction
-	{
-	public:
-		Borrow<PartsManager> pMan;
-		StartMotion* action = nullptr;
-		bool addParallel;
-		Borrow<prg::Actions> actions;
-
-		template<class... Args>
-		SetMotion(const String&, bool addParallel, Args&& ...args)
-			: addParallel(addParallel), action(new StartMotion(args...))
-		{
-		}
-
-		SetMotion<StartMotion>* build(const Borrow<PartsManager>& pMan, const Borrow<prg::Actions>& actions)
-		{
-			this->actions = actions;
-			this->pMan = pMan;
-			action->build(pMan);//partsManagerを渡す
-			return this;
-		}
-
-		StartMotion* getCreatedMotion()const
-		{
-			return action;
-		};
-	private:
-		void start()override
-		{
-			prg::IAction::start();
-			if (addParallel)
-			{
-				actions->addActParallel(action);
-			}
-			else
-			{
-				actions->addAct(action);
-			}
-		}
-	};
-
-	template<>
-	class SetMotion<Wait> :public prg::IAction
-	{
-	public:
-		Borrow<PartsManager> pMan;
-		String targetName;
-		Wait* action = nullptr;
-		bool addParallel;
-		Borrow<prg::Actions> actions;
-
-		template<class... Args>
-		SetMotion(const String& target, bool addParallel, Args&& ...args)
-			:addParallel(addParallel), targetName(target), action(new Wait(args...))
-		{
-		}
-
-		SetMotion<Wait>* build(const Borrow<PartsManager>& pMan, const Borrow<prg::Actions>& actions)
-		{
-			this->actions = actions;
-			this->pMan = pMan;
-			return this;
-		}
-
-		Wait* getCreatedMotion()const
-		{
-			return action;
-		};
-	private:
-		void start()
-		{
-			prg::IAction::start();
-			if (addParallel)
-			{
-				actions->addActParallel(action);
-			}
-			else
-			{
-				actions->addAct(action);
-			}
-		}
-	};
-	template<>
-	class SetMotion<MyPrint> :public prg::IAction
-	{
-	public:
-		Borrow<PartsManager> pMan;
-		String targetName;
-		MyPrint* action = nullptr;
-		bool addParallel;
-		Borrow<prg::Actions> actions;
-
-		template<class... Args>
-		SetMotion(const String& target, bool addParallel, Args&& ...args)
-			:addParallel(addParallel), targetName(target), action(new MyPrint(args...))
-		{
-		}
-
-		SetMotion<MyPrint>* build(const Borrow<PartsManager>& pMan, const Borrow<prg::Actions>& actions)
-		{
-			this->actions = actions;
-			this->pMan = pMan;
-			return this;
-		}
-
-		MyPrint* getCreatedMotion()const
-		{
-			return action;
-		};
-	private:
-		void start()
-		{
-			prg::IAction::start();
-			if (addParallel)
-			{
-				actions->addActParallel(action);
-			}
-			else
-			{
-				actions->addAct(action);
-			}
-		}
-	};
-	
 }

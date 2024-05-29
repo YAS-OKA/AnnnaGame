@@ -119,6 +119,16 @@
     "texture": "rect 0 0",
     "z": 100.0
   },
+  "skull": {
+    "angle": 0.4741500084644293,
+    "color": "(1, 1, 1, 1)",
+    "parent": "head",
+    "pos": "(89.95869, -250.20062)",
+    "rotatePos": "(0, 0)",
+    "scale": "(1, 1)",
+    "texture": "snake/skull.png",
+    "z": 0.0
+  },
   "tail": {
     "angle": 130.0,
     "color": "(1, 1, 1, 1)",

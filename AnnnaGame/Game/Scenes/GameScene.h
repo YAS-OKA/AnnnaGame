@@ -4,7 +4,6 @@
 class GameScene :public my::Scene
 {
 public:
-	Borrow<class Camera> camera;
 	Borrow<class Player> player;
 
 	~GameScene();

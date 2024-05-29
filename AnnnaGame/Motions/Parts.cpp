@@ -13,6 +13,19 @@ namespace
 
 namespace mot
 {
+	Array<String> PartsParams::Names = {
+			U"name",
+			U"path",
+			U"drawing",
+			U"parent",
+			U"pos",
+			U"scale",
+			U"angle",
+			U"z",
+			U"rotatePos",
+			U"color"
+	};
+
 	void Parts::onTrashing()
 	{
 		Object::onTrashing();
@@ -126,7 +139,8 @@ namespace mot
 
 	void Parts::update(double dt)
 	{
-		params.pos = transform->getXY();
+		//これいらないかもしらん
+		//params.pos = transform->getXY();
 
 		Object::update(dt);
 	}
@@ -312,6 +326,76 @@ namespace mot
 		dm->drawing.scalePos = transform->getPos().xy() - util::sc();//反転の中心を更新
 		Object::update(dt);
 		dm->drawing.update();//drawManagerをアプデ
+	}
+
+	String GetParamStr(const PartsParams& p, StringView name)
+	{
+		if (name == U"path" and p.path)
+		{
+			return *p.path;
+		}
+		if (name == U"drawing")
+		{
+			if (p.path)return *p.path;
+			else return get<1>(p.drawing).getName();
+		}
+		if (name == U"parent")
+		{
+			return p.parent;
+		}
+		if (name == U"pos")
+		{
+			return Format(p.pos);
+		}
+		if (name == U"posX")
+		{
+			return Format(p.pos.x);
+		}
+		if (name == U"posY")
+		{
+			return Format(p.pos.y);
+		}
+		if (name == U"scale")
+		{
+			return Format(p.scale);
+		}
+		if (name == U"scaleX")
+		{
+			return Format(p.scale.x);
+		}
+		if (name == U"scaleY")
+		{
+			return Format(p.scale.y);
+		}
+		if (name == U"angle")
+		{
+			return Format(p.angle);
+		}
+		if (name == U"z")
+		{
+			return Format(p.z);
+		}
+		if (name == U"rotatePos")
+		{
+			return Format(p.rotatePos);
+		}
+		if (name == U"color")
+		{
+			return Format(p.color);
+		}
+		return String();
+	}
+	String GetParamDefault(StringView name)
+	{
+		if (name == U"pos" or name == U"scale" or name == U"rotatePos")
+		{
+			return U"(0,0)";
+		}
+		if (name == U"color")
+		{
+			return U"(0,0,0,0)";
+		}
+		return U"0";
 	}
 }
 

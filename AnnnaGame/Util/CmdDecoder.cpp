@@ -43,16 +43,22 @@ void DecoderSet::motionScriptCmd(const Borrow<mot::PartsManager>& pmanager,const
 	decoder->add<SetMotion<RotateTo>, String, bool, double, double, Optional<bool>>(U"SetAngle", pmanager, actions);
 	decoder->add<SetMotion<RotateTo>, String, bool, double, double>(U"SetAngle", pmanager, actions);
 	decoder->add<SetMotion<RotateTo>, String, bool, double>(U"SetAngle", pmanager, actions);
-	decoder->add<SetMotion<MoveTo>, String, bool, double, double, double>(U"SetPos", pmanager, actions);
-	decoder->add<SetMotion<MoveTo>, String, bool, double, double>(U"SetPos", pmanager, actions);
+	decoder->add<SetMotion<MoveTo>, String, bool, Vec2, double>(U"SetPos", pmanager, actions);
+	decoder->add<SetMotion<MoveTo>, String, bool, Vec2>(U"SetPos", pmanager, actions);
 	decoder->add<SetMotion<PauseTo>, String, bool, double, double, double, double, double, double, Optional<bool>, int32>(U"Pause", pmanager, actions);
 	decoder->add<SetMotion<PauseTo>, String, bool, double, double, double, double, double, double, Optional<bool>>(U"Pause", pmanager, actions);
 	decoder->add<SetMotion<PauseTo>, String, bool, double, double, double, double, double, double>(U"Pause", pmanager, actions);
+	decoder->add<SetMotion<PauseTo>, String, bool, Vec2, Vec2, double, double, Optional<bool>, int32>(U"PauseVec", pmanager, actions);
+	decoder->add<SetMotion<PauseTo>, String, bool, Vec2, Vec2, double, double, Optional<bool>>(U"PauseVec", pmanager, actions);
+	decoder->add<SetMotion<PauseTo>, String, bool, Vec2, Vec2, double, double>(U"PauseVec", pmanager, actions);
 	decoder->add<SetMotion<StartMotion>, String, bool, String>(U"Start",pmanager, actions);
 	decoder->add<SetMotion<StartMotion>, String, bool, String, bool>(U"Start",pmanager, actions);
 	decoder->add<SetMotion<Wait>, String, bool, double>(U"Wait", pmanager, actions);
 	decoder->add<SetMotion<MyPrint>, String, bool, String,double>(U"MyPrint", pmanager, actions);
 	decoder->add<SetMotion<SetRotateCenter>, String, bool, double, double>(U"SetRC", pmanager, actions);
+	decoder->add<SetMotion<SetParent>, String, bool, String>(U"SetParent", pmanager, actions);
+	decoder->add<SetMotion<PartsParamsVariable>, String, bool, String, String, String>(U"Param", pmanager, actions);
+
 	decoder->add<EraseMotion, StringView>(U"em", pmanager);
 	decoder->add<LoadMotionScript, FilePath, String>(U"load", pmanager);
 	decoder->add<StartMotion, String>(U"start", pmanager);

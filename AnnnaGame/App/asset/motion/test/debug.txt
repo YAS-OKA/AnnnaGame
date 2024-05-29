@@ -1,5 +1,4 @@
 ﻿#Base
-TIME 0
 LEN 0.3
 JOINT a
 Pause 0 0 1 1 0
@@ -8,19 +7,14 @@ Pause -100.00000762939453 0 1 1 0
 JOINT c
 Pause -150 0 1 1 0
 
-#W
-LEN 2
-Wait
-
-#tmp
-TIME 0
-LEN 0.3
-JOINT a
-SetAngle -30
-
-DO W
-
-SetAngle 30
-
 #tmp2
 Start tmp true
+
+#tmp3
+JOINT a
+LEN 0.3
+Param initPos pos
+
+SetPos -100,0
+
+SetPos @initPos
