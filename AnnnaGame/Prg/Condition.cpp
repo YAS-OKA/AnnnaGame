@@ -41,7 +41,6 @@ bool ICondition::enoughFrame() const
 
 bool prg::ICondition::commonCheck()const
 {
-	if (getWaitFrame() >= 100)Print<<frameCounter;
 	return enoughFrame() and TNot != (flag or check());
 }
 

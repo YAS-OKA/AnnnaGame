@@ -58,55 +58,36 @@ void EnemyFactory::LoadCreator()
 		{
 			const auto& scene = enemy->scene;
 			//敵の基本設定
+			//当たり判定
 			enemy->getComponent<Collider>()->setCategory(ColliderCategory::enemy);
-
 			enemy->getComponent<Draw3D>(U"hitbox")->visible = true;
-
+			//パラメータ読み込み
 			enemy->param.LoadFile(U"enemys.txt", U"KirikabuBake");
 			//見た目の構築
-			auto eparts = scene->partsLoader->create(U"asset/motion/snake/snake.json", false);
-
-			eparts->master->transform->scale.setAspect({ 0.4,0.4,1 });
-
-			enemy->addComponent<Convert2DTransformComponent>(eparts->transform, scene->getDrawManager(), ProjectionType::Parse);
-
-			enemy->addComponent<Convert2DScaleComponent>(eparts->transform, scene->camera->distance(enemy->transform->getPos()), scene->getDrawManager());
-
-			enemy->addComponent<PartsMirrored>(eparts);
+			auto parts = scene->partsLoader->create(U"asset/motion/snake/snake.json", false);
+			//見た目の大きさ設定
+			parts->master->transform->scale.setAspect({ 0.3,0.3,1 });
+			//パースとミラー
+			enemy->addComponent<Convert2DTransformComponent>(parts->transform, scene->getDrawManager(), ProjectionType::Parse);
+			enemy->addComponent<Convert2DScaleComponent>(parts->transform, scene->camera->distance(enemy->transform->getPos()), scene->getDrawManager());
+			enemy->addComponent<PartsMirrored>(parts);
 			//座標をセット
 			enemy->transform->setPos({ 8 - 10,3,4 + 10 });
-
-			//モーションの構築
-			//auto decoder = std::make_shared<CmdDecoder>();
-
-			//DecoderSet(decoder.get()).motionScriptCmd(eparts, nullptr);
-
-			//decoder->input(U"load asset/motion/sara/motion1.txt Stand")->decode()->execute();//モーションをセット
-			//decoder->input(U"load asset/motion/sara/motion1.txt Jump")->decode()->execute();
-			//decoder->input(U"load asset/motion/sara/motion1.txt Attack")->decode()->execute();
-			//decoder->input(U"load asset/motion/sara/motion1.txt Run")->decode()->execute();
-			//decoder->input(U"load asset/motion/sara/motion1.txt Knockback")->decode()->execute();
-
-			//state::Inform info;
-
-			//info.set(U"MotionCmdDecoder", state::Info(decoder));//デコーダーを渡す
-			//info.set(U"StandMotionCmd", state::Info(U"start Stand"));
-			//info.set(U"JumpMotionCmd", state::Info(U"start Jump"));
-			//info.set(U"AttackMotionCmd", state::Info(U"start Attack"));
-			//info.set(U"RunMotionCmd", state::Info(U"start Run true"));
-			//info.set(U"KnockbackMotionCmd", state::Info(U"start Knockback"));
-			//info.set(U"parts", state::Info(eparts));
-
-			//player::SetPlayerAnimator(enemy, std::move(info));
-
+			//モーションのステートマシンを構築
+			CharaUtil::SetAnimator(enemy, parts, U"asset/motion/snake/motion.txt", U"Stand",
+				{
+				{{U"Stand"},U"Walk",true},
+				{{U"Stand",U"Walk"},U"Attack"}
+				}
+			);
 			//スキルのセットとAIのセット
-			/*info = state::Inform();
+			auto info = state::Inform();
 			auto s = skill::SkillProvider::Get(U"Tmp");
 			s->addInfo<skill::Chara>(U"chara", enemy);
 			s->addInfo<skill::InfoV<Vec3>>(U"dir", enemy->transform->getDirection());
 			enemy->setSkill(*s, U"Attack");
 
-			EnemyAIProvider::Set(U"Sample", enemy, std::move(info));*/
+			EnemyAIProvider::Set(U"Skulnake", enemy, std::move(info));
 			enemy->name = U"Enemy";
 
 			return enemy;

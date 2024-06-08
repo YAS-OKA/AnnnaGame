@@ -14,12 +14,16 @@
 #include"../../Motions/Parts.h"
 
 void setSimple(const Borrow<Enemy>&, state::Inform&&);
+void setSkulnake(const Borrow<Enemy>&, state::Inform&&);
+//void setOctpaskull(const Borrow<Enemy>&, state::Inform&&);
 
 EnemyAIProvider* EnemyAIProvider::instance = nullptr;
 
 EnemyAIProvider::EnemyAIProvider()
 {
-	aiList[U"Sample"]=setSimple;
+	aiList[U"Sample"]= setSimple;
+	aiList[U"Skulnake"] = setSkulnake;
+	//aiList[U"Octpaskull"] = setOctpaskull;
 }
 
 void EnemyAIProvider::Init()
@@ -42,6 +46,12 @@ void EnemyAIProvider::Set(StringView name, const Borrow<Enemy>& e, state::Inform
 		instance->aiList[name](e, std::forward<state::Inform>(info));
 	}
 }
+
+Optional<String> GetSkillName(StringView skill,state::Inform& info)
+{
+	auto& tmp = info.get(U"{}SkillName"_fmt(skill));
+	return tmp.valid ? Optional<String>(tmp.getValue<String>()) : none;
+};
 //サンプル状態遷移
 void setSimple(const Borrow<Enemy>& e, state::Inform&& info)
 {
@@ -164,17 +174,22 @@ void setSimple(const Borrow<Enemy>& e, state::Inform&& info)
 		};
 	dict[U"Attack"] = [&](In info, A act)
 		{
-			auto& tmp = info.get(U"AttackSkillName");
+			/*auto& tmp = info.get(U"AttackSkillName");
 			Optional<String> attackSkillName = none;
-			if (tmp.valid)attackSkillName = tmp.getValue<String>();
+			if (tmp.valid)attackSkillName = tmp.getValue<String>();*/
+			Optional<String> attackSkillName = GetSkillName(U"Attack", info);//これ使って無くない？
 
 			act |= FuncAction([=, skills = e->getSkills()] {
 				motionState->value[U"attack"] = true;
 				if (skills->value.contains(U"Attack")) {
 					auto& s = skills->value[U"Attack"];
-					auto dir = s->getInfo<skill::InfoV<Vec3>>(U"dir");
-					if (not dir)s->addInfo<skill::InfoV<Vec3>>(U"dir", e->transform->getDirection());
-					else *dir = e->transform->getDirection();
+					if (auto dir = s->getInfo<skill::InfoV<Vec3>>(U"dir"))
+					{
+						*dir = e->transform->getDirection();
+					}
+					else {
+						s->addInfo<skill::InfoV<Vec3>>(U"dir", e->transform->getDirection());
+					}
 					e->startAction(U"Attack");
 				}
 			},
@@ -197,3 +212,169 @@ void setSimple(const Borrow<Enemy>& e, state::Inform&& info)
 
 	e->ACreate(U"State", true) += dict[U"SampleAI"](info);
 }
+
+void setSkulnake(const Borrow<Enemy>& e, state::Inform&& info)
+{
+	using namespace prg;
+	using namespace state;
+	using namespace setting;
+
+	auto& target = e->addComponentNamed<Field<Borrow<Player>>>(U"Target")->value;
+
+	auto param = e->getComponent<Field<HashTable<String, Info>>>(U"StateMachineParam");
+	if (not param)param = e->addComponentNamed<Field<HashTable<String, Info>>>(U"StateMachineParam");
+	param->value[U"unOperatable"] = false;
+	param->value[U"attackTimer"] = 0.0;
+	//モーション開始のフラグ
+	auto motionState = e->getComponent<Field<HashTable<String, bool>>>(U"AnimatorParam");
+
+	SCreatorContainer dict;
+
+	//f1
+	dict[U"SkulnakeAI"] = [&](In info, A act)
+		{
+			act |= dict[U"Operatable"](info);
+			act |= dict[U"UnOperatable"](info);
+			
+			act.relate(U"Operatable", U"UnOperatable")
+				.andActiveIf([=] { return param->value[U"unOperatable"].getValue<bool>(); });
+
+			return F(act);
+		};
+	//f2
+	dict[U"Operatable"] = [&](In info, A act)
+		{
+			act |= dict[U"Stand"](info);
+			act |= dict[U"Attack"](info);
+			act |= dict[U"Walk"](info);
+			act |= dict[U"Constant"](info);
+
+			//コンスタント
+			act.duplicatable(U"Constant", U"Stand");
+			act.duplicatable(U"Constant", U"Walk");
+			act.relate(U"Stand", U"Constant");
+			act.relate(U"Walk", U"Constant");
+			//ターゲットがいれば
+			act.relate(U"Stand", U"Walk").andActiveIf([&] { return target; });
+			//
+			act.relate(U"Walk" , U"Attack").andStartIf(
+				[=,&target] {
+					//十分近づく
+					return target and (target->transform->getPos() - e->transform->getPos()).lengthSq() < 5;
+				}
+			).andIf([=] {
+					return param->value[U"attackTimer"].getValue<double>() > 1.0;
+				});
+
+			return F(act);
+		};
+	dict[U"UnOperatable"] = [&](In info, A act)
+		{
+			//今は何もしない
+
+			return F(act);
+		};
+	//f3
+	dict[U"Constant"] = [&](In info, A act)
+		{
+			act |= FuncAction([=](double dt) {
+				param->value[U"attackTimer"] = param->value[U"attackTimer"].getValue<double>() + dt;
+				});
+
+			return F(act);
+		};
+
+	dict[U"Stand"] = [&](In info, A act)
+		{
+			act |= FuncAction([=, players = e->scene->find<Player>(), &target](double dt)
+			{
+				for (const auto& player : players)
+				{
+					//近くにプレイヤーがいたらターゲットに(半径はinfoで設定できるようにする)
+					if ((e->transform->getPos() - player->transform->getPos()).lengthSq() < 2500)
+					{
+						target = player;
+					}
+				}
+			});
+
+			return F(act);
+		};
+	dict[U"Walk"] = [&](In info, A act)
+		{
+			auto up = std::make_shared<bool>(false);
+			auto down = std::make_shared<bool>(false);
+			auto left = std::make_shared<bool>(false);
+			auto right = std::make_shared<bool>(false);
+
+			act |= use::Move4D(e->transform, 2,
+					FuncCondition([=] {return *up; }),
+					FuncCondition([=] {return *down; }),
+					FuncCondition([=] {return *left; }),
+					FuncCondition([=] {return *right; }))
+				+ FuncAction(
+				[=,&target](double dt) {
+					const auto& dpos = target->transform->getPos() - e->transform->getPos();
+
+					motionState->value[U"Walk"] = e->transform->getVel().xz().lengthSq() > 1;
+
+					*up = false;
+					*down = false;
+					*left = false;
+					*right = false;
+
+					//ターゲットが殺された or ターゲットが認識範囲外に出たら　null
+					if (target->owner->isKilled(target) or dpos.lengthSq() > 2500)
+					{
+						target = nullptr;
+					}
+					else
+					{
+						*up = dpos.z >= 1;
+						*down = dpos.z <= -1;
+						*left = dpos.x <= -1;
+						*right = dpos.x >= 1;
+					}
+				},
+				[=] {
+					motionState->value[U"Walk"] = false;
+				}
+			);
+
+			return F(act);
+		};
+	dict[U"Attack"] = [&](In info, A act)
+		{
+			act |= FuncAction([=, skills = e->getSkills()] {
+				motionState->value[U"Attack"] = true;
+				if (skills->value.contains(U"Attack")) {
+					auto& s = skills->value[U"Attack"];
+					if (auto dir = s->getInfo<skill::InfoV<Vec3>>(U"dir"))
+					{
+						*dir = e->transform->getDirection();
+					}
+					else {
+						s->addInfo<skill::InfoV<Vec3>>(U"dir", e->transform->getDirection());
+					}
+					e->startAction(U"Attack");
+				}
+			},
+			[=] {
+				param->value[U"attackTimer"] = 0.0;
+				motionState->value[U"Attack"] = false;
+			}, 1);
+
+			act.endIf([borrow = act.lend()] { return borrow->isAllFinished(); });
+
+			return F(act);
+		};
+	//auto freeFall = FreeFall(e->transform, { 0,0,0 }, -27)
+	//	.startIfNot<Touch>(e->getComponent<Collider>(U"bottom"), ColliderCategory::object)
+	//	.endIf<Touch>(e->getComponent<Collider>(U"bottom"), ColliderCategory::object)
+	//	.andIf([=] {return e->transform->pos.delta.y < 0; }, 1);
+
+	////自由落下
+	//e->ACreate(U"FreeFall", true, true) += std::move(freeFall);
+
+	e->ACreate(U"State", true) += dict[U"SkulnakeAI"](info);
+};

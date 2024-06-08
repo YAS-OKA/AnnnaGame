@@ -152,6 +152,8 @@ namespace prg
 			return std::forward<Self>(self);
 		};
 
+		String getId()const;
+
 		bool isStarted();
 
 		bool isEnded();

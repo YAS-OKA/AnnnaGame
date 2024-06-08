@@ -18,11 +18,11 @@ struct GameMaster::Impl
 	{
 		//scene = manager.birth<TestScene>();
 
-		//scene = manager.birth<mot::PartsEditor>();
+		scene = manager.birth<mot::PartsEditor>();
 
 		//scene = manager.birth<Title>();
 
-		scene = manager.birth<GameScene>();
+		//scene = manager.birth<GameScene>();
 	}
 
 	void update(double dt)

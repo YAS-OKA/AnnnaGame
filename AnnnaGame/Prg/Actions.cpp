@@ -83,6 +83,15 @@ bool prg::Actions::empty() const
 	return update_list.empty();
 }
 
+Array<IAction*> prg::Actions::getActions(StringView id)
+{
+	Array<IAction*>res;
+
+	for (auto& action : update_list)if (action->id == id)res << action;
+
+	return res;
+}
+
 int32 Actions::getIndex(IAction* action)
 {
 	int32 count = 0;
@@ -369,7 +378,7 @@ prg::StateActions::StateActions(StringView id)
 	setEndCondition();//リセット
 }
 
-void prg::StateActions::start(const int32& startIndex, bool startFirstAction)
+void prg::StateActions::start()
 {
 	IAction::start();
 }
@@ -380,6 +389,11 @@ void prg::StateActions::update(double dt)
 
 	IAction::update(dt);
 	dt *= timeScale;
+
+	if (auto a = getActions(U"Constant")) {
+		Print << 12;
+	}
+
 	_sort();
 
 	_startCheck();
@@ -404,9 +418,10 @@ IAction& prg::StateActions::relate(StringView from, StringView to)
 {
 	auto fa = getAction<IAction>(from);
 	auto ta = getAction<IAction>(to);
+	if (not(fa and ta))throw Error{ U"{}または{}が存在しません"_fmt(from,to) };
 	//ta->startIf(fa->lend(), ActState::active);//fromアクションがアクティブか、という条件
-	ta->startIf([from, ow = this->lend()] {
-		return ow->getState().contains(from);
+	ta->startIf([from, ow = this->lend()] ()->bool {
+			return ow->getState().contains(from);
 		});
 	return *ta;
 }
@@ -419,7 +434,7 @@ IAction& prg::StateActions::relate(Array<String> froms, StringView to)
 	{
 		auto fa = getAction<IAction>(from);
 		//c.add(fa->lend(), ActState::active);
-		c.add([from, ow = this->lend()] {return ow->getState().contains(from); });
+		c.add([from, ow = this->lend()] ()->bool {return ow->getState().contains(from); });
 	}
 	ta->startIf<ConditionArray>(std::move(c));
 	return *ta;

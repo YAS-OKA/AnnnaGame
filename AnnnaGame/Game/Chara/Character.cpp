@@ -4,7 +4,7 @@
 #include"../Scenes.h"
 #include"../../Util/DataSaver.h"
 
-//#include"../../Motions/Parts.h"
+#include"../../Motions/Parts.h"
 
 void CharaProperty::printParams() const
 {
@@ -75,4 +75,79 @@ Borrow<skill::Skill> Character::setSkill(const Borrow<skill::Skill>& skill, Stri
 	return skill;
 }
 
+void CharaUtil::SetAnimator(const Borrow<Object>& obj, Borrow<mot::PartsManager> pman, FilePath srcPath, Optional<String> standard, Array<AnimeArg> args)
+{
+	using namespace prg;
+	using namespace state;
 
+	HashSet<String> stateSet;
+	//起点パラメータのセット
+	auto param = obj->addComponentNamed<Field<HashTable<String, bool>>>(U"AnimatorParam");
+	for (const auto& arg : args)
+	{
+		stateSet.emplace(arg.to);
+		param->value[arg.to] = false;
+	}
+	if (standard)stateSet.emplace(*standard);
+
+	SCreatorContainer dict;
+	//状態遷移を定義
+	dict[U"State"] = [&,args](In info, A act)->A
+		{
+			if (standard)
+			{
+				act |= dict[*standard](info);//default
+			}
+			for (const auto& arg : args)
+			{
+				act |= dict[arg.to](info);
+			}
+
+			for (const auto& arg : args)
+			{
+				for (const auto& state : arg.from)
+				{
+					if (not stateSet.contains(state))
+					{
+						throw Error{ U"存在しないfromが指定されました\nfrom={}\nto={}"_fmt(state,arg.to) };
+					}
+				}
+
+				act.relate(arg.from, arg.to).andActiveIf([=] {return param->value[arg.to]; });
+			}
+
+			return F(act);
+		};
+	//デコーダー作成
+	auto decoder = std::make_shared<CmdDecoder>();
+	DecoderSet(decoder.get()).motionScriptCmd(pman, nullptr);
+	if (standard)args << AnimeArg{ .from = {},.to = *standard };//スタンダード(default)のモーションを入れておく
+	//各状態(モーション)のセット
+	for (const auto& arg : args)
+	{
+		//モーションをロード
+		decoder->input(U"load {} {}"_fmt(srcPath, arg.to))->decode()->execute();
+
+		dict[arg.to] = [=](In info, A act)->A
+			{
+				act |= FuncAction(
+					[=]
+					{
+						String cmd = U"start {}"_fmt(arg.to);
+						if (arg.loop)cmd += U" true";//ループする
+						//モーション開始
+						decoder->input(cmd)->decode()->execute();
+					},
+					[=] {
+						if (pman->actman(arg.to) and pman->actman[arg.to].isActive())
+						{
+							pman->actman[arg.to].end();
+						}
+					}, none);
+
+				return F(act);
+			};
+	}
+
+	obj->ACreate(U"Animator", true) += dict[U"State"]();
+}

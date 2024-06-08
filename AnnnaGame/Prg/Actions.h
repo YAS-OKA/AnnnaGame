@@ -96,6 +96,9 @@ namespace prg
 			//見つからなければ
 			return nullptr;
 		}
+
+		Array<IAction*> getActions(StringView id);
+
 		int32 getIndex(IAction* action);
 
 		int32 getActiveIndex()const;
@@ -118,11 +121,11 @@ namespace prg
 		/// @brief アクションをリセットしてから開始する
 		void restart();
 
-		void start()override;
+		virtual void start()override;
 		/// @brief アクションを開始 startFirstActionsをtrueにすると、一番最初のアクションがこのstartの中で実行される
 		void start(bool startFirstActions);
-		/// @brief 指定したインデックスからアクションを開始 まだ実装してない
-		virtual void start(const int32& startIndex, bool startFirstAction);
+		/// @brief 指定したインデックスからアクションを開始
+		void start(const int32& startIndex, bool startFirstAction);
 		/// @brief 引数に渡したアクションがアクティブじゃなければ開始させる。
 		void start(IAction* act);
 		/// @brief アクションをリセット
@@ -171,12 +174,13 @@ namespace prg
 		int32 loopCount = 0;
 	};
 
+	/*注意　基本的に親クラスのスタートは使わないほうが良いっぽい*/
 	class StateActions :public Actions
 	{
 	public:
 		StateActions(StringView id);
 
-		void start(const int32& startIndex, bool startFirstAction)override;
+		void start()override;//親クラスのstartとはちょっと仕組みが違う
 
 		void update(double dt)override;
 		//from->toの条件

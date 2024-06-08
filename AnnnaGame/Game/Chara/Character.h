@@ -54,3 +54,17 @@ public:
 
 	Borrow<skill::Skill> setSkill(const Borrow<skill::Skill>& skill, StringView name);
 };
+
+#include"../../Util/CmdDecoder.h"
+
+namespace CharaUtil
+{
+	struct AnimeArg
+	{
+		Array<String> from;
+		String to;//モーション名も兼ねている
+		bool loop = true;
+	};
+
+	void SetAnimator(const Borrow<Object>& obj, Borrow<mot::PartsManager> pman, FilePath scrPath, Optional<String> standard, Array<AnimeArg> args);
+}

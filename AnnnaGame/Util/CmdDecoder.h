@@ -70,7 +70,7 @@ T* arrayPack(Array<String> arr) {
 using Delegate = std::function<std::shared_ptr<ICMD> (Array<String>)>;
 using ArgProcessing = std::function<Array<String>(Array<String>)>;
 
-class CmdDecoder
+class CmdDecoder:public Borrowable
 {
 public:
 	Array<String> token;
@@ -131,7 +131,7 @@ public:
 	{
 		decoder = target;
 	}
-
+	//loadを使うんだったら2つめの引数はnullでいいよ
 	void motionScriptCmd(const Borrow<mot::PartsManager>& pmanager,const Borrow<prg::Actions>& actions);
 
 	void objScriptCmd(const Borrow<Object>& obj);

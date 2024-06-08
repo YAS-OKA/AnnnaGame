@@ -241,7 +241,6 @@ void player::SetPlayerAnimator(const Borrow<Object>& obj, state::Inform&& info)
 {
 	using namespace prg;
 	using namespace state;
-	using namespace setting;
 
 	auto param = obj->addComponentNamed<Field<HashTable<String, bool>>>(U"AnimatorParam");
 	param->value[U"run"] = false;
