@@ -8,7 +8,7 @@ public:
 
 	BaseBorrow(BaseLender* lender);
 
-	~BaseBorrow();
+	virtual ~BaseBorrow();
 
 	void removeBorrower();
 };
@@ -22,14 +22,12 @@ public:
 
 	BaseLender(BaseBorrowable* owner);
 
-	~BaseLender();
+	virtual ~BaseLender();
 
 	void setOwner(BaseBorrowable* owner);
 
 	void _remove(BaseBorrow* bor);
 };
-
-class Lender;
 
 //借用可能オブジェクトの基底
 class BaseBorrowable
@@ -46,4 +44,6 @@ public:
 	BaseBorrowable(const BaseBorrowable&) = delete;
 
 	BaseBorrowable& operator =(const BaseBorrowable&) = delete;
+
+	virtual ~BaseBorrowable() = default;
 };

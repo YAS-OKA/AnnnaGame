@@ -343,7 +343,7 @@ public:
 		{
 			kill(*child);
 		}
-		//一蓮托生もkillする
+		//運命共同体もkillする
 		for (auto& other : ent->sameDestiny)
 		{
 			other->sameDestiny.remove(*ent);

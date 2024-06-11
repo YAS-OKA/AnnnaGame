@@ -1,18 +1,18 @@
 ﻿#pragma once
 #include"Base.h"
 
-class Lender;
+//class Lender;
+
 namespace {
 	//参照先のポインタを持っている
 	template<class C>
-	class BorrowImpl :public BaseBorrow
+	class BorrowImpl final :public BaseBorrow
 	{
 		C* borrow_obj = nullptr;
 	public:
-		Lender* cast_lender = nullptr;//キャストしたBorrowを作るときについ買う
+		class Lender* cast_lender = nullptr;//キャストしたBorrowを作るときについ買う
 
-		BorrowImpl(Lender* lender)
-			:BaseBorrow(lender), cast_lender(lender) {}
+		BorrowImpl(Lender* lender) :BaseBorrow(lender), cast_lender(lender) {}
 
 		void _init()
 		{
@@ -29,7 +29,7 @@ namespace {
 }
 //_Borrowのスマポ。sharedだからコピーも可
 template<class C>
-class Borrow
+class Borrow final
 {
 	std::shared_ptr<BorrowImpl<C>> ptr;
 public:
@@ -80,7 +80,7 @@ public:
 	operator Borrow<T>()const;
 };
 //貸出機能など
-class Lender :public BaseLender
+class Lender final :public BaseLender
 {
 public:
 	using BaseLender::BaseLender;

@@ -77,16 +77,13 @@ Array<Borrow<IDraw2D>> DrawManager::get2Ds(std::function<bool(const Borrow<IDraw
 
 void DrawManager::drop(const Borrow<IDrawing>& drawing)
 {
-	for (auto it = m_drawings3D.begin(); it != m_drawings3D.end();)
+	if (const auto& c = drawing.cast<IDraw2D>())
 	{
-		if (drawing == (*it))it = m_drawings3D.erase(it);
-		else ++it;
+		remove2D(c);
 	}
-
-	for (auto it = m_drawings2D.begin(); it != m_drawings2D.end();)
+	else if (const auto& c = drawing.cast<IDraw3D>())
 	{
-		if (drawing == (*it))it = m_drawings2D.erase(it);
-		else ++it;
+		remove3D(c);
 	}
 }
 
