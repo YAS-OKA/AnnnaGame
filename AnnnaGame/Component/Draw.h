@@ -145,7 +145,6 @@ public:
 	DrawManager* manager;
 
 	IDrawing(DrawManager* manager);
-	virtual ~IDrawing();
 
 	virtual void start();
 
@@ -167,6 +166,8 @@ class IDraw3D :public IDrawing
 {
 public:
 	using IDrawing::IDrawing;
+
+	virtual ~IDraw3D();
 
 	void start() override {
 		IDrawing::start();

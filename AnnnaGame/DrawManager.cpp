@@ -31,6 +31,16 @@ DrawManager::DrawManager(const Borrow<Camera>& camera, const MSRenderTexture& re
 	cb->fogCoefficient = 0.004;
 }
 
+DrawManager::~DrawManager()
+{
+	m_drawings3D
+		.remove_if([](const auto& elm) {return not elm; })
+		.each([](auto& elm) {elm->manager = nullptr; });
+	m_drawings2D
+		.remove_if([](const auto& elm) {return not elm; })
+		.each([](auto& elm) {elm->manager = nullptr; });
+}
+
 util::Convert2DTransform DrawManager::getConverter()
 {
 	return util::Convert2DTransform(this);
@@ -84,6 +94,10 @@ void DrawManager::drop(const Borrow<IDrawing>& drawing)
 	else if (const auto& c = drawing.cast<IDraw3D>())
 	{
 		remove3D(c);
+	}
+	else
+	{
+		throw Error{ U"ありえないことが起きています" };
 	}
 }
 

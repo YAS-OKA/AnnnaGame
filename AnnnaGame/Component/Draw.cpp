@@ -9,11 +9,6 @@ IDrawing::IDrawing(DrawManager* manager)
 {
 }
 
-IDrawing::~IDrawing()
-{
-	manager->drop(*this);
-}
-
 void IDrawing::start()
 {
 	//cameraInfluence = owner->addComponentNamed<Field<Influence>>(U"cameraInfluence", Influence());
@@ -86,25 +81,6 @@ void Draw3D::draw()const
 		);
 }
 
-//Billboard::Billboard(DrawManager* manager)
-//	:Draw3D(manager, MeshData::Billboard({ 1,1 }))
-//{}
-//
-//void Billboard::draw()const
-//{
-//	auto size = TextureAsset(assetName).size();
-//	double x = size.x;
-//	double y = size.y;
-//	auto max = Math::Max(x, y);
-//	Vec2 aspect_ = size / max;
-//
-//	mesh.draw(
-//			manager->getCamera()->getCamera().billboard(getDrawPos(), aspect_ * transform->getAspect().xy())
-//		, TextureAsset(assetName)
-//		, color
-//	);
-//}
-
 IDraw2D::IDraw2D(DrawManager* manager)
 	:IDrawing(manager)
 {
@@ -114,6 +90,7 @@ IDraw2D::~IDraw2D()
 {
 	delete _scale_calculation;
 	delete shallow;
+	if (manager)manager->remove2D(*this);
 }
 
 Vec2 IDraw2D::getScale() const
@@ -195,4 +172,9 @@ bool draw_helper::DrawShallow::shouldReplace(DrawShallow* other) const
 	{
 		return layer < other->layer;
 	}
+}
+
+IDraw3D::~IDraw3D()
+{
+	if (manager)manager->remove3D(*this);
 }

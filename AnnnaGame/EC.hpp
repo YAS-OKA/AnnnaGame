@@ -19,9 +19,6 @@ public:
 class Component :public Borrowable
 {
 public:
-	Component() = default;
-	virtual ~Component() = default;
-
 	virtual void start() {}
 	virtual void update(double dt) {}
 

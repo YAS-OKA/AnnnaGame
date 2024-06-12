@@ -16,7 +16,7 @@ class IDraw2D;
 class IDrawing;
 class Camera;
 
-class DrawManager
+class DrawManager final
 {
 private:
 	Array<Borrow<IDraw3D>> m_drawings3D;
@@ -43,6 +43,8 @@ public:
 	DrawManager(const ColorF& backGround = { 0,0,0,1 });
 	DrawManager(const Borrow<Camera>& camera, const ColorF& backGround = { 0,0,0,1 });
 	DrawManager(const Borrow<Camera>& camera, const MSRenderTexture& renderTexture, const ColorF& backGround = { 0,0,0,1 });
+
+	~DrawManager();
 
 	void setting(const Borrow<Camera>& camera, std::function<bool(const Borrow<IDrawing>&)> f = [](const Borrow<IDrawing>&) {return true; });
 	void set3D(const Borrow<IDraw3D>& drawing);
