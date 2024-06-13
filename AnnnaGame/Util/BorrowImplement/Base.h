@@ -29,11 +29,13 @@ public:
 	void _remove(BaseBorrow* bor);
 };
 
+class Lender;
+
 //借用可能オブジェクトの基底
 class BaseBorrowable
 {
 public:
-	std::unique_ptr<class Lender> lender;
+	std::unique_ptr<Lender> lender;
 
 	BaseBorrowable();
 

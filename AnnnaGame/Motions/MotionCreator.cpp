@@ -953,6 +953,8 @@ namespace mot
 			ui::makeUiLike(plusMark->addComponent<Draw2D<Polygon>>(scene->getDrawManager(), Shape2D::Plus(6, 1).asPolygon()));
 
 			plusMark->transform->setPos({ util::sc(),0 });
+
+
 		}
 
 		void update(double dt)override

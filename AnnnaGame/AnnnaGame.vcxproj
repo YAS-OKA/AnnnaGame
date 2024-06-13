@@ -146,7 +146,7 @@
     <ClCompile Include="Motions\Motion.cpp" />
     <ClCompile Include="Motions\MotionCmd.cpp" />
     <ClCompile Include="Motions\MotionCreator.cpp" />
-    <ClCompile Include="Motions\MotionEditor.cpp" />
+    <ClCompile Include="Motions\BodyEditor.cpp" />
     <ClCompile Include="Motions\Parts.cpp" />
     <ClCompile Include="Prg\Action.cpp" />
     <ClCompile Include="Prg\ActionManager.cpp" />
@@ -159,6 +159,7 @@
     </ClCompile>
     <ClCompile Include="TestScene.cpp" />
     <ClCompile Include="Tools\ObjScript.cpp" />
+    <ClCompile Include="UI\BunchoUI.cpp" />
     <ClCompile Include="Util\BorrowImplement\Base.cpp" />
     <ClCompile Include="Util\CmdDecoder.cpp" />
     <ClCompile Include="Util\DataSaver.cpp" />
@@ -404,7 +405,7 @@
     <ClInclude Include="Motions\Motion.h" />
     <ClInclude Include="Motions\MotionCmd.h" />
     <ClInclude Include="Motions\MotionCreator.h" />
-    <ClInclude Include="Motions\MotionEditor.h" />
+    <ClInclude Include="Motions\BodyEditor.h" />
     <ClInclude Include="Motions\Parts.h" />
     <ClInclude Include="Prg\Action.h" />
     <ClInclude Include="Prg\ActionManager.h" />
@@ -415,6 +416,8 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TestScene.h" />
     <ClInclude Include="Tools\ObjScript.h" />
+    <ClInclude Include="UI\BunchoUI.hpp" />
+    <ClInclude Include="UI\UIProducts.h" />
     <ClInclude Include="Util\Borrow.h" />
     <ClInclude Include="Util\BorrowImplement\Base.h" />
     <ClInclude Include="Util\BorrowImplement\Borrowable.hpp" />

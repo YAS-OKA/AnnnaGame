@@ -2,6 +2,7 @@
 #include "Title.h"
 #include"../UI.h"
 #include"../StateMachine/StateProvider.h"
+#include"../../Motions/BodyEditor.h"
 
 void Title::start()
 {
@@ -13,7 +14,7 @@ void Title::start()
 
 	drawManager.setting(camera);
 
-	state::SCreatorContainer dict;
+	/*state::SCreatorContainer dict;
 
 	auto text = birth<ui::Text>()->setting(U"hello", 24, { 200,200 });
 
@@ -38,8 +39,9 @@ void Title::start()
 		if (Key1.down())sele->selecting = 0;
 		if (Key2.down())sele->selecting = 1;
 		if (Key3.down())sele->determined = true;
-		});
+		});*/
 
+	auto obj = birth<bodyEditor::BodyEditor>();
 }
 
 void Title::update(double dt)

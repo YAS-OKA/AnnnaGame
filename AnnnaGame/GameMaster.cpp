@@ -7,6 +7,7 @@
 #include"Motions/MotionCreator.h"
 #include"TestScene.h"
 #include"Game/Scenes/Title.h"
+#include"Motions/BodyEditor.h"
 
 struct GameMaster::Impl
 {
@@ -20,9 +21,9 @@ struct GameMaster::Impl
 
 		//scene = manager.birth<mot::PartsEditor>();
 
-		//scene = manager.birth<Title>();
+		scene = manager.birth<Title>();
 
-		scene = manager.birth<GameScene>();
+		//scene = manager.birth<GameScene>();
 	}
 
 	void update(double dt)

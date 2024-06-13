@@ -7,7 +7,7 @@
 #include"Component/CameraAffect/Convert2DScaleComponent.h"
 #include"Component/CameraAffect/Convert2DTransformComponent.h"
 #include"Motions/MotionCreator.h"
-#include"Motions/MotionEditor.h"
+#include"Motions/BodyEditor.h"
 #include"Game/Objects/Card.h"
 #include"Game/Chara/Player.h"
 

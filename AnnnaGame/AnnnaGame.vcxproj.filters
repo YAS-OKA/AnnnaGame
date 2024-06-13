@@ -240,7 +240,7 @@
     <ClCompile Include="Motions\MotionCreator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Motions\MotionEditor.cpp">
+    <ClCompile Include="Motions\BodyEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Util\BorrowImplement\Base.cpp">
@@ -271,6 +271,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Motions\Motion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\BunchoUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1062,7 +1065,7 @@
     <ClInclude Include="Motions\MotionCreator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Motions\MotionEditor.h">
+    <ClInclude Include="Motions\BodyEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Util\BorrowImplement\Base.h">
@@ -1099,6 +1102,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Game\Scenes\Title.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\BunchoUI.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIProducts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

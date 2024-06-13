@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include"Base.h"
 
-//class Lender;
+class Lender;
 
 namespace {
 	//参照先のポインタを持っている
@@ -10,7 +10,7 @@ namespace {
 	{
 		C* borrow_obj = nullptr;
 	public:
-		class Lender* cast_lender = nullptr;//キャストしたBorrowを作るときについ買う
+		Lender* cast_lender = nullptr;//キャストしたBorrowを作るときについ買う
 
 		BorrowImpl(Lender* lender) :BaseBorrow(lender), cast_lender(lender) {}
 
